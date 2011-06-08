@@ -1,0 +1,19 @@
+byte version;
+uint32_t header_length; //LE
+message MeasuredData {
+    required double samplingRate = 1;
+    required uint32 channels = 2;
+    required bool hasExternalData = 3;
+    repeated DataSet inlineData = 4 [packed=true];
+}
+
+REPEATED:
+    uint32_t message_length; //LE
+    message DataSet {
+        required int64 timeSecs = 0;
+        required int64 timeNanosecs = 1;
+        repeated DataPoint channelData = 2 [packed=true];
+    }
+    message DataPoints {
+        repeated double dataPoints = 0 [packed=true];
+    }
