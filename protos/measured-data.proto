@@ -1,0 +1,17 @@
+message MeasuredData {
+    required double samplingRate = 1;
+    required uint32 channels = 2;
+    required bool hasExternalData = 3;
+    repeated DataSet inlineData = 4;
+}
+
+message DataSet {
+    required int64 timeSecs = 1;
+    required int64 timeNanosecs = 2;
+    repeated DataPoints channelData = 3;
+}
+
+message DataPoints {
+    repeated double dataPoints = 1 [packed=true];
+    optional uint32 channel = 2;
+}

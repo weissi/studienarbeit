@@ -1,3 +1,7 @@
+byte 0x03;
+byte 0x01;
+byte 0x56;
+byte 0x01;
 byte version;
 uint32_t header_length; //LE
 message MeasuredData {
@@ -8,6 +12,10 @@ message MeasuredData {
 }
 
 REPEATED:
+    byte 0x03;
+    byte 0x01;
+    byte 0x56;
+    byte 0x02;
     uint32_t message_length; //LE
     message DataSet {
         required int64 timeSecs = 0;
