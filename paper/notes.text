@@ -1,0 +1,13 @@
+- Widerstandscode:
+  * braun: 1
+  * rot: 2
+  * orange: 3
+
+- analog triggern, weil digital triggern mit NI daq MX base nicht
+  unterstuetzt wird
+  /usr/local/natinst/nidaqmxbase/documentation/README.txt:
+  --- SNIP ---
+  USB-621x Supported Functionality
+  NI-DAQmx Base 3.4.0f2 does NOT support reference trigger
+  capabilities on the USB-621x devices.
+  --- SNAP ---
