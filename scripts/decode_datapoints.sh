@@ -60,10 +60,10 @@ echo "HEADER_LENGTH: $H_LENGTH"
 echo "--- BEGIN HEADER ---"
 raw_bytes $OFFSET $H_LENGTH | decode_proto MeasuredData
 let OFFSET=$OFFSET+$H_LENGTH
-echo "--- END HEADER ---"
+echo "--- END HEADER (OFFSET=$OFFSET, SIZE=$F_SIZE) ---"
 
 PNO=0
-while [[ $OFFSET < $F_SIZE ]]; do
+while [[ $OFFSET -lt $F_SIZE ]]; do
     let PNO=$PNO+1
 
     MAGIC=$(bytes $OFFSET 4)
@@ -78,4 +78,5 @@ while [[ $OFFSET < $F_SIZE ]]; do
     echo "--- END PART $PNO ---"
 done
 echo "SUCCESS"
+test $OFFSET -eq $F_SIZE || die "offset '$OFFSET' != file size '$F_SIZE'"
 exit 0

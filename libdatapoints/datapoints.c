@@ -126,6 +126,9 @@ int write_dataset(DP_HANDLE opaque_handle,
     assert(len == write(h->fd, buf, len));
 
     free(buf);
+    fdatasync(h->fd);
+
+    printf("wrote %d bytes\n", len);
 
     return 0;
 }
@@ -139,7 +142,7 @@ int close_datapoints_file(DP_HANDLE opaque_handle) {
     return ret;
 }
 
-int main(int argc, char **argv) {
+int test_main(int argc, char **argv) {
     double d[3][10] = { { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
                         { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 },
                         { 3, 6, 9, 12, 15, 18, 21, 24, 27, 30 }
