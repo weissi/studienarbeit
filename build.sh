@@ -3,7 +3,8 @@
 set -e
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints"
+CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints \
+        -pedantic -Wall -Werror -ggdb --std=gnu99 -pg"
 LDFLAGS="$LDFLAGS"
 cd "$HERE"
 
@@ -16,11 +17,13 @@ cd - &> /dev/null
 echo "done"
 
 cd build
-gcc --std=gnu99 -o ../datadump/datadump $CFLAGS $LDFLAGS \
+gcc -o ../libdatapoints/demo_datapoints $CFLAGS $LDFLAGS \
+    -lprotobuf -lprotobuf-c -lrt \
+    $HERE/libdatapoints/*.c $HERE/gensrc/*.c
+
+gcc -o ../datadump/datadump $CFLAGS $LDFLAGS \
     -lprotobuf -lprotobuf-c -lrt -lnidaqmxbase \
-    -pedantic -Wall -Werror \
-    -ggdb \
-    $HERE/datadump/*.c $HERE/libdatapoints/*.c \
+    $HERE/datadump/*.c $HERE/libdatapoints/datapoints.c \
     $HERE/gensrc/*.c
 
 echo SUCCESS
