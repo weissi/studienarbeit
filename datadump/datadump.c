@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <sys/param.h>
 
 #include <datapoints.h>
 
@@ -17,69 +18,68 @@
 #define TIMEOUT 10.0
 #define ONE_SAMPLE 1
 #define D_OUT "Dev1/port1"
-#define AI_CPU "Dev1/ai0"
-#define AI_BOARD "Dev1/ai1"
-#define D_START_TRIG "/Dev1/PFI3"
-#define D_STOP_TRIG "/Dev1/PFI8"
 #define CLK_SRC "OnboardClock"
 
-#define U_MIN -0.2
-#define U_MAX 0.2
+#define MAX_PRINT_SMPLS 10
 
-#define SMPL_RATE 10 /* samples per second */
-#define DATA_SIZE 1024
+/**
+ * WARNING: Don't make any errors with channel names!
+ * Dev/ai0 instead of Dev1/ai0 causes a free() on an
+ * invalid address in nidaxmxbase!
+ */
+static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1, Dev1/ai2";
+static const char *CHAN_NAMES[] = { "CPU", "BOARD", "TRIGGER" };
+#define NO_CHANNELS 3
 
-#define CHANNELS 1
+#define U_MIN -5
+#define U_MAX 5
+
+#define SMPL_RATE 1000 /* samples per second */
+#define DATA_SIZE 8192
 
 int main(int argc, char **argv) {
     TaskHandle h = 0;
-    int32 written = 0;
     int32 error = 0;
-    uInt8 wr_data = 0xAA;
-    int32 pointsRead = 0;
     float64 data[DATA_SIZE];
     char errBuff[2048] = { 0 };
-    int i;
     DP_HANDLE dp_h;
-    DP_DATA_POINT **dp_data = malloc(sizeof(DP_DATA_POINT *) * CHANNELS);
-
-    /* task 1, 0xAA -> port1 */
-    CHK(DAQmxBaseCreateTask("digital-output", &h));
-    CHK(DAQmxBaseCreateDOChan(h, D_OUT, NULL, DAQmx_Val_ChanForAllLines));
-    CHK(DAQmxBaseWriteDigitalU8(h, ONE_SAMPLE, TRUE,
-                    TIMEOUT, DAQmx_Val_GroupByChannel,
-                    &wr_data, &written, NULL));
-    assert(written == ONE_SAMPLE);
-    CHK(DAQmxBaseStartTask(h));
-    CHK(DAQmxBaseStopTask(h));
-    CHK(DAQmxBaseClearTask(h));
-
-    /* task 2: measure diff ai0 */
-    CHK(DAQmxBaseCreateTask("analog-input", &h));
-    CHK(DAQmxBaseCreateAIVoltageChan(h, AI_CPU, NULL, DAQmx_Val_Diff,
-                         U_MIN, U_MAX, DAQmx_Val_Volts, NULL));
+    DP_DATA_POINT **dp_data = malloc(sizeof(DP_DATA_POINT *) * NO_CHANNELS);
+    /* measure diffs */
+    CHK(DAQmxBaseCreateTask("analog-inputs", &h));
+    printf("chan setup '%s'(%p)\n", AI_CHANNELS, AI_CHANNELS);
+    fflush(stdout);
+    CHK(DAQmxBaseCreateAIVoltageChan(h, AI_CHANNELS, NULL, DAQmx_Val_Diff,
+                                     U_MIN, U_MAX, DAQmx_Val_Volts, NULL));
+    printf("done\n");
+    fflush(stdout);
     CHK(DAQmxBaseCfgSampClkTiming(h, CLK_SRC, SMPL_RATE,
                       DAQmx_Val_Rising, DAQmx_Val_ContSamps,
-                      0));
+                      3));
     CHK(DAQmxBaseStartTask(h));
 
-    dp_h = open_datapoints_file_output("out", 1, SMPL_RATE);
+    dp_h = open_datapoints_file_output("out", NO_CHANNELS, CHAN_NAMES,
+                                       SMPL_RATE);
     printf("GOOOOOO!\n");
 
+    for (int rounds=0; rounds<3; rounds++) {
+        int32 pointsPerChan;
 
-    while (1) {
         CHK(DAQmxBaseReadAnalogF64(h, SMPL_RATE, TIMEOUT,
                        DAQmx_Val_GroupByChannel,
-                       data, DATA_SIZE, &pointsRead, NULL));
-        printf("Acquired %d samples:\n", (int)pointsRead);
-        for (i=0; i<pointsRead; i++) {
-            printf("data[%d] = %f\n", i, data[i]);
+                       data, DATA_SIZE, &pointsPerChan, NULL));
+        printf("Acquired %d samples per channel:\n", (int)pointsPerChan);
+
+        for (int i=0; i<MIN(pointsPerChan, MAX_PRINT_SMPLS); i++) {
+            printf("data[%d] = \t", i);
+            for (int j = 0; j < NO_CHANNELS; j++) {
+                printf("%F\t", (double)(data[i + (j * pointsPerChan)]));
+            }
+            printf("\n");
         }
-        for (i=0; i<CHANNELS; i++) {
-            unsigned int pointsPerChan = pointsRead / CHANNELS;
+        for (int i=0; i<NO_CHANNELS; i++) {
             dp_data[i] = data + (i * pointsPerChan);
-            write_dataset(dp_h, pointsRead, dp_data);
         }
+        write_dataset(dp_h, pointsPerChan, dp_data);
     }
 
 TearDown:

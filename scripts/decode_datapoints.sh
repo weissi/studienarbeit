@@ -42,6 +42,7 @@ function decode_proto () {
 test $# -eq 1 || die "Usage: $0 DATAPOINT-FILE"
 test -f $1 || die "file '$1' does not exist"
 F_SIZE=$(du -b "$F" | cut -f1)
+let F_SIZE=$F_SIZE-1 #newline before eof
 OFFSET=0
 
 MAGIC=$(bytes $OFFSET 4)
@@ -68,7 +69,8 @@ while [[ $OFFSET -lt $F_SIZE ]]; do
 
     MAGIC=$(bytes $OFFSET 4)
     let OFFSET=$OFFSET+4
-    test "$MAGIC" = "03015602" || die "$F: part magic bytes not found"
+    test "$MAGIC" = "03015602" || die "$F: part magic bytes not found "\
+"(offset=$OFFSET, file size=$F_SIZE)"
 
     echo "--- BEGIN PART $PNO ---"
     P_LENGTH=$(uint32_le_decode $OFFSET)

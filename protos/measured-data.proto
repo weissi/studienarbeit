@@ -3,6 +3,7 @@ message MeasuredData {
     required uint32 channels = 2;
     required bool hasExternalData = 3;
     repeated DataSet inlineData = 4;
+    repeated string channelNames = 5; //ordered!
 }
 
 message DataSet {
@@ -14,4 +15,5 @@ message DataSet {
 message DataPoints {
     repeated double dataPoints = 1 [packed=true];
     optional uint32 channel = 2;
+    optional string channelName = 3;
 }

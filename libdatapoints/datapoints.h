@@ -7,6 +7,7 @@ typedef double DP_DATA_POINT;
 
 DP_HANDLE open_datapoints_file_output(const char *filename,
                                       unsigned int channels,
+                                      const char *channelNames[],
                                       DP_SAMPLING_RATE sample_rate
                                      );
 int write_dataset(DP_HANDLE handle,

@@ -3,7 +3,8 @@
 set -e
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints"
+CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=2 -I$HERE/gensrc -I$HERE/libmisc "\
+"       -I$HERE/libdatapoints"
 LDFLAGS="$LDFLAGS"
 cd "$HERE"
 
@@ -21,6 +22,6 @@ gcc --std=gnu99 -o ../datadump/datadump $CFLAGS $LDFLAGS \
     -pedantic -Wall -Werror \
     -ggdb \
     $HERE/datadump/*.c $HERE/libdatapoints/*.c \
-    $HERE/gensrc/*.c
+    $HERE/gensrc/*.c $HERE/libmisc/*.c
 
 echo SUCCESS
