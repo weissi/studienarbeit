@@ -27,12 +27,18 @@
  * Dev/ai0 instead of Dev1/ai0 causes a free() on an
  * invalid address in nidaxmxbase!
  */
+/*
 static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1, Dev1/ai2";
 static const char *CHAN_NAMES[] = { "CPU", "BOARD", "TRIGGER" };
 #define NO_CHANNELS 3
+*/
 
-#define U_MIN -5
-#define U_MAX 5
+static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1";
+static const char *CHAN_NAMES[] = { "CPU", "BOARD" };
+#define NO_CHANNELS 2
+
+#define U_MIN -0.2
+#define U_MAX 0.2
 
 #define SMPL_RATE 1000 /* samples per second */
 #define DATA_SIZE 8192
@@ -54,14 +60,14 @@ int main(int argc, char **argv) {
     fflush(stdout);
     CHK(DAQmxBaseCfgSampClkTiming(h, CLK_SRC, SMPL_RATE,
                       DAQmx_Val_Rising, DAQmx_Val_ContSamps,
-                      3));
+                      0));
     CHK(DAQmxBaseStartTask(h));
 
     dp_h = open_datapoints_file_output("out", NO_CHANNELS, CHAN_NAMES,
                                        SMPL_RATE);
     printf("GOOOOOO!\n");
 
-    for (int rounds=0; rounds<3; rounds++) {
+    for (int rounds=0; rounds<100; rounds++) {
         int32 pointsPerChan;
 
         CHK(DAQmxBaseReadAnalogF64(h, SMPL_RATE, TIMEOUT,

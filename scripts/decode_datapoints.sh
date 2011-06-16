@@ -47,7 +47,7 @@ OFFSET=0
 
 MAGIC=$(bytes $OFFSET 4)
 let OFFSET=$OFFSET+4
-test "$MAGIC" = "03015601" || die "$F: parse error: header magic bytes bad"
+test "$MAGIC" = "03018601" || die "$F: parse error: header magic bytes bad"
 
 VERSION=$(bytes $OFFSET 1)
 let OFFSET=$OFFSET+1
@@ -69,7 +69,7 @@ while [[ $OFFSET -lt $F_SIZE ]]; do
 
     MAGIC=$(bytes $OFFSET 4)
     let OFFSET=$OFFSET+4
-    test "$MAGIC" = "03015602" || die "$F: part magic bytes not found "\
+    test "$MAGIC" = "03018602" || die "$F: part magic bytes not found "\
 "(offset=$OFFSET, file size=$F_SIZE)"
 
     echo "--- BEGIN PART $PNO ---"

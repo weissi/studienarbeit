@@ -24,4 +24,11 @@ gcc --std=gnu99 -o ../datadump/datadump $CFLAGS $LDFLAGS \
     $HERE/datadump/*.c $HERE/libdatapoints/*.c \
     $HERE/gensrc/*.c $HERE/libmisc/*.c
 
+gcc --std=gnu99 -o ../dataexport/dataexport $CFLAGS $LDFLAGS \
+    -lprotobuf -lprotobuf-c -lrt \
+    -pedantic -Wall -Werror \
+    -ggdb \
+    $HERE/dataexport/*.c $HERE/libdatapoints/*.c \
+    $HERE/gensrc/*.c $HERE/libmisc/*.c
+
 echo SUCCESS
