@@ -27,8 +27,7 @@ typedef struct {
 
 static void encode_datapoints(unsigned int samples_pc, DP_DATA_POINT *data,
                               unsigned int channelNo, DataPoints *msg_dps) {
-    DataPoints tmp_dps = DATA_POINTS__INIT;
-    *msg_dps = tmp_dps;
+    data_points__init(msg_dps);
 
     msg_dps->n_datapoints = samples_pc;
     msg_dps->datapoints = data;
