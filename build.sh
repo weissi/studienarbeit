@@ -23,7 +23,16 @@ gcc -o ../libdatapoints/demo_datapoints $CFLAGS $LDFLAGS \
 
 gcc -o ../datadump/datadump $CFLAGS $LDFLAGS \
     -lprotobuf -lprotobuf-c -lrt -lnidaqmxbase \
-    $HERE/datadump/*.c $HERE/libdatapoints/datapoints.c \
-    $HERE/gensrc/*.c
+    -pedantic -Wall -Werror \
+    -ggdb \
+    $HERE/datadump/*.c $HERE/libdatapoints/*.c \
+    $HERE/gensrc/*.c $HERE/libmisc/*.c
+
+gcc --std=gnu99 -o ../dataexport/dataexport $CFLAGS $LDFLAGS \
+    -lprotobuf -lprotobuf-c -lrt \
+    -pedantic -Wall -Werror \
+    -ggdb \
+    $HERE/dataexport/*.c $HERE/libdatapoints/*.c \
+    $HERE/gensrc/*.c $HERE/libmisc/*.c
 
 echo SUCCESS

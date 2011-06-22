@@ -1,6 +1,8 @@
 #ifndef __UTILS_H
 #define __UTILS_H 1
 
+#include <sys/types.h>
+
 #define BUG_ON(x) assert(!(x))
 #define DIE_NE0(x) BUG_ON((x) != 0)
 #define DIE_NE0_ERR(x,desc) \
@@ -21,5 +23,8 @@
             exit(-1); \
         } \
     }
+
+size_t strlcpy(char *d, char const *s, size_t n);
+size_t strlcat(char *d, char const *s, size_t n);
 
 #endif

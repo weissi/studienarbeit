@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 /* SITE includes */
 #include <utils.h>
@@ -21,12 +22,21 @@ typedef struct {
     int fd;
     bool write;
     unsigned int channels;
+    DP_SAMPLING_RATE sample_rate;
 } dp_handle;
+
+static const unsigned char HEADER_MAGIC[] = { 0x03, 0x01, 0x86, 0x01 };
+static const unsigned char DATASET_MAGIC[] = { 0x03, 0x01, 0x86, 0x02 };
+static const unsigned char VERSION = 0x1;
+#define PRE_HEADER_SIZE (sizeof(HEADER_MAGIC) + sizeof(VERSION) +\
+                         sizeof(header_length))
+#define PRE_DATASET_SIZE (sizeof(DATASET_MAGIC) + sizeof(uint32_t))
+
+#define MAX_CHAN_NAME_LEN 16
 
 static void encode_datapoints(unsigned int samples_pc, DP_DATA_POINT *data,
                               unsigned int channelNo, DataPoints *msg_dps) {
-    DataPoints tmp_dps = DATA_POINTS__INIT;
-    *msg_dps = tmp_dps;
+    data_points__init(msg_dps);
 
     msg_dps->n_datapoints = samples_pc;
     msg_dps->datapoints = data;
@@ -41,17 +51,30 @@ void free_dp_handle(dp_handle *h) {
 }
 
 void write_header(dp_handle *h, unsigned int channels,
-                  DP_SAMPLING_RATE sample_rate) {
+                  const char *channelNames[], DP_SAMPLING_RATE sample_rate) {
     MeasuredData msg_md = MEASURED_DATA__INIT;
-    const char magic[] = { 0x03, 0x01, 0x56, 0x01 };
-    const char version = 0x1;
+    char **chanNames_copy;
     uint32_t len;
     void *buf;
-    assert(sizeof(magic) == write(h->fd, magic, sizeof(magic)));
-    assert(1 == write(h->fd, &version, sizeof(char)));
+    unsigned int i;
+    assert(sizeof(HEADER_MAGIC) ==
+           write(h->fd, HEADER_MAGIC, sizeof(HEADER_MAGIC)));
+    assert(1 == write(h->fd, &VERSION, sizeof(char)));
+    assert(NULL != (chanNames_copy = alloca(sizeof(char *) * channels)));
+
+    if (channelNames != NULL) {
+        for (i = 0; i < channels; i++) {
+            assert(NULL != (chanNames_copy[i] = alloca(MAX_CHAN_NAME_LEN)));
+            strlcpy(chanNames_copy[i], channelNames[i], MAX_CHAN_NAME_LEN);
+        }
+    } else {
+        chanNames_copy = NULL;
+    }
 
     msg_md.samplingrate = sample_rate;
     msg_md.channels = channels;
+    msg_md.n_channelnames = chanNames_copy != NULL ? channels : 0;
+    msg_md.channelnames = chanNames_copy;
     msg_md.hasexternaldata = true;
     msg_md.n_inlinedata = 0;
 
@@ -69,21 +92,68 @@ void write_header(dp_handle *h, unsigned int channels,
 /* PUBLIC stuff */
 DP_HANDLE open_datapoints_file_output(const char *filename,
                                       unsigned int channels,
+                                      const char *channelNames[],
                                       DP_SAMPLING_RATE sample_rate
                                      ) {
     int fd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP |
                             S_IROTH );
+    assert(fd > 0);
     dp_handle *h = (dp_handle *)malloc(sizeof(dp_handle));
     h->channels = channels;
     h->write = true;
     h->fd = fd;
+    h->sample_rate = sample_rate;
 
     if (fd < 0) {
         free_dp_handle(h);
         return NULL;
     }
 
-    write_header(h, channels, sample_rate);
+    write_header(h, channels, channelNames, sample_rate);
+
+    return (DP_HANDLE)h;
+}
+
+DP_HANDLE open_datapoints_file_input(const char *filename) {
+    MeasuredData *msg_md;
+    unsigned char *buf;
+    dp_handle *h;
+    int fd;
+    size_t offset = 0;
+    uint32_t header_length;
+
+    fd = open(filename, O_RDONLY);
+    assert(fd > 0);
+
+    assert(NULL != (buf = malloc(PRE_HEADER_SIZE)));
+    assert(PRE_HEADER_SIZE == read(fd, buf, PRE_HEADER_SIZE));
+
+    offset = 0;
+    assert(0 == memcmp(buf+offset, HEADER_MAGIC, sizeof(HEADER_MAGIC)));
+
+    offset += sizeof(HEADER_MAGIC);
+    assert(0 == memcmp(buf+offset, &VERSION, sizeof(VERSION)));
+
+    offset += sizeof(VERSION);
+    memcpy(&header_length, buf+offset, sizeof(uint32_t));
+
+    free(buf);
+    assert(NULL != (buf = malloc(header_length)));
+    assert(header_length == read(fd, buf, header_length));
+
+    assert(NULL != (msg_md = measured_data__unpack(NULL, header_length, buf)));
+    free(buf);
+
+    assert(true == msg_md->hasexternaldata);
+    assert(0 == msg_md->n_inlinedata);
+
+    h = (dp_handle *)malloc(sizeof(dp_handle));
+    h->write = false;
+    h->fd = fd;
+    h->sample_rate = msg_md->samplingrate;
+    h->channels = msg_md->channels;
+
+    measured_data__free_unpacked(msg_md, NULL);
 
     return (DP_HANDLE)h;
 }
@@ -92,7 +162,6 @@ int write_dataset(DP_HANDLE opaque_handle,
                   unsigned int samples_per_channel,
                   DP_DATA_POINT **data
                  ) {
-    const char magic[] = { 0x03, 0x01, 0x56, 0x02 };
     uint32_t len;
     void *buf;
     unsigned int i;
@@ -111,7 +180,9 @@ int write_dataset(DP_HANDLE opaque_handle,
     msg_ds.n_channeldata = h->channels;
 
     for(i = 0; i < h->channels; i++) {
-        encode_datapoints(samples_per_channel, data[i], i, msg_dps[i]);
+        if (data[i] != NULL) {
+            encode_datapoints(samples_per_channel, data[i], i, msg_dps[i]);
+        }
     }
 
     msg_ds.n_channeldata = h->channels;
@@ -120,7 +191,8 @@ int write_dataset(DP_HANDLE opaque_handle,
     len = data_set__get_packed_size(&msg_ds);
     buf = malloc(len);
 
-    assert(sizeof(magic) == write(h->fd, magic, sizeof(magic)));
+    assert(sizeof(DATASET_MAGIC) ==
+           write(h->fd, DATASET_MAGIC, sizeof(DATASET_MAGIC)));
     assert(4 == write(h->fd, &len, sizeof(uint32_t)));
     data_set__pack(&msg_ds, buf);
     assert(len == write(h->fd, buf, len));
@@ -128,6 +200,77 @@ int write_dataset(DP_HANDLE opaque_handle,
     free(buf);
 
     return 0;
+}
+
+unsigned int num_of_channels(DP_HANDLE handle) {
+    dp_handle *h = (dp_handle *)handle;
+    return h->channels;
+}
+
+dp_error read_dataset(DP_HANDLE handle,
+                      struct timespec *tp,
+                      unsigned int *samples_per_channel,
+                      DP_DATA_POINT **out_data[]
+                     ) {
+    dp_handle *h = (dp_handle *)handle;
+    uint32_t ds_len;
+    unsigned char *buf;
+    DataSet *msg_ds;
+    size_t offset;
+    DP_DATA_POINT **data;
+    ssize_t bytes_read;
+
+    assert(NULL != (buf = malloc(PRE_DATASET_SIZE)));
+
+    bytes_read = read(h->fd, buf, PRE_DATASET_SIZE);
+    if (bytes_read == 0) {
+        /* EOF */
+        free(buf);
+        return DP_EOF;
+    }
+    assert(PRE_DATASET_SIZE == bytes_read);
+
+    offset = 0;
+    assert(0 == memcmp(DATASET_MAGIC, buf+offset, sizeof(DATASET_MAGIC)));
+    offset += sizeof(DATASET_MAGIC);
+
+    memcpy(&ds_len, buf+offset, sizeof(uint32_t));
+    free(buf);
+
+    assert(NULL != (buf = malloc(ds_len)));
+    assert(ds_len == read(h->fd, buf, ds_len));
+    assert(NULL != (msg_ds = data_set__unpack(NULL, ds_len, buf)));
+    free(buf);
+
+    if (NULL != tp) {
+        tp->tv_sec = msg_ds->timesecs;
+        tp->tv_nsec = msg_ds->timenanosecs;
+    }
+
+    assert(h->channels == msg_ds->n_channeldata);
+    assert(NULL != (data = malloc(h->channels * sizeof(DP_DATA_POINT *))));
+    for (int i = 0; i < h->channels; i++) {
+        DataPoints *msg_dps = msg_ds->channeldata[i];
+        unsigned int spc = msg_dps->n_datapoints;
+        if (NULL != samples_per_channel) {
+            *samples_per_channel = spc;
+        }
+        assert(NULL != (data[i] = malloc(spc * sizeof(DP_DATA_POINT))));
+        memcpy(data[i], msg_dps->datapoints, spc * sizeof(DP_DATA_POINT));
+    }
+
+    data_set__free_unpacked(msg_ds, NULL);
+    *out_data = data;
+    return DP_OK;
+}
+
+void free_dataset(DP_HANDLE handle, DP_DATA_POINT *data[]) {
+    dp_handle *h = (dp_handle *)handle;
+
+    for (int i = 0; i < h->channels; i++) {
+        free(data[i]);
+    }
+    free(data);
 }
 
 int close_datapoints_file(DP_HANDLE opaque_handle) {
