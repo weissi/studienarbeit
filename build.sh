@@ -3,6 +3,7 @@
 set -e
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+BUILD="$HERE/build"
 CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints \
         -pedantic -Wall -Werror -ggdb --std=gnu99 -pg"
 LDFLAGS="$LDFLAGS"
@@ -27,19 +28,19 @@ echo "done"
 
 cd build
 
-build "demo_datapoints" -o ../libdatapoints/demo_datapoints $CFLAGS $LDFLAGS \
+build "demo_datapoints" -o $BUILD/demo_datapoints $CFLAGS $LDFLAGS \
     -lprotobuf -lprotobuf-c -lrt \
     $HERE/libdatapoints/datapoints.c $HERE/gensrc/*.c $HERE/libmisc/*.c \
     $HERE/libdatapoints/demo_datapoints.c
 
-build "datadump" -o ../datadump/datadump $CFLAGS $LDFLAGS \
+build "datadump" -o $BUILD/datadump $CFLAGS $LDFLAGS \
     -lprotobuf -lprotobuf-c -lrt -lnidaqmxbase \
     -pedantic -Wall -Werror \
     -ggdb \
     $HERE/datadump/*.c $HERE/libdatapoints/datapoints.c \
     $HERE/gensrc/*.c $HERE/libmisc/*.c
 
-build "dataexport" --std=gnu99 -o ../dataexport/dataexport $CFLAGS $LDFLAGS \
+build "dataexport" --std=gnu99 -o $BUILD/dataexport $CFLAGS $LDFLAGS \
     -lprotobuf -lprotobuf-c -lrt \
     -pedantic -Wall -Werror \
     -ggdb \
