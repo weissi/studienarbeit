@@ -50,10 +50,20 @@ int main(int argc, char **argv) {
     char errBuff[2048] = { 0 };
     DP_HANDLE dp_h;
     char *fname, *shot;
+    int rounds;
     DP_DATA_POINT **dp_data = malloc(sizeof(DP_DATA_POINT *) * NO_CHANNELS);
 
+    if (argc != 3 && argc != 4) {
+        fprintf(stderr, "Usage: %s FILENAME SHOT-ID [ROUNDS]\n", argv[0]);
+        exit(1);
+    }
     fname = argv[1];
     shot = argv[2];
+    if (argc == 4) {
+        rounds = atoi(argv[3]);
+    } else {
+        rounds = 100;
+    }
 
     /* measure diffs */
     CHK(DAQmxBaseCreateTask("analog-inputs", &h));
@@ -72,13 +82,14 @@ int main(int argc, char **argv) {
                                        SMPL_RATE);
     printf("GOOOOOO!\n");
 
-    for (int rounds=0; rounds<100; rounds++) {
+    for (int r = 0; r < rounds; r++) {
         int32 pointsPerChan;
 
         CHK(DAQmxBaseReadAnalogF64(h, SMPL_RATE, TIMEOUT,
                        DAQmx_Val_GroupByChannel,
                        data, DATA_SIZE, &pointsPerChan, NULL));
-        printf("Acquired %d samples per channel:\n", (int)pointsPerChan);
+        printf("[%d/%d] Acquired %d samples per channel:\n",
+               r, rounds, (int)pointsPerChan);
 
         for (int i=0; i<MIN(pointsPerChan, MAX_PRINT_SMPLS); i++) {
             printf("data[%d] = \t", i);
