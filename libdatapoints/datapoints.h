@@ -15,8 +15,9 @@ typedef enum {
 } dp_error;
 
 DP_HANDLE open_datapoints_file_output(const char *filename,
+                                      const char *shot_id,
                                       unsigned int channels,
-                                      const char *channelNames[],
+                                      const char *channel_names[],
                                       DP_SAMPLING_RATE sample_rate
                                      );
 DP_HANDLE open_datapoints_file_input(const char *filename);

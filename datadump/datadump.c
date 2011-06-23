@@ -49,7 +49,12 @@ int main(int argc, char **argv) {
     float64 data[DATA_SIZE];
     char errBuff[2048] = { 0 };
     DP_HANDLE dp_h;
+    char *fname, *shot;
     DP_DATA_POINT **dp_data = malloc(sizeof(DP_DATA_POINT *) * NO_CHANNELS);
+
+    fname = argv[1];
+    shot = argv[2];
+
     /* measure diffs */
     CHK(DAQmxBaseCreateTask("analog-inputs", &h));
     printf("chan setup '%s'(%p)\n", AI_CHANNELS, AI_CHANNELS);
@@ -63,7 +68,7 @@ int main(int argc, char **argv) {
                       0));
     CHK(DAQmxBaseStartTask(h));
 
-    dp_h = open_datapoints_file_output("out", NO_CHANNELS, CHAN_NAMES,
+    dp_h = open_datapoints_file_output(fname, shot, NO_CHANNELS, CHAN_NAMES,
                                        SMPL_RATE);
     printf("GOOOOOO!\n");
 

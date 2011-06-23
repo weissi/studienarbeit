@@ -19,6 +19,7 @@
 
 /* PRIVATE stuff */
 typedef struct {
+    char *shot_id;
     int fd;
     bool write;
     unsigned int channels;
@@ -33,6 +34,7 @@ static const unsigned char VERSION = 0x1;
 #define PRE_DATASET_SIZE (sizeof(DATASET_MAGIC) + sizeof(uint32_t))
 
 #define MAX_CHAN_NAME_LEN 16
+#define MAX_SHOT_ID_LEN 64
 
 static void encode_datapoints(unsigned int samples_pc, DP_DATA_POINT *data,
                               unsigned int channelNo, DataPoints *msg_dps) {
@@ -50,8 +52,7 @@ void free_dp_handle(dp_handle *h) {
     free(h);
 }
 
-void write_header(dp_handle *h, unsigned int channels,
-                  const char *channelNames[], DP_SAMPLING_RATE sample_rate) {
+void write_header(dp_handle *h, const char *channel_names[]) {
     MeasuredData msg_md = MEASURED_DATA__INIT;
     char **chanNames_copy;
     uint32_t len;
@@ -60,20 +61,21 @@ void write_header(dp_handle *h, unsigned int channels,
     assert(sizeof(HEADER_MAGIC) ==
            write(h->fd, HEADER_MAGIC, sizeof(HEADER_MAGIC)));
     assert(1 == write(h->fd, &VERSION, sizeof(char)));
-    assert(NULL != (chanNames_copy = alloca(sizeof(char *) * channels)));
+    assert(NULL != (chanNames_copy = alloca(sizeof(char *) * h->channels)));
 
-    if (channelNames != NULL) {
-        for (i = 0; i < channels; i++) {
+    if (channel_names != NULL) {
+        for (i = 0; i < h->channels; i++) {
             assert(NULL != (chanNames_copy[i] = alloca(MAX_CHAN_NAME_LEN)));
-            strlcpy(chanNames_copy[i], channelNames[i], MAX_CHAN_NAME_LEN);
+            strlcpy(chanNames_copy[i], channel_names[i], MAX_CHAN_NAME_LEN);
         }
     } else {
         chanNames_copy = NULL;
     }
 
-    msg_md.samplingrate = sample_rate;
-    msg_md.channels = channels;
-    msg_md.n_channelnames = chanNames_copy != NULL ? channels : 0;
+    msg_md.shotid = h->shot_id;
+    msg_md.samplingrate = h->sample_rate;
+    msg_md.channels = h->channels;
+    msg_md.n_channelnames = chanNames_copy != NULL ? h->channels : 0;
     msg_md.channelnames = chanNames_copy;
     msg_md.hasexternaldata = true;
     msg_md.n_inlinedata = 0;
@@ -91,14 +93,18 @@ void write_header(dp_handle *h, unsigned int channels,
 
 /* PUBLIC stuff */
 DP_HANDLE open_datapoints_file_output(const char *filename,
+                                      const char *shot_id,
                                       unsigned int channels,
-                                      const char *channelNames[],
+                                      const char *channel_names[],
                                       DP_SAMPLING_RATE sample_rate
                                      ) {
     int fd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP |
                             S_IROTH );
     assert(fd > 0);
     dp_handle *h = (dp_handle *)malloc(sizeof(dp_handle));
+    assert(NULL != h);
+    assert(NULL != (h->shot_id = malloc(MAX_SHOT_ID_LEN)));
+    strlcpy(h->shot_id, shot_id, MAX_SHOT_ID_LEN);
     h->channels = channels;
     h->write = true;
     h->fd = fd;
@@ -109,7 +115,7 @@ DP_HANDLE open_datapoints_file_output(const char *filename,
         return NULL;
     }
 
-    write_header(h, channels, channelNames, sample_rate);
+    write_header(h, channel_names);
 
     return (DP_HANDLE)h;
 }

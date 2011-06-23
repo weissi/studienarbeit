@@ -1,9 +1,10 @@
 message MeasuredData {
-    required double samplingRate = 1;
-    required uint32 channels = 2;
-    required bool hasExternalData = 3;
-    repeated DataSet inlineData = 4;
-    repeated string channelNames = 5; //ordered!
+    required string shotId = 1;
+    required double samplingRate = 2;
+    required uint32 channels = 3;
+    required bool hasExternalData = 4;
+    repeated DataSet inlineData = 5;
+    repeated string channelNames = 6; //ordered!
 }
 
 message DataSet {
