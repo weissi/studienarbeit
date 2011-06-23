@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     for(i = 0; i < 3; i++) {
         p_d[i] = d[i];
     }
-    DP_HANDLE h = open_datapoints_file_output("out", 3, 10);
+    DP_HANDLE h = open_datapoints_file_output("out", 3, NULL, 10);
     DIE_EQNULL_ERR(h, "open_datapoints_file_output");
 
     DIE_NE0_ERR(write_dataset(h, 10, p_d), "write_dataset");
