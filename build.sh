@@ -12,7 +12,7 @@ cd "$HERE"
 function build() {
     BINARY="$1"
     shift
-    echo "Building '$BINARY'..."
+    echo "- Building '$BINARY'..."
     gcc "$@" 2>&1 | while read line; do
         echo "    $line"
     done
@@ -33,12 +33,16 @@ build "demo_datapoints" -o $BUILD/demo_datapoints $CFLAGS $LDFLAGS \
     $HERE/libdatapoints/datapoints.c $HERE/gensrc/*.c $HERE/libmisc/*.c \
     $HERE/libdatapoints/demo_datapoints.c
 
-build "datadump" -o $BUILD/datadump $CFLAGS $LDFLAGS \
-    -lprotobuf -lprotobuf-c -lrt -lnidaqmxbase \
-    -pedantic -Wall -Werror \
-    -ggdb \
-    $HERE/datadump/*.c $HERE/libdatapoints/datapoints.c \
-    $HERE/gensrc/*.c $HERE/libmisc/*.c
+if ld -lnidaqmxbase &> /dev/null; then
+    build "datadump" -o $BUILD/datadump $CFLAGS $LDFLAGS \
+        -lprotobuf -lprotobuf-c -lrt -lnidaqmxbase \
+        -pedantic -Wall -Werror \
+        -ggdb \
+        $HERE/datadump/*.c $HERE/libdatapoints/datapoints.c \
+        $HERE/gensrc/*.c $HERE/libmisc/*.c
+else
+    echo '- not building datadump, NIdaqMXbase not found'
+fi
 
 build "dataexport" --std=gnu99 -o $BUILD/dataexport $CFLAGS $LDFLAGS \
     -lprotobuf -lprotobuf-c -lrt \
