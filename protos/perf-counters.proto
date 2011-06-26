@@ -1,0 +1,13 @@
+import "generic.proto";
+
+message CounterData {
+    required string shot_id = 1;
+    required Timestamp start_time = 2;
+    required Timestamp stop_time = 3;
+    repeated CounterValue counters = 4;
+}
+
+message CounterValue {
+    required string counter_name = 1;
+    required uint64 counter_value = 2;
+}
