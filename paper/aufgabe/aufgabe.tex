@@ -1,0 +1,91 @@
+\documentclass[a4paper,DIV=15]{scrartcl}
+
+\newcommand{\JWemail}[1]{\texttt{#1}}
+\newcommand{\JWphone}[1]{\texttt{#1}}
+\newcommand{\JWemph}[1]{\emph{#1}}
+\newcommand{\JWproduct}[1]{\JWemph{#1}}
+%\newcommand{\JWlone}[1]{\section{#1}}
+\newcommand{\JWlone}[1]{\medskip}
+\def\TReg{\textsuperscript{\textregistered}}
+\def\TCop{\textsuperscript{\textcopyright}}
+\def\TTra{\textsuperscript{\texttrademark}}
+
+\usepackage[ngerman]{babel}
+\usepackage{ngerman}
+\usepackage[utf8]{inputenc}
+
+\usepackage{draftwatermark}
+\SetWatermarkText{ENTWURF}
+\SetWatermarkScale{4.0}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\title{Anmeldung Studienarbeit zum Thema "`multi-core energy counting"'}
+\author{
+  Johannes Weiß, Karlstr. 17, 76133 Karlsruhe\\
+  \JWemail{uni-mcec@tux4u.de}, mobil: \JWphone{+49 179 9448602}\\
+  \\
+  Matrikelnummer: 1333799
+}
+\date{\today}
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\JWlone{Grundlagen}
+
+Viele der aktuell verfügbaren Prozessoren besitzen sogenannte
+\JWemph{performance counters}, die gewisse Ereignisse innerhalb innerhalb des
+Prozessors mitzählen. Bereits in früheren Arbeiten wurde gezeigt, dass gewisse
+Ereignisse des Prozessors stark mit dem momentanen Energieverbrauch des
+Prozessors korrelieren. Mit einem geeigneten Energiemodell kann somit zur
+Laufzeit der momentane Energieverbrauch hinreichend genau abgeschätzt werden.
+
+\JWlone{Related Work}
+
+Die bisherigen Arbeiten beschäftigen sich ausschließlich mit
+Einprozessorsystemen, heutige Desktop- und Notebook-Computersysteme besitzen
+aber in fast allen Fällen mehr als eine Recheneinheit. Wären die Recheneinheiten
+einzelne, voneinander unabhängige Prozessoren, ließe sich das Energiemodell
+recht einfach auf Mehrprozessorsysteme erweitern. Die aktuellen
+\JWemph{multi-core} Systeme besitzen zwar mehrere Recheneinheiten -- es können
+also tatsächlich mehrere Operationen zur gleichen Zeit ausgeführt werden --
+allerdings sind die Recheneinheiten (alias \JWemph{cores}) nicht voneinander
+unabhängig: Sie teilen sich Caches, Speicher und vieles mehr.
+
+Somit muss überprüft werden ob, und gegebenenfalls wie ein Energiemodell für
+sogenannte \JWemph{multi-core Syteme} aufgestellt werden kann.
+
+
+\JWlone{Problem}
+
+Das grundlegende Problem wird sein, die Auswirkungen eines Ereignisses sowohl
+lokal pro Core als auch global für das System sein können. Das zu entwickelnde
+Energiemodell muss dem also Rechnung tragen.
+
+\JWlone{Ziele}
+
+Das Ziel der Studienarbeit ist es ein belastbares Energiemodell für einen
+\JWproduct{Intel\TReg Core\TTra i7-2600 Processor} zu
+entwerfen, wobei folgende Prozessor-Features abgeschalten bleiben:
+\JWemph{hyper-threading}, \JWemph{DVFS}, \JWemph{turbo mode}. Es soll später
+möglich sein, den momentanen Energieverbrauch jedes laufenden Prozesses im
+System zu erfahren. Desweiteren sollen Werkzeuge entwickelt werden, mit denen
+die Entwicklung eines Energiemodells für ähnliche Prozessoren möglichst einfach
+ist.
+
+
+\JWlone{Lösungsansatz}
+
+Um das Ziel zu erreichen, soll zuerst nur ein Core aktiviert werden und ein
+traditionelles Energiemodell, wie bei den vorhergenden Arbeiten, aufgestellt
+werden. Dazu wird eine Benchmark-Suite entwickelt, die konzentriert und
+möglichst voneinander isoliert einige energierelevante Ereignisse im Prozessor
+hervorruft. Aus den Daten dieser Benchmark-Suite soll dann mittels
+Statistik-Software ein Energiemodell gewonnen werden. Sobald ein tragfähiges
+Modell für den Einprozessor-Fall gefunden worden ist, soll untersucht werden,
+was getan werden muss, um es auf ein Mehrkern-System zu erweitern.
+
+\end{document}
