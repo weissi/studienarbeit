@@ -173,6 +173,7 @@ int write_dataset(DP_HANDLE opaque_handle,
     unsigned int i;
     dp_handle *h = (dp_handle *)opaque_handle;
     struct timespec cur_time;
+    Timestamp msg_time;
     DataSet msg_ds = DATA_SET__INIT;
     DataPoints **msg_dps = alloca(sizeof(DataPoints *) * h->channels);
 
@@ -181,6 +182,7 @@ int write_dataset(DP_HANDLE opaque_handle,
     }
 
     DIE_NE0_ERR(clock_gettime(CLOCK_REALTIME, &cur_time), "clock_gettime");
+    msg_ds.time = &msg_time;
     timestamp_from_timespec(msg_ds.time, &cur_time);
     msg_ds.n_channel_data = h->channels;
 
