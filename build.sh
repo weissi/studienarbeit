@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 BUILD="$HERE/build"
@@ -50,5 +51,16 @@ build "dataexport" --std=gnu99 -o $BUILD/dataexport $CFLAGS $LDFLAGS \
     -ggdb \
     $HERE/dataexport/*.c $HERE/libdatapoints/datapoints.c \
     $HERE/gensrc/*.c $HERE/libmisc/*.c
+
+if ld -lpfm &> /dev/null; then
+    build "dumpcounters" -o $BUILD/dumpcounters $CFLAGS $LDFLAGS \
+        -lpfm -lprotobuf -lprotobuf-c -lrt \
+        -pedantic -Wall -Werror \
+        -ggdb \
+        $HERE/dumpcounters/*.c \
+        $HERE/gensrc/*.c $HERE/libmisc/*.c
+else
+    echo '- not building dumpcounters, libpfm not found'
+fi
 
 echo SUCCESS
