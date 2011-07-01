@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
     dp_error err;
     DP_DATA_POINT **data;
     unsigned int spc;
-    unsigned long int cnt = 0;
     struct timespec ref_tp = { 0 };
     struct timespec last_tp = { .tv_sec = 0, .tv_nsec = 0 };
     struct timespec tp;
@@ -41,18 +40,23 @@ int main(int argc, char **argv) {
 
     h = open_datapoints_file_input(argv[1]);
 
+    printf("t\t");
+    for (int j = 0; j < num_of_channels(h); j++) {
+        printf("\t%s", channel_name(h, j));
+    }
+    printf("\n");
+
     while(DP_OK == (err = read_dataset(h, &tp, &spc, &data))) {
         if (0 != last_tp.tv_sec) {
             t0tb = diff(ref_tp, last_tp);
             tbte = diff(last_tp, tp);
             for (int i = 0; i < spc; i++) {
                 t = t0tb + ((tbte / spc) * i);
-                printf("%ld\t%f", cnt, t);
+                printf("%f", t);
                 for (int j = 0; j < num_of_channels(h); j++) {
                     printf("\t%f", data[j][i]);
                 }
                 printf("\n");
-                cnt++;
             }
         } else {
             ref_tp = tp;
