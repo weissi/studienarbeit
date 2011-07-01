@@ -1,6 +1,7 @@
 #include <datapoints.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 double diff(struct timespec start, struct timespec end) {
     double d;
@@ -21,7 +22,7 @@ double diff(struct timespec start, struct timespec end) {
 }
 
 int main(int argc, char **argv) {
-    DP_HANDLE h = open_datapoints_file_input("out");
+    DP_HANDLE h;
     dp_error err;
     DP_DATA_POINT **data;
     unsigned int spc;
@@ -32,6 +33,13 @@ int main(int argc, char **argv) {
     double t;
     double t0tb;
     double tbte;
+    
+    if (2 != argc) {
+        fprintf(stderr, "Usage: %s DATAPOINTS-FILE.dpts\n", argv[0]);
+        exit(1);
+    }
+
+    h = open_datapoints_file_input(argv[1]);
 
     while(DP_OK == (err = read_dataset(h, &tp, &spc, &data))) {
         if (0 != last_tp.tv_sec) {
