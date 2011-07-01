@@ -22,6 +22,7 @@ DP_HANDLE open_datapoints_file_output(const char *filename,
                                      );
 DP_HANDLE open_datapoints_file_input(const char *filename);
 unsigned int num_of_channels(DP_HANDLE handle);
+const char *channel_name(DP_HANDLE handle, unsigned int channel_no);
 int write_dataset(DP_HANDLE handle,
                   unsigned int samples_per_channel,
                   DP_DATA_POINT *data[]

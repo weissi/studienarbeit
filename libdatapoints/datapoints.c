@@ -24,6 +24,7 @@ typedef struct {
     bool write;
     unsigned int channels;
     DP_SAMPLING_RATE sample_rate;
+    char **channel_names;
 } dp_handle;
 
 static const unsigned char HEADER_MAGIC[] = { 0x03, 0x01, 0x86, 0x01 };
@@ -52,31 +53,19 @@ void free_dp_handle(dp_handle *h) {
     free(h);
 }
 
-void write_header(dp_handle *h, const char *channel_names[]) {
+void write_header(dp_handle *h) {
     MeasuredData msg_md = MEASURED_DATA__INIT;
-    char **chanNames_copy;
     uint32_t len;
     void *buf;
-    unsigned int i;
     assert(sizeof(HEADER_MAGIC) ==
            write(h->fd, HEADER_MAGIC, sizeof(HEADER_MAGIC)));
     assert(1 == write(h->fd, &VERSION, sizeof(char)));
-    assert(NULL != (chanNames_copy = alloca(sizeof(char *) * h->channels)));
-
-    if (channel_names != NULL) {
-        for (i = 0; i < h->channels; i++) {
-            assert(NULL != (chanNames_copy[i] = alloca(MAX_CHAN_NAME_LEN)));
-            strlcpy(chanNames_copy[i], channel_names[i], MAX_CHAN_NAME_LEN);
-        }
-    } else {
-        chanNames_copy = NULL;
-    }
 
     msg_md.shot_id = h->shot_id;
     msg_md.sampling_rate = h->sample_rate;
     msg_md.channel_count = h->channels;
-    msg_md.n_channel_names = chanNames_copy != NULL ? h->channels : 0;
-    msg_md.channel_names = chanNames_copy;
+    msg_md.n_channel_names = h->channel_names != NULL ? h->channels : 0;
+    msg_md.channel_names = h->channel_names;
     msg_md.has_external_data = true;
     msg_md.n_inline_data = 0;
 
@@ -115,7 +104,18 @@ DP_HANDLE open_datapoints_file_output(const char *filename,
         return NULL;
     }
 
-    write_header(h, channel_names);
+    if (NULL != channel_names) {
+        assert(NULL != (
+               h->channel_names = malloc(sizeof(const char *) * h->channels)));
+        for (int i = 0; i < h->channels; i++) {
+            assert(NULL != (h->channel_names[i] = malloc(MAX_CHAN_NAME_LEN)));
+            strlcpy(h->channel_names[i], channel_names[i], MAX_CHAN_NAME_LEN);
+        }
+    } else {
+        h->channel_names = NULL;
+    }
+
+    write_header(h);
 
     return (DP_HANDLE)h;
 }
@@ -158,6 +158,20 @@ DP_HANDLE open_datapoints_file_input(const char *filename) {
     h->fd = fd;
     h->sample_rate = msg_md->sampling_rate;
     h->channels = msg_md->channel_count;
+    if (0 != msg_md->n_channel_names) {
+        assert(NULL != (
+               h->channel_names = malloc(sizeof(const char *) *
+                                         msg_md->n_channel_names)));
+        for (int i = 0; i < msg_md->n_channel_names; i++) {
+            h->channel_names[i] = malloc(MAX_CHAN_NAME_LEN);
+            assert(NULL != h->channel_names[i]);
+            strlcpy(h->channel_names[i],
+                    msg_md->channel_names[i],
+                    MAX_CHAN_NAME_LEN);
+        }
+    } else {
+        h->channel_names = NULL;
+    }
 
     measured_data__free_unpacked(msg_md, NULL);
 
@@ -283,7 +297,24 @@ int close_datapoints_file(DP_HANDLE opaque_handle) {
     dp_handle *h = (dp_handle *)opaque_handle;
 
     int ret = close(h->fd);
+    if (NULL != h->channel_names) {
+        for (int i = 0; i < h->channels; i++) {
+            free(h->channel_names[i]);
+        }
+        free(h->channel_names);
+        h->channel_names = NULL;
+    }
     free_dp_handle(h);
 
     return ret;
+}
+
+const char *channel_name(DP_HANDLE opaque_handle, unsigned int channel_no) {
+    dp_handle *h = (dp_handle *)opaque_handle;
+
+    if (NULL == h->channel_names || channel_no >= h->channels) {
+        return NULL;
+    }
+
+    return h->channel_names[channel_no];
 }
