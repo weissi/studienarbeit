@@ -6,7 +6,7 @@ set -o pipefail
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 BUILD="$HERE/build"
 CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints \
-        -pedantic -Wall -Werror -ggdb --std=gnu99 -pg"
+        -pedantic -pedantic-errors -Wall -Werror --std=gnu99 -pg"
 LDFLAGS="$LDFLAGS"
 cd "$HERE"
 
@@ -17,6 +17,10 @@ function build() {
     gcc "$@" 2>&1 | while read line; do
         echo "    $line"
     done
+}
+
+function checklib() {
+    ld $LDFLAGS -l"$1"
 }
 
 echo -n "- generating prots... "
@@ -34,7 +38,7 @@ build "demo_datapoints" -o $BUILD/demo_datapoints $CFLAGS $LDFLAGS \
     $HERE/libdatapoints/datapoints.c $HERE/gensrc/*.c $HERE/libmisc/*.c \
     $HERE/libdatapoints/demo_datapoints.c
 
-if ld -lnidaqmxbase &> /dev/null; then
+if checklib nidaqmxbase &> /dev/null; then
     build "datadump" -o $BUILD/datadump $CFLAGS $LDFLAGS \
         -lprotobuf -lprotobuf-c -lrt -lnidaqmxbase \
         -pedantic -Wall -Werror \
@@ -52,7 +56,7 @@ build "dataexport" --std=gnu99 -o $BUILD/dataexport $CFLAGS $LDFLAGS \
     $HERE/dataexport/*.c $HERE/libdatapoints/datapoints.c \
     $HERE/gensrc/*.c $HERE/libmisc/*.c
 
-if ld -lpfm &> /dev/null; then
+if checklib pfm &> /dev/null; then
     build "dumpcounters" -o $BUILD/dumpcounters $CFLAGS $LDFLAGS \
         -lpfm -lprotobuf -lprotobuf-c -lrt \
         -pedantic -Wall -Werror \
