@@ -1,11 +1,16 @@
 #!/bin/bash
 
 EV_URL="http://software.intel.com/sites/products/documentation/hpc/amplifierxe/en-us/lin/ug_docs/reference/hh_toc.htm"
-PFM_DIR="/home/weiss/libpfm-4.1.0/perf_examples"
+PFM_DIR="$HOME/build/libpfm-4.1.0/perf_examples"
 
 trap unrec_err ERR
 function unrec_err() {
     echo "ERROR occured"
+}
+
+function die() {
+    echo "$@"
+    exit 1
 }
 
 set -e
@@ -14,6 +19,8 @@ if [ $# -ne 2 ]; then
     echo "Usage: $0 AVAILABLE-FILE UNAVAILABLE-FILE"
     exit 1
 fi
+
+test -d "$PFM_DIR" || die "libpfm in '$PFM_DIR' not found"
 
 AV_F=$1
 NAV_F=$2
