@@ -460,7 +460,7 @@ measure(void)
     for (int i = 0; i < options.nevents[0]; i++) {
         fprintf(stderr, "EVENT %s: ", all_fds[0][i].name);
         for (int j = 0; j < ncpus; j++) {
-            fprintf(stderr, "%lu\t", event_values[i][j]);
+            fprintf(stderr, "%"PRIu64"\t", event_values[i][j]);
         }
         fprintf(stderr, "\n");
     }
