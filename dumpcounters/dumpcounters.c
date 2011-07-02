@@ -474,7 +474,7 @@ measure(void)
 static void
 usage(void)
 {
-    fprintf(stderr, "usage: syst [-c cpu] [-x] [-h] [-p] [-d delay] [-P] [-G cgroup name] [-e event1,event2,...]\n");
+    fprintf(stderr, "usage: dumpcounters [-c cpu] [-x] [-h] [-p] [-d delay] [-P] [-G cgroup name] [-e event1,event2,...] -s shot-id -o output-file\n");
 }
 
 int
