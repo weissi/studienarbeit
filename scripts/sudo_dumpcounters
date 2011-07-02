@@ -1,0 +1,4 @@
+#!/bin/bash
+
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+sudo LD_LIBRARY_PATH="$LD_LIBRARY_PATH" $HERE/../build/dumpcounters "$@"
