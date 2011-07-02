@@ -1,4 +1,4 @@
-\documentclass[a4paper,DIV=15]{scrartcl}
+\documentclass[a4paper,DIV=16]{scrartcl}
 
 \newcommand{\JWemail}[1]{\texttt{#1}}
 \newcommand{\JWphone}[1]{\texttt{#1}}
@@ -17,6 +17,9 @@
 \usepackage{draftwatermark}
 \SetWatermarkText{ENTWURF}
 \SetWatermarkScale{4.0}
+
+\setlength{\parskip}{1.3ex}
+\setlength{\parindent}{1.3em}
 
 \begin{document}
 
@@ -55,26 +58,27 @@ also tatsächlich mehrere Operationen zur gleichen Zeit ausgeführt werden --
 allerdings sind die Recheneinheiten (alias \JWemph{cores}) nicht voneinander
 unabhängig: Sie teilen sich Caches, Speicher und vieles mehr.
 
-Somit muss überprüft werden ob, und gegebenenfalls wie ein Energiemodell für
-sogenannte \JWemph{multi-core Syteme} aufgestellt werden kann.
-
 
 \JWlone{Problem}
 
-Das grundlegende Problem wird sein, die Auswirkungen eines Ereignisses sowohl
-lokal pro Core als auch global für das System sein können. Das zu entwickelnde
-Energiemodell muss dem also Rechnung tragen.
+Somit muss überprüft werden ob, und gegebenenfalls wie ein Energiemodell für
+sogenannte \JWemph{multi-core Syteme} aufgestellt werden kann.  Das grundlegende
+Problem wird sein, die Auswirkungen eines Ereignisses sowohl lokal pro Core als
+auch global für das System sein können. Das zu entwickelnde Energiemodell muss
+dem also Rechnung tragen.
+
 
 \JWlone{Ziele}
 
 Das Ziel der Studienarbeit ist es ein belastbares Energiemodell für einen
-\JWproduct{Intel\TReg Core\TTra i7-2600 Processor} zu
-entwerfen, wobei folgende Prozessor-Features abgeschalten bleiben:
-\JWemph{hyper-threading}, \JWemph{DVFS}, \JWemph{turbo mode}. Es soll später
-möglich sein, den momentanen Energieverbrauch jedes laufenden Prozesses im
-System zu erfahren. Desweiteren sollen Werkzeuge entwickelt werden, mit denen
-die Entwicklung eines Energiemodells für ähnliche Prozessoren möglichst einfach
-ist.
+\JWproduct{Intel\TReg Core\TTra i7-2600 Processor} zu entwerfen, wobei folgende
+Prozessor-Features abgeschalten bleiben: \JWemph{hyper-threading},
+\JWemph{DVFS}, \JWemph{turbo mode}. Es soll später möglich sein, den momentanen
+Energieverbrauch jedes laufenden Prozesses im System zu erfahren. Zudem soll das
+Energiemodell auch im Mehrprogrammbetrieb funkionieren, das heißt die Summe der
+Energiemengen aller Prozesse im System soll der des Gesamtsystems entsprechen.
+Desweiteren sollen Werkzeuge entwickelt werden, mit denen die Entwicklung eines
+Energiemodells für ähnliche Prozessoren möglichst einfach ist.
 
 
 \JWlone{Lösungsansatz}
