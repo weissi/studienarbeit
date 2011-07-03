@@ -42,6 +42,7 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #include <utils.h>
 
@@ -62,7 +63,7 @@
 typedef struct {
     char *shot_id;
     const char *dump_fname;
-    const char *events[MAX_GROUPS];
+    char *events[MAX_GROUPS];
     int nevents[MAX_GROUPS]; /* #events per group */
     int num_groups;
     int delay;
@@ -357,7 +358,9 @@ write_dump_data(struct timespec *start, struct timespec *stop,
         for (int j = 0; j < ncpus; j++) {
             global_counter_val += event_values[i][j];
         }
+        msg_cvs[i]->has_global_counter_value = true;
         msg_cvs[i]->global_counter_value = global_counter_val;
+        msg_cvs[i]->counter_name = options.events[i];
     }
 
     msg_cd.n_counters = ncounters;
