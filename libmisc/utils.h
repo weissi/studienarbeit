@@ -25,6 +25,15 @@
             exit(-1); \
         } \
     }
+#define assert_err(op, p) \
+    { \
+        if (true != (p)) { \
+            fprintf(stderr, "UNRECOVERABLE ERROR in %s:%d\n", \
+                    __FILE__, __LINE__); \
+            perror((op)); \
+            exit(-1); \
+        } \
+    }
 
 size_t strlcpy(char *d, char const *s, size_t n);
 size_t strlcat(char *d, char const *s, size_t n);
