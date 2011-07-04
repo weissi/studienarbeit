@@ -43,6 +43,8 @@
 #include <time.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <linux/ppdev.h>
+#include <linux/parport.h>
 
 #include <utils.h>
 
@@ -71,11 +73,37 @@ typedef struct {
     int pin;
     int interval;
     int cpu;
+    int parport_fd;
     char *cgroup_name;
 } options_t;
 
 static options_t options;
 static perf_event_desc_t **all_fds;
+
+static int
+open_parport(const char *dev) {
+    int fd;
+    int mode = IEEE1284_MODE_BYTE;
+    int dir = 0x00; //direction = output
+
+    fd = open(dev, O_WRONLY);
+    assert_err("open", fd > 0);
+    assert_err("PPEXCL", 0 == ioctl (fd, PPEXCL));
+    assert_err("PPCLAIM", 0 == ioctl (fd, PPCLAIM));
+    assert_err("IEEE1284_MODE_BYTE", 0 == ioctl (fd, PPSETMODE, &mode));
+    assert_err("PPDATADIR", 0 == ioctl(fd, PPDATADIR, &dir));
+
+    return fd;
+}
+
+static void parport_write_data(const int fd, unsigned char data) {
+    assert_err("PPWDATA", 0 == ioctl(fd, PPWDATA, &data));
+}
+
+static void
+close_parport(const int fd) {
+    assert_err("PPRELEASE", 0 == ioctl(fd, PPRELEASE));
+}
 
 static int
 cgroupfs_find_mountpoint(char *buf, size_t maxlen)
@@ -365,7 +393,6 @@ write_dump_data(struct timespec *start, struct timespec *stop,
 
     msg_cd.n_counters = ncounters;
     msg_cd.counters = msg_cvs;
-    printf("[0]: %p, [1]: %p\n", (void*)(&msg_cvs+0), (void*)(&msg_cvs+1));
     len = counter_data__get_packed_size(&msg_cd);
     buf = malloc(len);
     assert(NULL != buf);
@@ -406,6 +433,7 @@ measure(void)
             exit(1);
     }
 
+    parport_write_data(options.parport_fd, 0xFF);
     for(c=cmin ; c < cmax; c++)
         setup_cpu(c, cfd);
 
@@ -458,6 +486,7 @@ measure(void)
         }
     }
 
+    parport_write_data(options.parport_fd, 0x00);
     write_dump_data(&start_t, &stop_t, ncpus, options.nevents[0], event_values);
 
     for (int i = 0; i < options.nevents[0]; i++) {
@@ -547,10 +576,14 @@ main(int argc, char **argv)
     }
 
     ret = pfm_initialize();
-    if (ret != PFM_SUCCESS)
+    if (ret != PFM_SUCCESS) {
         errx(1, "libpfm initialization failed: %s\n", pfm_strerror(ret));
-    
+    }
+
+    options.parport_fd = open_parport("/dev/parport0");
+    parport_write_data(options.parport_fd, 0x00);
     measure();
+    close_parport(options.parport_fd);
 
     /* free libpfm resources cleanly */
     pfm_terminate();
