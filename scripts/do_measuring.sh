@@ -51,6 +51,10 @@ echo -n "Building: "
 ./build.sh &> /dev/null || die "building failed"
 echo "OK"
 
+echo -n "Remote building: "
+remote studienarbeit/build.sh || die "remote building failed"
+echo "OK"
+
 LOG="/tmp/measuring_log_$SHOTID"
 echo "Hint: logfile is '$LOG'"
 datadump measured_${SHOTID}.dpts $SHOTID $DUMPRUNTIME &> "$LOG" &
