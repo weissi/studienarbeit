@@ -2,14 +2,13 @@
 
 args <- commandArgs(TRUE)
 
-if (length(args) != 3) {
-    cat("Usage: Rscript test.r INPUT-FILE TABLE-COLUMN SAMPLE-RATE-HZ\n")
+if (length(args) != 2) {
+    cat("Usage: Rscript test.r INPUT-FILE TABLE-COLUMN\n")
     quit("no", 1)
 }
 
 tab_fname <- args[1]
 data_col <- args[2]
-sample_rate <- as.integer(args[3])
 
 table <- read.table(tab_fname, header=TRUE)
 
@@ -18,6 +17,7 @@ time <- t
 data <- (12 * get(data_col)) / 0.01
 detach(table)
 
+sample_rate <- nrow(table)/table$t[nrow(table)]
 work_in_joule <- sum(data[-nrow(table)]*diff(time))
 
 start <- min(time)
