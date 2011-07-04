@@ -27,23 +27,25 @@
  * Dev/ai0 instead of Dev1/ai0 causes a free() on an
  * invalid address in nidaxmxbase!
  */
-/*
 static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1, Dev1/ai2";
 static const char *CHAN_NAMES[] = { "CPU", "BOARD", "TRIGGER" };
 #define NO_CHANNELS 3
-*/
+#define U_MIN -5
+#define U_MAX 5
 
+/*
 static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1";
 static const char *CHAN_NAMES[] = { "CPU", "BOARD" };
 #define NO_CHANNELS 2
-
 #define U_MIN -0.2
 #define U_MAX 0.2
+*/
 
-#define SMPL_RATE 1000 /* samples per second */
+#define SMPL_RATE 100 /* samples per second */
 #define DATA_SIZE 8192
 
 int main(int argc, char **argv) {
+    int ret = 1;
     TaskHandle h = 0;
     int32 error = 0;
     float64 data[DATA_SIZE];
@@ -104,6 +106,7 @@ int main(int argc, char **argv) {
         write_dataset(dp_h, pointsPerChan, dp_data);
     }
 
+    ret = 0;
 TearDown:
     close_datapoints_file(dp_h);
     if( DAQmxFailed(error) )
@@ -112,7 +115,11 @@ TearDown:
         DAQmxBaseStopTask (h);
         DAQmxBaseClearTask (h);
     }
-    if( DAQmxFailed(error) )
-                printf ("DAQmxBase Error %d %s\n", (int)error, errBuff);
-    return 0;
+    if( DAQmxFailed(error) ) {
+        printf ("DAQmxBase Error %d %s\n", (int)error, errBuff);
+    }
+
+    printf("FINISHED!\n");
+
+    return ret;
 }
