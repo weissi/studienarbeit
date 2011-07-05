@@ -75,7 +75,7 @@ while [[ $OFFSET -lt $F_SIZE ]]; do
     echo "--- BEGIN PART $PNO ---"
     P_LENGTH=$(uint32_le_decode $OFFSET)
     let OFFSET=$OFFSET+4
-    raw_bytes $OFFSET $P_LENGTH | decode_proto DataSet
+    raw_bytes $OFFSET $P_LENGTH | decode_proto DataSet || die "decode failed: offset=$OFFSET, p_len=$P_LENGTH"
     let OFFSET=$OFFSET+$P_LENGTH
     echo "--- END PART $PNO ---"
 done
