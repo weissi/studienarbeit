@@ -18,7 +18,7 @@ time <- t
 data <- (12 * get(data_col)) / 0.01
 data_raw <- data
 if (!is.na(trigger_col)) {
-    trigger <- as.integer(get(trigger_col) > 1.5)
+    trigger <- as.integer(get(trigger_col) > 0.02)
     trigger_rle <- rle(trigger)
     data <- data * trigger
 }
