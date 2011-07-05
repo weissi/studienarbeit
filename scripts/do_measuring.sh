@@ -27,7 +27,7 @@ RHOST="$1"
 RUNTIME="$2"
 RBENCH="$3"
 SHOTID=$(date +"%Y-%m-%d_%H-%M-%S")
-let DUMPRUNTIME=$RUNTIME+10
+let DUMPRUNTIME=$RUNTIME+2
 
 echo -n "No other 'datadump' running: "
 ! pgrep datadump || die "datadump already running"
@@ -52,7 +52,7 @@ echo -n "Building: "
 echo "OK"
 
 echo -n "Remote building: "
-remote studienarbeit/build.sh || die "remote building failed"
+remote studienarbeit/build.sh &> /dev/null || die "remote building failed"
 echo "OK"
 
 LOG="/tmp/measuring_log_$SHOTID"

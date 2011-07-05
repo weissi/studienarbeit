@@ -52,19 +52,21 @@ int main(int argc, char **argv) {
     char errBuff[2048] = { 0 };
     DP_HANDLE dp_h;
     char *fname, *shot;
-    int rounds;
+    time_t t, t_end;
+    int mtime;
     DP_DATA_POINT **dp_data = malloc(sizeof(DP_DATA_POINT *) * NO_CHANNELS);
 
     if (argc != 3 && argc != 4) {
-        fprintf(stderr, "Usage: %s FILENAME SHOT-ID [ROUNDS]\n", argv[0]);
+        fprintf(stderr, "Usage: %s FILENAME SHOT-ID [MEASURING-TIME]\n",
+                argv[0]);
         exit(1);
     }
     fname = argv[1];
     shot = argv[2];
     if (argc == 4) {
-        rounds = atoi(argv[3]);
+        mtime = atoi(argv[3]);
     } else {
-        rounds = 100;
+        mtime = 100;
     }
 
     /* measure diffs */
@@ -83,15 +85,17 @@ int main(int argc, char **argv) {
     dp_h = open_datapoints_file_output(fname, shot, NO_CHANNELS, CHAN_NAMES,
                                        SMPL_RATE);
     printf("GOOOOOO!\n");
+    t_end = mtime + time(NULL);
 
-    for (int r = 0; r < rounds; r++) {
+    do {
         int32 pointsPerChan;
+        t = time(NULL);
 
         CHK(DAQmxBaseReadAnalogF64(h, SMPL_RATE, TIMEOUT,
                        DAQmx_Val_GroupByChannel,
                        data, DATA_SIZE, &pointsPerChan, NULL));
-        printf("[%d/%d] Acquired %d samples per channel:\n",
-               r, rounds, (int)pointsPerChan);
+        printf("[ETA: %ds] Acquired %d samples per channel:\n",
+               (int)(t_end-t), (int)pointsPerChan);
 
         for (int i=0; i<MIN(pointsPerChan, MAX_PRINT_SMPLS); i++) {
             printf("data[%d] = \t", i);
@@ -104,7 +108,7 @@ int main(int argc, char **argv) {
             dp_data[i] = data + (i * pointsPerChan);
         }
         write_dataset(dp_h, pointsPerChan, dp_data);
-    }
+    } while(t <= t_end);
 
     ret = 0;
 TearDown:
