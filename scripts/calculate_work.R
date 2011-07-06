@@ -18,7 +18,9 @@ time <- t
 data <- (12 * get(data_col)) / 0.01
 data_raw <- data
 if (!is.na(trigger_col)) {
-    trigger <- as.integer(get(trigger_col) > 0.02)
+    trigger_data <- get(trigger_col)
+    trigger_threshold <- (max(trigger_data) + min(trigger_data)) / 2
+    trigger <- as.integer(trigger_data > trigger_threshold)
     trigger_rle <- rle(trigger)
     data <- data * trigger
 }
@@ -54,10 +56,11 @@ if (!is.na(trigger_col)) {
         cat("# #############\n")
         cat("# #  WARNING  #\n")
         cat("# #############\n")
+        cat("# Trigger threshold:", trigger_threshold, "\n")
         cat("# Trigger seems weird, its rle:\n")
         cat("# values :", trigger_rle$values, "\n")
         cat("# lengths:", trigger_rle$lengths, "\n")
     } else {
-        cat("# trigger looks good :-)\n")
+        cat("# trigger looks good, threshold:", trigger_threshold, " :-) \n")
     }
 }
