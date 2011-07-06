@@ -27,7 +27,13 @@ RHOST="$1"
 RUNTIME="$2"
 RBENCH="$3"
 SHOTID=$(date +"%Y-%m-%d_%H-%M-%S")
-let DUMPRUNTIME=$RUNTIME+2
+let DUMPRUNTIME=$RUNTIME+10
+
+RPATH="studienarbeit/"
+DPFILE="measured_${SHOTID}.dpts"
+EXFILE="measured_${SHOTID}.rtab"
+CTFILE="counters_${SHOTID}.ctrs"
+CTLOG="/tmp/counter-dump_${SHOTID}.log"
 
 echo -n "No other 'datadump' running: "
 ! pgrep datadump || die "datadump already running"
@@ -57,7 +63,7 @@ echo "OK"
 
 LOG="/tmp/measuring_log_$SHOTID"
 echo "Hint: logfile is '$LOG'"
-datadump measured_${SHOTID}.dpts $SHOTID $DUMPRUNTIME &> "$LOG" &
+datadump "$DPFILE" $SHOTID $DUMPRUNTIME &> "$LOG" &
 DATADUMPPID=$!
 echo -n "Waiting for sloooow NI call (e.g. 29s) "
 START=$(date +%s)
@@ -81,11 +87,11 @@ sleep 2
 
 echo -n "Running dumpcounters in background: "
 remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o - -d $RUNTIME 2> /dev/null > counters_${SHOTID}.ctrs &
+    -o - -d $RUNTIME 2> "$CTLOG" > "$CTFILE" &
 DC_PID=$!
 echo "OK (pid=$DC_PID)"
 
-sleep 2
+sleep 1
 
 echo -n "Running remote benchmark: "
 START=$(date +%s)
@@ -101,7 +107,10 @@ done
 echo "OK"
 
 if grep 'FINISHED!' "$LOG" &> /dev/null; then
-    echo "WARNING: data measuring finished before benchmark finished..."
+    echo
+    echo "WARNING: data measuring finished before benchmark+dump counter "\
+"finished..."
+    echo
 fi
 
 echo -n "Waiting for dump process ($DATADUMPPID) to finish "
@@ -110,3 +119,7 @@ while ps $DATADUMPPID &> /dev/null; do
     echo -n .
 done
 echo OK
+
+echo -n "Exporting data to '$EXFILE' "
+dataexport "$DPFILE" > "$EXFILE"
+echo "OK"
