@@ -93,16 +93,20 @@ open_parport(const char *dev) {
     assert_err("IEEE1284_MODE_BYTE", 0 == ioctl (fd, PPSETMODE, &mode));
     assert_err("PPDATADIR", 0 == ioctl(fd, PPDATADIR, &dir));
 
+    fprintf(stderr, "PARPORT: OPENED SUCCESSFULLY\n");
+
     return fd;
 }
 
 static void parport_write_data(const int fd, unsigned char data) {
     assert_err("PPWDATA", 0 == ioctl(fd, PPWDATA, &data));
+    fprintf(stderr, "PARPORT: written 0x%x\n", data);
 }
 
 static void
 close_parport(const int fd) {
     assert_err("PPRELEASE", 0 == ioctl(fd, PPRELEASE));
+    fprintf(stderr, "PARPORT: CLOSED SUCCESSFULLY\n");
 }
 
 static int
