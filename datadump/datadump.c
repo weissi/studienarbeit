@@ -30,8 +30,12 @@
 static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1, Dev1/ai2";
 static const char *CHAN_NAMES[] = { "CPU", "BOARD", "TRIGGER" };
 #define NO_CHANNELS 3
+#define U_MIN -0.2
+#define U_MAX 0.2
+/*
 #define U_MIN -5
 #define U_MAX 5
+*/
 
 /*
 static const char *AI_CHANNELS = "Dev1/ai0, Dev1/ai1";
@@ -41,8 +45,17 @@ static const char *CHAN_NAMES[] = { "CPU", "BOARD" };
 #define U_MAX 0.2
 */
 
-#define SMPL_RATE 100 /* samples per second */
+#define SMPL_RATE 50000 /* samples per second */
 #define DATA_SIZE 8192
+
+/**
+ * WARNING: When it crashes dereferencing 0x4 '0x0x4'
+ * replug the NI device
+ *
+ * original message:
+ * Reason: address not mapped to object
+ * Attempt to reference address: 0x0x4
+ */
 
 int main(int argc, char **argv) {
     int ret = 1;
