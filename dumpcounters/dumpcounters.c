@@ -45,6 +45,7 @@
 #include <stdbool.h>
 #include <linux/ppdev.h>
 #include <linux/parport.h>
+#include <signal.h>
 
 #include <utils.h>
 
@@ -77,7 +78,7 @@ typedef struct {
     char *cgroup_name;
 } options_t;
 
-static options_t options;
+static volatile options_t options;
 static perf_event_desc_t **all_fds;
 
 static int
@@ -107,6 +108,15 @@ static void
 close_parport(const int fd) {
     assert_err("PPRELEASE", 0 == ioctl(fd, PPRELEASE));
     fprintf(stderr, "PARPORT: CLOSED SUCCESSFULLY\n");
+}
+
+static void sig_hnd( void ) {
+    if (-1 != options.parport_fd) {
+        parport_write_data(options.parport_fd, 0x00);
+        close_parport(options.parport_fd);
+        options.parport_fd = -1;
+        exit(1);
+    }
 }
 
 static int
@@ -231,7 +241,7 @@ setup_cpu(int cpu, int cfd)
                 if (errno == EACCES)
                     err(1, "you need to be root to run system-wide on this machine");
 
-                warn("cannot attach event %s to CPU%ds, skipping it", fds[j].name, cpu);
+                errx(2, "cannot attach event %s to CPU%ds, skipping it", fds[j].name, cpu);
                 goto error;
             }
         }
@@ -392,7 +402,7 @@ write_dump_data(struct timespec *start, struct timespec *stop,
         }
         msg_cvs[i]->has_global_counter_value = true;
         msg_cvs[i]->global_counter_value = global_counter_val;
-        msg_cvs[i]->counter_name = options.events[i];
+        msg_cvs[i]->counter_name = (char*)all_fds[0][i].name; //options.events[i];
     }
 
     msg_cd.n_counters = ncounters;
@@ -521,6 +531,9 @@ main(int argc, char **argv)
     setlocale(LC_ALL, "");
 
     options.cpu = -1;
+    options.parport_fd = -1;
+
+    signal( SIGINT, (void (*)(int))sig_hnd );
 
     while ((c=getopt(argc, argv,"hc:e:d:xPpG:s:o:")) != -1) {
         switch(c) {
@@ -588,6 +601,7 @@ main(int argc, char **argv)
     parport_write_data(options.parport_fd, 0x00);
     measure();
     close_parport(options.parport_fd);
+    options.parport_fd = -1;
 
     /* free libpfm resources cleanly */
     pfm_terminate();
