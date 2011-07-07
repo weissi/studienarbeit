@@ -6,6 +6,7 @@ set -o pipefail
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 BUILD="$HERE/build"
 CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints \
+        -I$HERE/ctrbenchmark \
         -pedantic -pedantic-errors -Wall -Werror --std=gnu99"
 LDFLAGS="$LDFLAGS"
 cd "$HERE"
@@ -66,5 +67,9 @@ if checklib pfm &> /dev/null; then
 else
     echo '- not building dumpcounters, libpfm not found'
 fi
+
+build ctrbenchmark --std=gnu99 -o $BUILD/ctrbenchmark $CFLAGS $LDFLAGS \
+    -Wall -Werror -pedantic -ggdb \
+    $HERE/ctrbenchmark/*.c $HERE/ctrbenchmark/benchlets/*.c
 
 echo SUCCESS
