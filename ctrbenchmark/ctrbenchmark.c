@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
                 run_fun(&cfg);
                 printf("- OK (%ds)\n", (int)(time(NULL)-start_t));
             } else {
-                printf("- not running '%s'", info.name);
+                printf("- not running '%s'\n", info.name);
             }
         }
     }

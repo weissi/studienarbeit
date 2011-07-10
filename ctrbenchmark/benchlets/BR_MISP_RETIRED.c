@@ -6,35 +6,30 @@
 
 #include <benchlet.h>
 
-#define LOOPS_IN_ROW 550000000
+#define LOOPS_IN_ROW 15000000
+#define BHT_SIZE 32
 
-static const char *COUNTERS[] = { "BR_MISP_RETIRED", NULL };
+static const char *COUNTERS[] = { "BR_MISP_RETIRED", "BR_MISP_EXEC", NULL };
 
 static void init_mispredict_branches(benchlet_info_t *info) {
     info->name = "mispredict branches";
-    info->description = "always alternate taken/not taken --> many mispred";
+    info->description = "small loop but bigger than BHT (branch history table)"
+                        " --> branch mispreds: ~13.5M/s";
     info->penetrated_counters = COUNTERS;
 }
 
 static int generate_mispredicted_branches(benchlet_config_t *cfg) {
     bool take_branch[] = { false, true };
-    register int i = 0, j;
     register int tmp = 0;
-    int a, b, c;
 
     MICRO_BENCH_LOOP(cfg) {
-        for (j = 0; j < LOOPS_IN_ROW; j++) {
-            if ((j%2) == 0) a=1;
-            else a=0;
-            if ((j%5) == 0) b=1;
-            else b=0;
-            if (j<0) a=1; //dummy branch
-            //...
-            if (j<0) a=1; //dummy branch
-            if ( (a*b) == 1) c=1;
+        for (int j = 0; j < LOOPS_IN_ROW; j++) {
+            for (int k = 0; k <= BHT_SIZE; k++) {
+                tmp++;
+            }
         }
     }
-    return tmp+a+b+c+i+take_branch[0];
+    return tmp+take_branch[0];
 }
 
 BENCHLET_INIT(init_mispredict_branches)
