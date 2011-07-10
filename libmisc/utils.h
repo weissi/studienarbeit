@@ -41,4 +41,6 @@ size_t strlcat(char *d, char const *s, size_t n);
 void timestamp_from_timespec(Timestamp *dest, struct timespec *src);
 void timespec_from_timestamp(struct timespec *dest, Timestamp *src);
 
+double timediff(struct timespec start, struct timespec end);
+
 #endif

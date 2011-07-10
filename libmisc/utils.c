@@ -26,3 +26,21 @@ void timespec_from_timestamp(struct timespec *dest, Timestamp *src) {
         dest->tv_nsec = src->nsec;
     }
 }
+
+double timediff(struct timespec start, struct timespec end) {
+    double d;
+    struct timespec temp;
+    if ((end.tv_nsec-start.tv_nsec)<0) {
+        temp.tv_sec = end.tv_sec-start.tv_sec-1;
+        temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    } else {
+        temp.tv_sec = end.tv_sec-start.tv_sec;
+        temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+    d = temp.tv_sec + (temp.tv_nsec / 1000000000.0);
+    /*
+    printf("%ld.%ld - %ld.%ld = %ld.%ld = %f = %e\n", end.tv_sec, end.tv_nsec,
+           start.tv_sec, start.tv_nsec, temp.tv_sec, temp.tv_nsec, d, d);
+           */
+    return d;
+}
