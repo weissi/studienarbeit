@@ -43,4 +43,8 @@ void timespec_from_timestamp(struct timespec *dest, Timestamp *src);
 
 double timediff(struct timespec start, struct timespec end);
 
+int open_parport(const char *dev);
+void parport_write_data(const int fd, unsigned char data);
+void close_parport(const int fd);
+
 #endif
