@@ -33,10 +33,16 @@ RPATH="studienarbeit/"
 DPFILE="measured_${SHOTID}.dpts"
 EXFILE="measured_${SHOTID}.rtab"
 CTFILE="counters_${SHOTID}.ctrs"
+LOG="/tmp/measuring_log_$SHOTID.log"
 CTLOG="/tmp/counter-dump_${SHOTID}.log"
+REMLOG="/tmp/remote-${SHOTID}.log"
 
 echo -n "No other 'datadump' running: "
 ! pgrep datadump || die "datadump already running"
+echo "OK"
+
+echo -n "Checking if NI device 3923:7272 is plugged: "
+lsusb | grep -q '3923:7272' || die "NI USB-6218 not connected to USB"
 echo "OK"
 
 echo -n "Testing password-free SSH: "
@@ -61,7 +67,6 @@ echo -n "Remote building: "
 remote studienarbeit/build.sh &> /dev/null || die "remote building failed"
 echo "OK"
 
-LOG="/tmp/measuring_log_$SHOTID"
 echo "Hint: logfile is '$LOG'"
 datadump "$DPFILE" $SHOTID $DUMPRUNTIME &> "$LOG" &
 DATADUMPPID=$!
@@ -91,11 +96,9 @@ remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
 DC_PID=$!
 echo "OK (pid=$DC_PID)"
 
-sleep 1
-
-echo -n "Running remote benchmark: "
+echo -n "Running remote benchmark (remote log: '$REMLOG'): "
 START=$(date +%s)
-remote $RBENCH &> /dev/null
+remote $RBENCH &> "$REMLOG"
 let DIFF=$(date +%s)-$START
 echo "OK ($DIFF s)"
 
