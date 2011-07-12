@@ -15,9 +15,18 @@ function die() {
 }
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 
-test $# -eq 1 || die "Usage: $0 DATAPOINTS-FILE.dpts"
+test $# -eq 1 || die "Usage: $0 DATAPOINTS-FILE.{dpts|rtab}"
 FILE="$1"
-TABFILE=$(mktemp)
-"$HERE"/../build/dataexport "$FILE" > "$TABFILE"
+CONV=1
+if [ "${FILE#*.}" = "rtab" ]; then
+    CONV=0
+    TABFILE=$FILE
+else
+    TABFILE=$(mktemp)
+    "$HERE"/../build/dataexport "$FILE" > "$TABFILE"
+fi
+
 Rscript "$HERE"/calculate_work.R "$TABFILE" CPU TRIGGER
-rm "$TABFILE"
+if [ $CONV -ne 0 ]; then
+    rm "$TABFILE"
+fi
