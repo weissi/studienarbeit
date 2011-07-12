@@ -3,6 +3,7 @@
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <benchlet.h>
 
@@ -56,8 +57,9 @@ int main(int argc, char **argv) {
         cfg.desired_running_time = (int)rtime;
         for (int j = 0; j < num_benchs; j++) {
             if (info.name == strstr(info.name, benchlet_prefixes[j])) {
-                printf("- Running '%s' for %ds...\n",
+                printf("- Running '%s' for %ds in 1s...\n",
                        info.name, (int)cfg.desired_running_time);
+                sleep(1);
                 start_t = time(NULL);
                 run_fun(&cfg);
                 printf("- OK (%ds)\n", (int)(time(NULL)-start_t));
