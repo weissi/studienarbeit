@@ -43,8 +43,6 @@
 #include <time.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <linux/ppdev.h>
-#include <linux/parport.h>
 #include <signal.h>
 
 #include <utils.h>
@@ -75,40 +73,12 @@ typedef struct {
     int interval;
     int cpu;
     int parport_fd;
+    bool no_parport;
     char *cgroup_name;
 } options_t;
 
 static volatile options_t options;
 static perf_event_desc_t **all_fds;
-
-static int
-open_parport(const char *dev) {
-    int fd;
-    int mode = IEEE1284_MODE_BYTE;
-    int dir = 0x00; //direction = output
-
-    fd = open(dev, O_WRONLY);
-    assert_err("open", fd > 0);
-    assert_err("PPEXCL", 0 == ioctl (fd, PPEXCL));
-    assert_err("PPCLAIM", 0 == ioctl (fd, PPCLAIM));
-    assert_err("IEEE1284_MODE_BYTE", 0 == ioctl (fd, PPSETMODE, &mode));
-    assert_err("PPDATADIR", 0 == ioctl(fd, PPDATADIR, &dir));
-
-    fprintf(stderr, "PARPORT: OPENED SUCCESSFULLY\n");
-
-    return fd;
-}
-
-static void parport_write_data(const int fd, unsigned char data) {
-    assert_err("PPWDATA", 0 == ioctl(fd, PPWDATA, &data));
-    fprintf(stderr, "PARPORT: written 0x%x\n", data);
-}
-
-static void
-close_parport(const int fd) {
-    assert_err("PPRELEASE", 0 == ioctl(fd, PPRELEASE));
-    fprintf(stderr, "PARPORT: CLOSED SUCCESSFULLY\n");
-}
 
 static void sig_hnd( void ) {
     if (-1 != options.parport_fd) {
@@ -447,7 +417,9 @@ measure(void)
             exit(1);
     }
 
-    parport_write_data(options.parport_fd, 0xFF);
+    if (!options.no_parport) {
+        parport_write_data(options.parport_fd, 0xFF);
+    }
     for(c=cmin ; c < cmax; c++)
         setup_cpu(c, cfd);
 
@@ -500,7 +472,9 @@ measure(void)
         }
     }
 
-    parport_write_data(options.parport_fd, 0x00);
+    if (!options.no_parport) {
+        parport_write_data(options.parport_fd, 0x00);
+    }
     write_dump_data(&start_t, &stop_t, ncpus, options.nevents[0], event_values);
 
     for (int i = 0; i < options.nevents[0]; i++) {
@@ -532,10 +506,11 @@ main(int argc, char **argv)
 
     options.cpu = -1;
     options.parport_fd = -1;
+    options.no_parport = false;
 
     signal( SIGINT, (void (*)(int))sig_hnd );
 
-    while ((c=getopt(argc, argv,"hc:e:d:xPpG:s:o:")) != -1) {
+    while ((c=getopt(argc, argv,"hc:e:d:xPpG:s:o:n")) != -1) {
         switch(c) {
             case 's':
                 options.shot_id = optarg;
@@ -572,6 +547,9 @@ main(int argc, char **argv)
             case 'G':
                 options.cgroup_name = optarg;
                 break;
+            case 'n':
+                options.no_parport = true;
+                break;
             default:
                 errx(1, "unknown error");
         }
@@ -597,11 +575,15 @@ main(int argc, char **argv)
         errx(1, "libpfm initialization failed: %s\n", pfm_strerror(ret));
     }
 
-    options.parport_fd = open_parport("/dev/parport0");
-    parport_write_data(options.parport_fd, 0x00);
+    if (!options.no_parport) {
+        options.parport_fd = open_parport("/dev/parport0");
+        parport_write_data(options.parport_fd, 0x00);
+    }
     measure();
-    close_parport(options.parport_fd);
-    options.parport_fd = -1;
+    if (!options.no_parport) {
+        close_parport(options.parport_fd);
+        options.parport_fd = -1;
+    }
 
     /* free libpfm resources cleanly */
     pfm_terminate();

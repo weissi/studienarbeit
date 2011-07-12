@@ -2,7 +2,15 @@
 
 #include "generic.pb-c.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <linux/ppdev.h>
+#include <linux/parport.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 size_t strlcpy(char *d, char const *s, size_t n) {
         return snprintf(d, n, "%s", s);
@@ -43,4 +51,31 @@ double timediff(struct timespec start, struct timespec end) {
            start.tv_sec, start.tv_nsec, temp.tv_sec, temp.tv_nsec, d, d);
            */
     return d;
+}
+
+int open_parport(const char *dev) {
+    int fd;
+    int mode = IEEE1284_MODE_BYTE;
+    int dir = 0x00; //direction = output
+
+    fd = open(dev, O_WRONLY);
+    assert_err("open", fd > 0);
+    assert_err("PPEXCL", 0 == ioctl (fd, PPEXCL));
+    assert_err("PPCLAIM", 0 == ioctl (fd, PPCLAIM));
+    assert_err("IEEE1284_MODE_BYTE", 0 == ioctl (fd, PPSETMODE, &mode));
+    assert_err("PPDATADIR", 0 == ioctl(fd, PPDATADIR, &dir));
+
+    fprintf(stderr, "PARPORT: OPENED SUCCESSFULLY\n");
+
+    return fd;
+}
+
+void parport_write_data(const int fd, unsigned char data) {
+    assert_err("PPWDATA", 0 == ioctl(fd, PPWDATA, &data));
+    fprintf(stderr, "PARPORT: written 0x%x\n", data);
+}
+
+void close_parport(const int fd) {
+    assert_err("PPRELEASE", 0 == ioctl(fd, PPRELEASE));
+    fprintf(stderr, "PARPORT: CLOSED SUCCESSFULLY\n");
 }
