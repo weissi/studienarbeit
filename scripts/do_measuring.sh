@@ -21,10 +21,11 @@ function remote() {
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 
-test $# -eq 2 || ( echo "Usage $0 REMOTE-HOST BENCHMARK"; exit 1; )
+test $# -eq 3 || ( echo "Usage $0 REMOTE-HOST CTRS BENCHMARK"; exit 1; )
 
 RHOST="$1"
-RBENCH="$2"
+COUNTERS="$2"
+RBENCH="$3"
 
 SHOTID=$(date +"%Y-%m-%d_%H-%M-%S")
 
@@ -92,7 +93,8 @@ sleep 1
 echo -n "Running benchmark: "
 START=$(date +%s)
 remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o - -r "\"$RBENCH\"" 2> "$CTLOG" > "$CTFILE"
+    -o "/tmp/$CTFILE" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" &> "$CTLOG"
+scp -q "$RHOST":"/tmp/$CTFILE" "$CTFILE"
 let DIFF=$(date +%s)-$START
 echo "OK (time=$DIFF)"
 
