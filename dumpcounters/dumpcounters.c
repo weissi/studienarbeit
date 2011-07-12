@@ -70,11 +70,11 @@ typedef struct {
     int delay;
     int excl;
     int pin;
-    int interval;
     int cpu;
     int parport_fd;
     bool no_parport;
     char *cgroup_name;
+    char *run_cmd;
 } options_t;
 
 static volatile options_t options;
@@ -428,48 +428,28 @@ measure(void)
      * FIX this for hotplug CPU
      */
 
-    if (options.interval) {
-        assert(0);
-        struct timespec tv;
-        int delay;
+    /* START CPUs */
+    assert(0 == clock_gettime(CLOCK_REALTIME, &start_t));
+    for(c=cmin ; c < cmax; c++) {
+        start_cpu(c);
+    }
 
-        for (delay = 1 ; delay <= options.delay; delay++) {
-
-            for(c=cmin ; c < cmax; c++)
-                start_cpu(c);
-
-            if (0) {
-                tv.tv_sec = 0;
-                tv.tv_nsec = 100000000;
-                nanosleep(&tv, NULL);
-            } else
-                sleep(1);
-
-            for(c=cmin ; c < cmax; c++) {
-                stop_cpu(c);
-            }
-
-            for(c = cmin; c < cmax; c++) {
-                fprintf(stderr, "# %ds -----\n", delay);
-                read_cpu(c, event_values);
-            }
-        }
+    /* WAIT OR EXECUTE CMD */
+    if (NULL != options.run_cmd) {
+        assert(0 <= system(options.run_cmd));
     } else {
-        assert(0 == clock_gettime(CLOCK_REALTIME, &start_t));
-        for(c=cmin ; c < cmax; c++) {
-            start_cpu(c);
-        }
-
         sleep(options.delay);
+    }
 
-        for(c=cmin ; c < cmax; c++)
-            stop_cpu(c);
-        assert(0 == clock_gettime(CLOCK_REALTIME, &stop_t));
+    /* STOP CPUs */
+    for(c=cmin ; c < cmax; c++) {
+        stop_cpu(c);
+    }
+    assert(0 == clock_gettime(CLOCK_REALTIME, &stop_t));
 
-        for(c = cmin; c < cmax; c++) {
-            fprintf(stderr, "# -----\n");
-            read_cpu(c, event_values);
-        }
+    for(c = cmin; c < cmax; c++) {
+        fprintf(stderr, "# -----\n");
+        read_cpu(c, event_values);
     }
 
     if (!options.no_parport) {
@@ -507,11 +487,15 @@ main(int argc, char **argv)
     options.cpu = -1;
     options.parport_fd = -1;
     options.no_parport = false;
+    options.run_cmd = NULL;
 
     signal( SIGINT, (void (*)(int))sig_hnd );
 
-    while ((c=getopt(argc, argv,"hc:e:d:xPpG:s:o:n")) != -1) {
+    while ((c=getopt(argc, argv,"hc:e:d:xPG:s:o:r:n")) != -1) {
         switch(c) {
+            case 'r':
+                options.run_cmd = optarg;
+                break;
             case 's':
                 options.shot_id = optarg;
                 break;
@@ -521,9 +505,6 @@ main(int argc, char **argv)
             case 'x':
                 options.excl = 1;
                 break;
-             case 'p':
-                 options.interval = 1;
-                 break;
             case 'e':
                 if (options.num_groups < MAX_GROUPS) {
                     options.events[options.num_groups++] = optarg;
