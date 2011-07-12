@@ -4,6 +4,8 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <sys/param.h>
+#include <signal.h>
+#include <stdbool.h>
 
 #include <datapoints.h>
 
@@ -57,6 +59,11 @@ static const char *CHAN_NAMES[] = { "CPU", "BOARD" };
  * Attempt to reference address: 0x0x4
  */
 
+static volatile bool running = true;
+static void sig_hnd() {
+    running = false;
+}
+
 int main(int argc, char **argv) {
     int ret = 1;
     TaskHandle h = 0;
@@ -79,7 +86,7 @@ int main(int argc, char **argv) {
     if (argc == 4) {
         mtime = atoi(argv[3]);
     } else {
-        mtime = 100;
+        mtime = -1;
     }
 
     /* measure diffs */
@@ -95,10 +102,16 @@ int main(int argc, char **argv) {
                       0));
     CHK(DAQmxBaseStartTask(h));
 
+    signal( SIGINT, (void (*)(int))sig_hnd );
+
     dp_h = open_datapoints_file_output(fname, shot, NO_CHANNELS, CHAN_NAMES,
                                        SMPL_RATE);
     printf("GOOOOOO!\n");
-    t_end = mtime + time(NULL);
+    if (0 < mtime) {
+        t_end = mtime + time(NULL);
+    } else {
+        t_end = 0;
+    }
 
     do {
         int32 pointsPerChan;
@@ -107,8 +120,13 @@ int main(int argc, char **argv) {
         CHK(DAQmxBaseReadAnalogF64(h, SMPL_RATE, TIMEOUT,
                        DAQmx_Val_GroupByChannel,
                        data, DATA_SIZE, &pointsPerChan, NULL));
-        printf("[ETA: %ds] Acquired %d samples per channel:\n",
-               (int)(t_end-t), (int)pointsPerChan);
+        if (0 != t_end) {
+            printf("[ETA: %ds] Acquired %d samples per channel:\n",
+                   (int)(t_end-t), (int)pointsPerChan);
+        } else {
+            printf("[Ctrl-C to stop] Acquired %d samples per channel:\n",
+                   (int)pointsPerChan);
+        }
 
         for (int i=0; i<MIN(pointsPerChan, MAX_PRINT_SMPLS); i++) {
             printf("data[%d] = \t", i);
@@ -121,7 +139,7 @@ int main(int argc, char **argv) {
             dp_data[i] = data + (i * pointsPerChan);
         }
         write_dataset(dp_h, pointsPerChan, dp_data);
-    } while(t <= t_end);
+    } while(running && (0 == t_end || t <= t_end));
 
     ret = 0;
 TearDown:
