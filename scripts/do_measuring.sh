@@ -15,19 +15,18 @@ function die() {
 }
 
 function remote() {
-    ssh -qt "$RHOST" "$@"
+    ssh -qt "$RHOST" "$@" || die "ssh to '$RHOST' failed"
 }
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 
-test $# -eq 3 || ( echo "Usage $0 REMOTE-HOST RUNNING-TIME BENCHMARK"; exit 1; )
+test $# -eq 2 || ( echo "Usage $0 REMOTE-HOST BENCHMARK"; exit 1; )
 
 RHOST="$1"
-RUNTIME="$2"
-RBENCH="$3"
+RBENCH="$2"
+
 SHOTID=$(date +"%Y-%m-%d_%H-%M-%S")
-let DUMPRUNTIME=$RUNTIME+10
 
 RPATH="studienarbeit/"
 DPFILE="measured_${SHOTID}.dpts"
@@ -68,7 +67,7 @@ remote studienarbeit/build.sh &> /dev/null || die "remote building failed"
 echo "OK"
 
 echo "Hint: logfile is '$LOG'"
-datadump "$DPFILE" $SHOTID $DUMPRUNTIME &> "$LOG" &
+datadump "$DPFILE" $SHOTID &> "$LOG" &
 DATADUMPPID=$!
 echo -n "Waiting for sloooow NI call (e.g. 29s) "
 START=$(date +%s)
@@ -88,26 +87,14 @@ let DIFF=1+$(date +%s)-$START
 test $DIFF -gt 10 || die "NI responding too fast ;-), only took $DIFF s"
 echo "OK ($DIFF s, pid=$DATADUMPPID)"
 
-sleep 2
+sleep 1
 
-echo -n "Running dumpcounters in background: "
-remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o - -d $RUNTIME 2> "$CTLOG" > "$CTFILE" &
-DC_PID=$!
-echo "OK (pid=$DC_PID)"
-
-echo -n "Running remote benchmark (remote log: '$REMLOG'): "
+echo -n "Running benchmark: "
 START=$(date +%s)
-remote $RBENCH &> "$REMLOG"
+remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
+    -o - -r "\"$RBENCH\"" 2> "$CTLOG" > "$CTFILE"
 let DIFF=$(date +%s)-$START
-echo "OK ($DIFF s)"
-
-echo -n "Waiting for dump counter process ($DC_PID) to finish "
-while ps $DC_PID &> /dev/null; do
-    sleep 1
-    echo -n .
-done
-echo "OK"
+echo "OK (time=$DIFF)"
 
 if grep 'FINISHED!' "$LOG" &> /dev/null; then
     echo
@@ -115,6 +102,10 @@ if grep 'FINISHED!' "$LOG" &> /dev/null; then
 "finished..."
     echo
 fi
+
+echo -n 'Telling datadump to stop (SIGINT): '
+kill -INT $DATADUMPPID
+echo "OK"
 
 echo -n "Waiting for dump process ($DATADUMPPID) to finish "
 while ps $DATADUMPPID &> /dev/null; do
