@@ -1,0 +1,20 @@
+//this is a duplicate of perf-counters.proto buf with
+//imports resolved (because of a hprotc bug)
+message Timestamp {
+    required int64 sec = 1;
+    required int64 nsec = 2;
+}
+
+message CounterData {
+    required string shot_id = 1;
+    required Timestamp start_time = 2;
+    required Timestamp stop_time = 3;
+    required uint32 cpu_count = 4;
+    repeated CounterValue counters = 5;
+}
+
+message CounterValue {
+    required string counter_name = 1;
+    repeated uint64 counter_value_per_cpu = 2; //ordered by cpu id
+    optional uint64 global_counter_value = 3;
+}
