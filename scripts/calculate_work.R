@@ -2,20 +2,22 @@
 
 args <- commandArgs(TRUE)
 
-if (length(args) != 2 && length(args) != 3) {
-    cat("Usage: Rscript test.r INPUT-FILE TABLE-COLUMN [TRIGGER-COLUMN]\n")
+if (length(args) != 3 && length(args) != 4) {
+    cat("Usage: Rscript test.r INPUT-FILE TABLE-COLUMN RESISTOR-VAL [TRIGGER-COLUMN]\n")
+    cat("Sample: Rscript test.r input.rtab CPU 0.01 TRIGGER\n")
     quit("no", 1)
 }
 
 tab_fname <- args[1]
 data_col <- args[2]
-trigger_col <- args[3]
+resistor_val <- as.double(args[3])
+trigger_col <- args[4]
 
 table <- read.table(tab_fname, header=TRUE)
 
 attach(table)
 time <- t
-data <- (12 * get(data_col)) / 0.01
+data <- (12 * get(data_col)) / resistor_val
 data_raw <- data
 if (!is.na(trigger_col)) {
     trigger_data <- get(trigger_col)

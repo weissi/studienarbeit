@@ -6,6 +6,7 @@ message CounterData {
     required Timestamp stop_time = 3;
     required uint32 cpu_count = 4;
     repeated CounterValue counters = 5;
+    optional string benchmark_cmd = 6;
 }
 
 message CounterValue {

@@ -81,7 +81,7 @@ build ctrbenchmark --std=gnu99 -o $BUILD/ctrbenchmark $CFLAGS $LDFLAGS \
     -Wall -Werror -pedantic -ggdb \
     $HERE/ctrbenchmark/*.c $HERE/ctrbenchmark/benchlets/*.c
 
-if which ghc &> /dev/null; then
+if which hprotoc &> /dev/null; then
     hprotoc -d../gensrc -I../protos ../protos/hs-perf-counters.proto > /dev/null
     build_raw ghc "BuildSLE" -Wall -o $BUILD/buildsle --make \
         -i$HERE/gensrc $HERE/buildsle/*.hs
