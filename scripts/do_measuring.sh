@@ -30,9 +30,9 @@ RBENCH="$3"
 SHOTID=$(date +"%Y-%m-%d_%H-%M-%S")
 
 RPATH="studienarbeit/"
-DPFILE="measured_${SHOTID}.dpts"
-EXFILE="measured_${SHOTID}.rtab"
-CTFILE="counters_${SHOTID}.ctrs"
+DPFILE="measuring_data/measured_${SHOTID}.dpts"
+EXFILE="measuring_data/measured_${SHOTID}.rtab"
+CTFILE="measuring_data/counters_${SHOTID}.ctrs"
 LOG="/tmp/measuring_log_$SHOTID.log"
 CTLOG="/tmp/counter-dump_${SHOTID}.log"
 REMLOG="/tmp/remote-${SHOTID}.log"
@@ -92,11 +92,18 @@ sleep 1
 
 echo -n "Running benchmark: "
 START=$(date +%s)
+set +e
 remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
     -o "/tmp/$CTFILE" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" &> "$CTLOG"
+RET=$?
 scp -q "$RHOST":"/tmp/$CTFILE" "$CTFILE"
+set -e
 let DIFF=$(date +%s)-$START
-echo "OK (time=$DIFF)"
+if [ $RET -eq 0 ]; then
+    echo "OK (time=$DIFF)"
+else
+    echo "done, but FAILURE (time=$DIFF, ret=$RET)"
+fi
 
 if grep 'FINISHED!' "$LOG" &> /dev/null; then
     echo
