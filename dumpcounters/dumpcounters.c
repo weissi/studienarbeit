@@ -359,7 +359,6 @@ write_dump_data(struct timespec *start, struct timespec *stop,
     msg_cd.stop_time = &msg_ts_stop;
     timestamp_from_timespec(msg_cd.stop_time, stop);
     msg_cd.cpu_count = ncpus;
-    msg_cd.has_benchmark_cmd = NULL != options.run_cmd;
     msg_cd.benchmark_cmd = options.run_cmd;
 
     for (int i = 0; i < ncounters; i++) {
