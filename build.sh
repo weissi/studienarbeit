@@ -9,6 +9,7 @@ CFLAGS="$CFLAGS -I$HERE/gensrc -I$HERE/libmisc -I$HERE/libdatapoints \
         -I$HERE/ctrbenchmark \
         -pedantic -pedantic-errors -Wall -Werror --std=gnu99"
 LDFLAGS="$LDFLAGS"
+PATH="$PATH:$HERE/build:$HOME/.cabal/bin"
 cd "$HERE"
 
 function build_raw() {
