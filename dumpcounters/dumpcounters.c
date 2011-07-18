@@ -348,7 +348,7 @@ write_dump_data(struct timespec *start, struct timespec *stop,
     if (0 == strcmp("-", options.dump_fname)) {
         fd = 1;
     } else {
-        fd = open(options.dump_fname, O_WRONLY | O_CREAT,
+        fd = open(options.dump_fname, O_WRONLY | O_CREAT | O_TRUNC,
                   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
     }
     assert(fd > 0);

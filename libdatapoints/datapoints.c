@@ -87,8 +87,8 @@ DP_HANDLE open_datapoints_file_output(const char *filename,
                                       const char *channel_names[],
                                       DP_SAMPLING_RATE sample_rate
                                      ) {
-    int fd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP |
-                            S_IROTH );
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC,
+                  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
     assert(fd > 0);
     dp_handle *h = (dp_handle *)malloc(sizeof(dp_handle));
     assert(NULL != h);
