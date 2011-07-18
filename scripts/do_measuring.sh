@@ -4,18 +4,30 @@ set -e
 
 trap err ERR
 function err() {
+    set +e
     echo "UNRECOVERABLE ERROR"
+    if [ x$DATADUMPPID != x ]; then
+        kill -INT $DATADUMPPID
+    fi
     exit 1
 }
 
 function die() {
+    set +e
     echo
     echo "ERROR: $@"
+    if [ x$DATADUMPPID != x ]; then
+        kill -INT $DATADUMPPID
+    fi
     exit 1
 }
 
 function remote() {
-    ssh -qt "$RHOST" "$@" || die "ssh to '$RHOST' failed"
+    set +e
+    ssh -qt "$RHOST" "$@"
+    RET=$?
+    set -e
+    return $RET
 }
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
@@ -33,8 +45,8 @@ RPATH="studienarbeit/"
 DPFILE="measuring_data/measured_${SHOTID}.dpts"
 EXFILE="measuring_data/measured_${SHOTID}.rtab"
 CTFILE="measuring_data/counters_${SHOTID}.ctrs"
+CWFILE="measuring_data/work_${SHOTID}.work"
 LOG="/tmp/measuring_log_$SHOTID.log"
-CTLOG="/tmp/counter-dump_${SHOTID}.log"
 REMLOG="/tmp/remote-${SHOTID}.log"
 
 echo -n "No other 'datadump' running: "
@@ -80,8 +92,8 @@ while ! grep -q 'GOOOOOO!' "$LOG"; do
         echo -n "."
         TMP=$DIFF
     fi
-    if [ $DIFF -gt 35 ]; then
-        die "something went wrong, waited 35s and nothing happened"
+    if [ $DIFF -gt 60 ]; then
+        die "something went wrong, waited 60s and nothing happened"
     fi
 done
 let DIFF=1+$(date +%s)-$START
@@ -94,9 +106,10 @@ echo -n "Running benchmark: "
 START=$(date +%s)
 set +e
 remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o "/tmp/$CTFILE" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" &> "$CTLOG"
+    -o "/tmp/$(basename CTFILE)" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" \
+    &> "$REMLOG" || die "remote benchmark failed, see log '$REMLOG'"
 RET=$?
-scp -q "$RHOST":"/tmp/$CTFILE" "$CTFILE"
+scp -q "$RHOST":"/tmp/$(basename CTFILE)" "$CTFILE"
 set -e
 let DIFF=$(date +%s)-$START
 if [ $RET -eq 0 ]; then
@@ -126,3 +139,10 @@ echo OK
 echo -n "Exporting data to '$EXFILE' "
 dataexport "$DPFILE" > "$EXFILE"
 echo "OK"
+
+echo -n "Calculating work to '$CWFILE' "
+calculate_work.sh -s "$EXFILE" > "$CWFILE"
+echo "OK"
+
+echo "GREAT SUCCESS, EVERYTHING WENT FINE :-)"
+echo "---------------------------------------"
