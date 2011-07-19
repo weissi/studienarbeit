@@ -23,6 +23,12 @@ type ShotCounterMap = Map ShotId CounterMap
 type ShotWorkMap = Map ShotId Double
 type ShotDataMap = Map ShotId (CounterMap, Double)
 
+_NaN_ :: Fractional a => a
+_NaN_ = 0/0
+
+_REF_COL_ :: String
+_REF_COL_ = "CPU_CLK_UNHALTED"
+
 loadCounterDataProto :: FilePath -> IO (Maybe CounterData)
 loadCounterDataProto fn =
     do pbs <- BSL.readFile fn
@@ -30,7 +36,7 @@ loadCounterDataProto fn =
          Right (cd, _) ->
              return (Just cd)
          Left err ->
-             do putStrLn $ "ERROR: " ++ err
+             do hPutStrLn stderr $ "ERROR on file `" ++ fn ++ "': " ++ err
                 return Nothing
 
 addShotData :: CounterData -> ShotCounterMap -> ShotCounterMap
@@ -54,24 +60,45 @@ allCounters sm = nub $ concat $ map (Map.keys . fst) $ Map.elems sm
 printRTAB :: ShotDataMap -> IO ()
 printRTAB sm =
     do putStr "SHOT_ID\t"
-       mapM_ (\c -> putStr $ c ++ "\t") allCtrs
        putStr "WORK\t"
+       mapM_ (\c -> putStr $ c ++ "\t") allCtrs
+       mapM_ (\c -> putStr $ "RATIO_" ++ c ++ "\t") allCtrs
        putStr "\n"
        mapM_ printShot (Map.keys sm)
        where allCtrs = allCounters sm
+             valueMap :: ShotId -> Map CtrName CtrVal
+             valueMap sid =
+                 fst $ Map.findWithDefault (Map.empty, undefined) sid sm
+
              strValueMap :: ShotId -> Map CtrName String
              strValueMap sid =
-                 Map.map show $ fst $ Map.findWithDefault (Map.empty, undefined) sid sm
+                 Map.map show $ valueMap sid
+
+             referenceValue :: Fractional a => ShotId -> a
+             referenceValue sid =
+                 Map.findWithDefault _NaN_ _REF_COL_ (Map.map fromIntegral (valueMap sid))
+
+             strRatioMap :: ShotId -> Map CtrName String
+             strRatioMap sid =
+                 Map.map (\v -> show (fromIntegral v / referenceValue sid)) (valueMap sid)
 
              printCounter :: ShotId -> String -> IO ()
              printCounter sid c =
                  putStr ((Map.findWithDefault "NA\t" c (strValueMap sid))
                                     ++ "\t")
+
+             printCounterRatio :: ShotId -> String -> IO ()
+             printCounterRatio sid c =
+                 putStr ((Map.findWithDefault "NA\t" c (strRatioMap sid))
+                                    ++ "\t")
+
              printShot :: ShotId -> IO ()
              printShot sid =
                  do putStr $ sid ++ "\t"
-                    mapM_ (printCounter sid) allCtrs
                     putStr (Map.findWithDefault "NA" sid (Map.map (show.snd) sm))
+                    putStr "\t"
+                    mapM_ (printCounter sid) allCtrs
+                    mapM_ (printCounterRatio sid) allCtrs
                     putStr "\n"
 
 calcWorkFile :: ShotId -> FilePath
