@@ -384,8 +384,8 @@ write_dump_data(struct timespec *start, struct timespec *stop,
     counter_data__pack(&msg_cd, buf);
 
     assert(len == write(fd, buf, len));
-    assert(0 == fsync(fd));
     if (1 != fd) {
+        assert(0 == fsync(fd));
         assert(0 == close(fd));
     }
 
