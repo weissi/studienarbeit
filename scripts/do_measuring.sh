@@ -106,11 +106,11 @@ echo -n "Running benchmark: "
 START=$(date +%s)
 set +e
 remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o "/tmp/$(basename CTFILE)" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" \
+    -o "/tmp/$(basename $CTFILE)" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" \
     &> "$REMLOG" || die "remote benchmark failed, see log '$REMLOG'"
 RET=$?
-scp -q "$RHOST":"/tmp/$(basename CTFILE)" "$CTFILE"
 set -e
+scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
 let DIFF=$(date +%s)-$START
 if [ $RET -eq 0 ]; then
     echo "OK (time=$DIFF)"
@@ -144,5 +144,6 @@ echo -n "Calculating work to '$CWFILE' "
 calculate_work.sh -s "$EXFILE" > "$CWFILE"
 echo "OK"
 
+echo
 echo "GREAT SUCCESS, EVERYTHING WENT FINE :-)"
 echo "---------------------------------------"
