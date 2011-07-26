@@ -1,0 +1,52 @@
+\documentclass[a4paper]{scrreprt}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage{draftwatermark}
+\SetWatermarkText{DRAFT}
+\SetWatermarkScale{4.0}
+
+\setlength{\parskip}{1.3ex}
+\setlength{\parindent}{1.3em}
+
+\usepackage{natbib}
+
+\input{commands}
+
+\title{Multi-Core Energy Accounting}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\title{Multi-Core Energy Accounting}
+\author{Johannes Weiß\\
+        \JWemail{mcea@johannesweiss.eu}}
+\date{\today}
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\maketitle
+
+\tableofcontents
+
+\begin{abstract}
+\end{abstract}
+
+\input{introduction}
+
+\input{methodology}
+
+\input{validation}
+
+\input{related-work}
+
+\input{conclusion}
+
+\bibliographystyle{alpha}
+\bibliography{bibliography}
+
+\end{document}
+% vim: set spell spelllang=en_us fileencoding=utf8 :
