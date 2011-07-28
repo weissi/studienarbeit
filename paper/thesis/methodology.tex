@@ -1,2 +1,41 @@
 \JWlone{Methodology}
 
+\JWltwo{Measuring Setup}
+
+\begin{itemize}
+
+\item measuring setup sketch
+
+\end{itemize}
+
+\JWltwo{Calculation of the Eletrical Work}
+
+From elementary physics
+
+\begin{eqnarray}
+     U_R & = & R * I \\
+  \iff I & = & \frac{U_R}{R}
+\end{eqnarray}
+
+and
+
+\begin{equation}
+  U_{CPU} + U_{R} = 12 V
+\end{equation}
+
+we obtain the instantaneous power of the CPU by measuring the voltage drop
+across the (measuring) resistor:
+
+\begin{eqnarray}
+P_{CPU}(t) & = & (12V - U_R(t)) * \frac{U_R(t)}{R} \\
+           & = & \frac{12V * U_R - {U_R}^2}{R} \\
+           & \stackrel{0 < U_R \ll 1}{\approx} & \frac{12V * U_R}{R}.
+\end{eqnarray}
+
+Hence, integrating will result in the electrical work
+
+\begin{equation}
+  W = \int P_{CPU}(t)dt.
+\end{equation}
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :
