@@ -1,15 +1,16 @@
 #!/bin/bash
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+TEXOPTS="-interaction=batchmode -halt-on-error"
 cd "$HERE"
 
 ./clean.sh
 
 set -e
-pdflatex thesis
+pdflatex $TEXOPTS thesis
 bibtex thesis
-pdflatex thesis
-pdflatex thesis
+pdflatex $TEXOPTS thesis
+pdflatex $TEXOPTS thesis
 
 echo BUILD SUCCESSFUL
 
