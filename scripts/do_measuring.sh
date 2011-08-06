@@ -33,13 +33,20 @@ function remote() {
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 
-test $# -eq 3 || ( echo "Usage $0 REMOTE-HOST CTRS BENCHMARK"; exit 1; )
+SHOT_ID_PREFIX=""
+if [ "$1" = "-s" ]; then
+    SHOT_ID_PREFIX="$2@"
+    shift
+    shift
+fi
+
+test $# -eq 3 || ( echo "Usage $0 [-s SHOT-ID-PREFIX] REMOTE-HOST CTRS BENCHMARK"; exit 1; )
 
 RHOST="$1"
 COUNTERS="$2"
 RBENCH="$3"
 
-SHOTID=$(date +"%Y-%m-%d_%H-%M-%S")
+SHOTID="${SHOT_ID_PREFIX}$(date +'%Y-%m-%d_%H-%M-%S')"
 
 RPATH="studienarbeit/"
 DPFILE="measuring_data/measured_${SHOTID}.dpts"
