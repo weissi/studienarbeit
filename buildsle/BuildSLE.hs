@@ -2,10 +2,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 import Prelude
 import Control.Monad.Error (MonadError(), throwError)
-import Data.List ( nub, isSuffixOf, genericLength, foldl', groupBy, sort, (\\)
+import Data.List ( nub, isSuffixOf, foldl', groupBy, sort, (\\)
                  , intercalate)
 import Data.Map (Map)
 import Data.Maybe (catMaybes, fromMaybe)
+import Math.Statistics (mean, stddev)
 import Safe (readMay)
 import System.Environment (getArgs)
 import System.FilePath.Posix (takeFileName)
@@ -43,9 +44,6 @@ _NaN_ = 0/0
 
 _REF_COL_ :: String
 _REF_COL_ = "CPU_CLK_UNHALTED"
-
-average :: forall a b. (Real b, Fractional a) => [b] -> a
-average xs = realToFrac (sum xs) / genericLength xs
 
 tr :: Eq a => a -> a -> [a] -> [a]
 tr a b = map f
@@ -188,7 +186,7 @@ shotGroupIds sids = groupBy (\l r -> si_shotGroupId l == si_shotGroupId r)
 groupShotDataMap :: MonadError String m => ShotDataMap -> m ShotGroupDataMap
 groupShotDataMap sdm =
     do groupNames <- sequence $ map shotGroupname groupedShotIds
-       let shotGroupData = map accumShotDataMapNEW groupedShotIds
+       let shotGroupData = map accumShotDataMap groupedShotIds
        return $ Map.fromList $ zip groupNames shotGroupData
     where
     groupedShotIds :: [[ShotId]]
@@ -196,7 +194,7 @@ groupShotDataMap sdm =
     accumCounterMaps :: [CounterMap] -> CounterMap
     accumCounterMaps cms = foldl' Map.union Map.empty cms
     accumWork :: [Double] -> Double
-    accumWork = average
+    accumWork = mean
     shotGroupname :: MonadError String m => [ShotId] -> m ShotGroupId
     shotGroupname sids =
         case sids of
@@ -204,8 +202,8 @@ groupShotDataMap sdm =
           firstShot:_ -> return $ si_shotGroupId firstShot
     shotListData :: [ShotId] -> ([CounterMap], [Double])
     shotListData sids = unzip $ catMaybes $ map (flip Map.lookup sdm) sids
-    accumShotDataMapNEW :: [ShotId] -> (CounterMap, Double)
-    accumShotDataMapNEW sids = ( accumCounterMaps $ fst (shotListData sids)
+    accumShotDataMap :: [ShotId] -> (CounterMap, Double)
+    accumShotDataMap sids = ( accumCounterMaps $ fst (shotListData sids)
                                , accumWork $ snd (shotListData sids)
                                )
 
