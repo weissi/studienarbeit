@@ -2,7 +2,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 import Prelude
 import Control.Monad.Error (MonadError(), throwError)
-import Data.List (nub, isSuffixOf, genericLength, foldl', groupBy, sort, (\\))
+import Data.List ( nub, isSuffixOf, genericLength, foldl', groupBy, sort, (\\)
+                 , intercalate)
 import Data.Map (Map)
 import Data.Maybe (catMaybes, fromMaybe)
 import Safe (readMay)
@@ -46,6 +47,13 @@ _REF_COL_ = "CPU_CLK_UNHALTED"
 average :: forall a b. (Real b, Fractional a) => [b] -> a
 average xs = realToFrac (sum xs) / genericLength xs
 
+tr :: Eq a => a -> a -> [a] -> [a]
+tr a b = map f
+         where f c = if c == a then b else c
+
+rCompatibleCounterName :: CtrName -> String
+rCompatibleCounterName = tr ':' '.'
+
 loadCounterDataProto :: FilePath -> IO (Maybe CounterData)
 loadCounterDataProto fn =
     do pbs <- BSL.readFile fn
@@ -77,7 +85,7 @@ addShotData shotIdFun cd shotMap = Map.insert shotId ctrMap' shotMap
 shotCounterMap :: (String -> ShotId) -> [CounterData] -> ShotCounterMap
 shotCounterMap shotIdFun cds = foldr (addShotData shotIdFun) Map.empty cds
 
-allCounters :: ShotDataMap -> [String]
+allCounters :: ShotDataMap -> [CtrName]
 allCounters sm = nub $ concat $ map (Map.keys . fst) $ Map.elems sm
 
 printRTAB :: ShotDataMap -> IO ()
@@ -222,6 +230,11 @@ main =
        hPutStrLn stderr $ "group char: " ++ (show mGroupChar)
        hPutStrLn stderr $ "GOOD sids: " ++ (show $ Map.keys sdmap)
        hPutStrLn stderr $ "Ignored sids: " ++ (show bad_sids)
+       hPutStrLn stderr $ "leaps <- regsubsets(unlist(t['WORK'])~" ++
+                          (intercalate "+" (map rCompatibleCounterName
+                          (allCounters sdmap))) ++
+                          ", data=t, force.in=c('CPU_CLK_UNHALTED', " ++
+                          "'INST_RETIRED'), nbest=10)"
        case groupShotDataMap sdmap of
          Left err -> putStrLn err
          Right gsdmap ->
