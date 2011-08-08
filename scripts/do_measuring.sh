@@ -22,6 +22,10 @@ function die() {
     exit 1
 }
 
+function warn() {
+    echo "WARNING: $@"
+}
+
 function remote() {
     set +e
     ssh -qt "$RHOST" "$@"
@@ -30,17 +34,38 @@ function remote() {
     return $RET
 }
 
+function usage() {
+    echo "Usage $0 [-s SHOT-ID-PREFIX] [-o OUT-DIR] REMOTE-HOST CTRS BENCHMARK"
+    echo
+    echo "Defaults:"
+    echo "  SHOT-ID-PREFIX: none"
+    echo "  OUT-DIR: $HERE/measuring_data"
+}
+
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 
 SHOT_ID_PREFIX=""
-if [ "$1" = "-s" ]; then
-    SHOT_ID_PREFIX="$2@"
-    shift
-    shift
-fi
+OUTDIR="measuring_data"
 
-test $# -eq 3 || ( echo "Usage $0 [-s SHOT-ID-PREFIX] REMOTE-HOST CTRS BENCHMARK"; exit 1; )
+while getopts s:o: OPT; do
+    case "$OPT" in
+        s)
+            SHOT_ID_PREFIX="${OPTARG}@"
+            ;;
+        o)
+            OUTDIR="$OPTARG"
+            ;;
+        [?])
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+shift $(( $OPTIND-1 ))
+
+test $# -eq 3 || ( usage; exit 1; )
 
 RHOST="$1"
 COUNTERS="$2"
@@ -49,15 +74,16 @@ RBENCH="$3"
 SHOTID="${SHOT_ID_PREFIX}$(date +'%Y-%m-%d_%H-%M-%S')"
 
 RPATH="studienarbeit/"
-DPFILE="measuring_data/measured_${SHOTID}.dpts"
-EXFILE="measuring_data/measured_${SHOTID}.rtab"
-CTFILE="measuring_data/counters_${SHOTID}.ctrs"
-CWFILE="measuring_data/work_${SHOTID}.work"
+DPFILE="$OUTDIR/measured_${SHOTID}.dpts"
+EXFILE="$OUTDIR/measured_${SHOTID}.rtab"
+CTFILE="$OUTDIR/counters_${SHOTID}.ctrs"
+CWFILE="$OUTDIR/work_${SHOTID}.work"
 LOG="/tmp/measuring_log_$SHOTID.log"
 REMLOG="/tmp/remote-${SHOTID}.log"
 
 echo -n "No other 'datadump' running: "
-! pgrep datadump || die "datadump already running"
+! pgrep datadump 2> /dev/null || ( sleep 5; ! pgrep -l datadump ) \
+    || die "datadump already running"
 echo "OK"
 
 echo -n "Checking if NI device 3923:7272 is plugged: "
@@ -92,7 +118,7 @@ DATADUMPPID=$!
 echo -n "Waiting for sloooow NI call (e.g. 29s) "
 START=$(date +%s)
 TMP=0
-while ! grep -q 'GOOOOOO!' "$LOG"; do
+while ! grep -q 'GOOOOOO!' "$LOG" 2> /dev/null; do
     let DIFF=1+$(date +%s)-$START
     sleep 0.2
     if [ $TMP -ne $DIFF ]; then
@@ -114,7 +140,7 @@ START=$(date +%s)
 set +e
 remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
     -o "/tmp/$(basename $CTFILE)" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" \
-    &> "$REMLOG" || die "remote benchmark failed, see log '$REMLOG'"
+    &> "$REMLOG"
 RET=$?
 set -e
 scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
@@ -122,6 +148,7 @@ let DIFF=$(date +%s)-$START
 if [ $RET -eq 0 ]; then
     echo "OK (time=$DIFF)"
 else
+    warn "remote benchmark failed, see log '$REMLOG'"
     echo "done, but FAILURE (time=$DIFF, ret=$RET)"
 fi
 
@@ -142,6 +169,17 @@ while ps $DATADUMPPID &> /dev/null; do
     echo -n .
 done
 echo OK
+
+pgrep datadump | while read DDPID; do
+    echo "WARNING: there is still a datadump running with pid $DDPID, killing it"
+    set +e
+    kill -INT $DDPID
+    sleep 5
+    kill $DDPID
+    sleep 1
+    kill -9 $DDPID
+    set -e
+done
 
 echo -n "Exporting data to '$EXFILE' "
 dataexport "$DPFILE" > "$EXFILE"
