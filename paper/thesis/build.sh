@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-TEXOPTS="-interaction=batchmode -halt-on-error"
+TEXOPTS="-halt-on-error"
 cd "$HERE"
 
 ./clean.sh

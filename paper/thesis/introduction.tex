@@ -2,6 +2,27 @@
 
 What is the problem?
 
+Energy is a crucial good especially for mobile devices. Since the energy
+available is either limited -- on mobile devices, or can become expensive --
+on devices connected to the regular power network, we should use as little as
+possible. And since we want to evaluate a whole process, the goal is not to
+minimize the instantaneous power but to maximize energy-efficiency.
+
+Even though most modern operating systems try to maximize the CPU utilization
+by lowering the frequency \cite{snowdon2010operating} to eventually maximize the
+energy-efficiency, this reaction is not always appropriate. A lower CPU
+frequency is not always the more energy-efficient
+\cite{weissel2002process,snowdon2010operating}.
+
+Thus, for being able to build a good power management, a good power/energy
+estimation is critical. The approach used in this study thesis is to use the
+CPU's \JWemph{performance counters}.  Since \cite{bellosa2000benefits} there
+have been many papers
+(\cite{Bertran2010,bertran2010decomposable,kellner03tempcontrol,isci2003runtime,
+weissel2002process}, ...) doing energy estimation using performance counters
+with really good results.
+
+
 \begin{itemize}
 
 \item Energy control is important, especially on mobile devices
