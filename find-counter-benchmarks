@@ -1,13 +1,13 @@
-phoronix-test-suite batch-run pts/openssl
-phoronix-test-suite batch-run pts/x264
-phoronix-test-suite batch-run pts/unpack-linux
-phoronix-test-suite batch-run pts/sudokut
-phoronix-test-suite batch-run pts/sample-program
-phoronix-test-suite batch-run pts/gnupg
-phoronix-test-suite batch-run pts/encode-mp3
-phoronix-test-suite batch-run pts/encode-wavpack
-phoronix-test-suite batch-run pts/compress-gzip
-phoronix-test-suite batch-run pts/ffmpeg
-phoronix-test-suite batch-run pts/clomp
-phoronix-test-suite batch-run pts/espeak
-phoronix-test-suite batch-run pts/mrbayes
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/openssl
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/x264
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/unpack-linux
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/sudokut
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/sample-program
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/gnupg
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/encode-mp3
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/encode-wavpack
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/compress-gzip
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/ffmpeg
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/clomp
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/espeak
+sudo -u weiss FORCE_TIMES_TO_RUN=1 phoronix-test-suite batch-run pts/mrbayes
