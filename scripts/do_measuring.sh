@@ -34,6 +34,10 @@ function remote() {
     return $RET
 }
 
+function str_to_id() {
+    echo $* | tr -d -c a-zA-Z0-9_-
+}
+
 function usage() {
     echo "Usage $0 [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] [-o OUT-DIR] "\
 "REMOTE-HOST COUNTERS BENCHMARK"
@@ -56,10 +60,10 @@ TEST_AND_BUILD=1
 while getopts ns:p:o: OPT; do
     case "$OPT" in
         p)
-            SHOT_ID_PREFIX="${OPTARG}@"
+            SHOT_ID_PREFIX="$(str_to_id ${OPTARG})@"
             ;;
         s)
-            SHOTID="$OPTARG"
+            SHOTID="$(str_to_id $OPTARG)"
             ;;
         o)
             OUTDIR="$OPTARG"
