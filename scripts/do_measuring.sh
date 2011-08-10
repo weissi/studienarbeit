@@ -28,7 +28,7 @@ function warn() {
 
 function remote() {
     set +e
-    ssh -qt "$RHOST" "$@"
+    ssh -q "$RHOST" "$@"
     RET=$?
     set -e
     return $RET
@@ -70,6 +70,9 @@ test $# -eq 3 || ( usage; exit 1; )
 RHOST="$1"
 COUNTERS="$2"
 RBENCH="$3"
+LHOST="i30pc26"
+LPORT="12345"
+RSCRIPT="__do_measuring_remote_script.sh"
 
 SHOTID="${SHOT_ID_PREFIX}$(date +'%Y-%m-%d_%H-%M-%S')"
 
@@ -135,17 +138,27 @@ echo "OK ($DIFF s, pid=$DATADUMPPID)"
 
 sleep 1
 
-echo -n "Running benchmark: "
+echo -n "Writing remote script: "
+remote tee "$RSCRIPT" &> /dev/null <<EOF
+#!/bin/bash
+(
+sleep 1
+/home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
+    -o "/tmp/$(basename $CTFILE)" -r "$RBENCH" -e "$COUNTERS" \
+    &> "/tmp/$(basename $REMLOG)"
+echo \$? | nc "$LHOST" -q 0 "$LPORT"
+) < /dev/null > /dev/null &
+EOF
+echo OK
+
+echo -n "Running remote benchmark: "
 START=$(date +%s)
-set +e
-remote /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o "/tmp/$(basename $CTFILE)" -r "\"$RBENCH\"" -e "\"$COUNTERS\"" \
-    &> "$REMLOG"
-RET=$?
-set -e
+remote bash "$RSCRIPT"
+RET=$(netcat -l -p "$LPORT")
 scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
+scp -q "$RHOST":"/tmp/$(basename $REMLOG)" "$REMLOG"
 let DIFF=$(date +%s)-$START
-if [ $RET -eq 0 ]; then
+if [ "$RET" -eq "0" ]; then
     echo "OK (time=$DIFF)"
 else
     warn "remote benchmark failed, see log '$REMLOG'"
@@ -191,4 +204,3 @@ echo "OK"
 
 echo
 echo "GREAT SUCCESS, EVERYTHING WENT FINE :-)"
-echo "---------------------------------------"
