@@ -35,7 +35,10 @@ function remote() {
 }
 
 function usage() {
-    echo "Usage $0 [-s SHOT-ID-PREFIX] [-o OUT-DIR] REMOTE-HOST CTRS BENCHMARK"
+    echo "Usage $0 [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] [-o OUT-DIR] "\
+"REMOTE-HOST COUNTERS BENCHMARK"
+    echo
+    echo "-n: no automatic tests and building"
     echo
     echo "Defaults:"
     echo "  SHOT-ID-PREFIX: none"
@@ -45,16 +48,24 @@ function usage() {
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 
+SHOTID="$(date +'%Y-%m-%d_%H-%M-%S')"
 SHOT_ID_PREFIX=""
 OUTDIR="measuring_data"
+TEST_AND_BUILD=1
 
-while getopts s:o: OPT; do
+while getopts ns:p:o: OPT; do
     case "$OPT" in
-        s)
+        p)
             SHOT_ID_PREFIX="${OPTARG}@"
+            ;;
+        s)
+            SHOTID="$OPTARG"
             ;;
         o)
             OUTDIR="$OPTARG"
+            ;;
+        n)
+            TEST_AND_BUILD=0
             ;;
         [?])
             usage
@@ -74,7 +85,7 @@ LHOST="i30pc26"
 LPORT="12345"
 RSCRIPT="__do_measuring_remote_script.sh"
 
-SHOTID="${SHOT_ID_PREFIX}$(date +'%Y-%m-%d_%H-%M-%S')"
+SHOTID="${SHOT_ID_PREFIX}$SHOTID"
 
 RPATH="studienarbeit/"
 DPFILE="$OUTDIR/measured_${SHOTID}.dpts"
@@ -93,27 +104,29 @@ echo -n "Checking if NI device 3923:7272 is plugged: "
 lsusb | grep -q '3923:7272' || die "NI USB-6218 not connected to USB"
 echo "OK"
 
-echo -n "Testing password-free SSH: "
-START=$(date +%s)
-remote true
-let DIFF=1+$(date +%s)-$START
-test $DIFF -lt 3 || die "ssh not working correctly, took $DIFF s"
-echo "OK"
+if [ $TEST_AND_BUILD -eq 1 ]; then
+    echo -n "Testing password-free SSH: "
+    START=$(date +%s)
+    remote true
+    let DIFF=1+$(date +%s)-$START
+    test $DIFF -lt 3 || die "ssh not working correctly, took $DIFF s"
+    echo "OK"
 
-echo -n "Testing password-free sudo: "
-START=$(date +%s)
-remote sudo true
-let DIFF=1+$(date +%s)-$START
-test $DIFF -lt 2 || die "sudo not working correctly, took $DIFF s"
-echo "OK"
+    echo -n "Testing password-free sudo: "
+    START=$(date +%s)
+    remote sudo true
+    let DIFF=1+$(date +%s)-$START
+    test $DIFF -lt 2 || die "sudo not working correctly, took $DIFF s"
+    echo "OK"
 
-echo -n "Building: "
-./build.sh &> /dev/null || die "building failed"
-echo "OK"
+    echo -n "Building: "
+    ./build.sh &> /dev/null || die "building failed"
+    echo "OK"
 
-echo -n "Remote building: "
-remote studienarbeit/build.sh &> /dev/null || die "remote building failed"
-echo "OK"
+    echo -n "Remote building: "
+    remote studienarbeit/build.sh &> /dev/null || die "remote building failed"
+    echo "OK"
+fi
 
 echo "Hint: logfile is '$LOG'"
 datadump "$DPFILE" $SHOTID &> "$LOG" &
@@ -143,11 +156,12 @@ remote tee "$RSCRIPT" &> /dev/null <<EOF
 #!/bin/bash
 (
 sleep 1
+killall sshd
+ps auxw
 /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o "/tmp/$(basename $CTFILE)" -r "$RBENCH" -e "$COUNTERS" \
-    &> "/tmp/$(basename $REMLOG)"
+    -o "/tmp/$(basename $CTFILE)" -r "$RBENCH" -e "$COUNTERS"
 echo \$? | nc "$LHOST" -q 0 "$LPORT"
-) < /dev/null > /dev/null &
+) < /dev/null &> "/tmp/$(basename $REMLOG)" &
 EOF
 echo OK
 
