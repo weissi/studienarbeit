@@ -39,10 +39,11 @@ function str_to_id() {
 }
 
 function usage() {
-    echo "Usage $0 [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] [-o OUT-DIR] "\
+    echo "Usage $0 [-d] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] [-o OUT-DIR] "\
 "REMOTE-HOST COUNTERS BENCHMARK"
     echo
     echo "-n: no automatic tests and building"
+    echo "-d: delete R table file after having calculated work"
     echo
     echo "Defaults:"
     echo "  SHOT-ID-PREFIX: none"
@@ -56,8 +57,9 @@ SHOTID="$(date +'%Y-%m-%d_%H-%M-%S')"
 SHOT_ID_PREFIX=""
 OUTDIR="measuring_data"
 TEST_AND_BUILD=1
+DEL_RTAB=0
 
-while getopts ns:p:o: OPT; do
+while getopts dns:p:o: OPT; do
     case "$OPT" in
         p)
             SHOT_ID_PREFIX="$(str_to_id ${OPTARG})@"
@@ -70,6 +72,9 @@ while getopts ns:p:o: OPT; do
             ;;
         n)
             TEST_AND_BUILD=0
+            ;;
+        d)
+            DEL_RTAB=1
             ;;
         [?])
             usage
@@ -219,6 +224,12 @@ echo "OK"
 echo -n "Calculating work to '$CWFILE' "
 calculate_work.sh -s "$EXFILE" > "$CWFILE"
 echo "OK"
+
+if [ $DEL_RTAB -gt 0 ]; then
+    echo -n "Deleting R table file '$EXFILE' "
+    rm -- "$EXFILE"
+    echo OK
+fi
 
 echo
 echo "GREAT SUCCESS, EVERYTHING WENT FINE :-)"
