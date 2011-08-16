@@ -199,10 +199,24 @@ echo -n 'Telling datadump to stop (SIGINT): '
 kill -INT $DATADUMPPID
 echo "OK"
 
+TRIES=0
 echo -n "Waiting for dump process ($DATADUMPPID) to finish "
 while ps $DATADUMPPID &> /dev/null; do
     sleep 1
     echo -n .
+    TRIES=$(($TRIES + 1))
+    if [ $TRIES -gt 10 ]; then
+        warn "datadump($DATADUMPPID) didn't exit after 10s, sending SIGINT"
+        kill -INT $DATADUMPPID || true
+    fi
+    if [ $TRIES -gt 20 ]; then
+        warn "datadump($DATADUMPPID) didn't exit after 20s, sending SIGTERM"
+        kill $DATADUMPPID || true
+    fi
+    if [ $TRIES -gt 30 ]; then
+        warn "datadump($DATADUMPPID) didn't exit after 30s, sending SIGKILL"
+        kill -9 $DATADUMPPID || true
+    fi
 done
 echo OK
 
