@@ -2,6 +2,7 @@
 #define __UTILS_H 1
 
 #include <sys/types.h>
+#include <stdint.h>
 
 #include "generic.pb-c.h"
 
@@ -46,5 +47,7 @@ double timediff(struct timespec start, struct timespec end);
 int open_parport(const char *dev);
 void parport_write_data(const int fd, unsigned char data);
 void close_parport(const int fd);
+
+uint64_t rdtsc();
 
 #endif
