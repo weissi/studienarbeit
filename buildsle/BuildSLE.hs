@@ -5,15 +5,16 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 import Prelude
-import Control.Monad ()
+import Control.Monad (foldM, liftM)
 import Control.Monad.Error (MonadError(), throwError)
 import Data.List ( nub, isSuffixOf, foldl', groupBy, sort, (\\)
-                 , intercalate)
+                 , intercalate, isPrefixOf)
 import Data.Map (Map)
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Math.Statistics (mean, stddev)
 import Safe (readMay)
 import System.Console.CmdLib
+import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import System.IO (hPutStrLn, stderr)
 import Text.ProtocolBuffers.Basic (uToString)
@@ -22,8 +23,14 @@ import qualified Data.Foldable as F
 import qualified Data.Map as Map
 
 import Text.ProtocolBuffers.WireMessage (messageGet)
-import HsPerfCounters.CounterData(CounterData(..))
+import qualified HsPerfCounters.CounterData as Pb
+import qualified HsPerfCounters.Timestamp as Pb
 import HsPerfCounters.CounterValue(CounterValue(..))
+
+{-
+import Debug.Trace
+strace a = trace (show a) a
+-}
 
 type ShotGroupId = String
 data ShotId = ShotId { si_shotGroupId :: ShotGroupId
@@ -32,17 +39,22 @@ data ShotId = ShotId { si_shotGroupId :: ShotGroupId
                      } deriving (Eq, Ord)
 type CtrName = String
 type CtrVal = Integer
+type TimeNanosecs = Double
 
 instance Show ShotId where
     show (ShotId shotGroupId mSubShotId mGroupChar) =
-        shotGroupId ++ (maybe "" (:[]) mGroupChar)
-        ++ (fromMaybe "" mSubShotId)
+        showString shotGroupId $
+        showString (maybe "" (:[]) mGroupChar) $
+        fromMaybe "" mSubShotId
 
 type CounterMap = Map CtrName CtrVal
-type ShotCounterMap = Map ShotId CounterMap
+type ShotCounterMap = Map ShotId (CounterMap, TimeNanosecs)
 type ShotWorkMap = Map ShotId Double
-type ShotDataMap = Map ShotId (CounterMap, Double)
-type ShotGroupDataMap = Map ShotGroupId (CounterMap, Double)
+type ShotDataMap = Map ShotId (CounterMap, TimeNanosecs, Double)
+type ShotGroupDataMap = Map ShotGroupId (CounterMap, TimeNanosecs, Double)
+
+type FilePath' = String
+type WorkFileMap = Map ShotId FilePath'
 
 _NaN_ :: Fractional a => a
 _NaN_ = 0/0
@@ -63,7 +75,19 @@ tr a b = map f
 rCompatibleCounterName :: CtrName -> String
 rCompatibleCounterName = tr ':' '.'
 
-loadCounterDataProto :: FilePath -> IO (Maybe CounterData)
+internalCounterName :: String -> CtrName
+internalCounterName = tr '.' ':'
+
+tt_fst :: (a, b, c) -> a
+tt_fst (a, _, _) = a
+
+tt_snd :: (a, b, c) -> b
+tt_snd (_, b, _) = b
+
+tt_trd :: (a, b, c) -> c
+tt_trd (_, _, c) = c
+
+loadCounterDataProto :: FilePath' -> IO (Maybe Pb.CounterData)
 loadCounterDataProto fn =
     do pbs <- BSL.readFile fn
        case messageGet pbs of
@@ -72,35 +96,49 @@ loadCounterDataProto fn =
          Left err ->
              do hPutStrLn stderr $ "ERROR on file `" ++ fn ++ "': " ++ err
                 return Nothing
+runTime :: Pb.CounterData -> TimeNanosecs
+runTime cd = fromIntegral $ stopNs - startNs
+    where calcNs :: Pb.Timestamp -> Integer
+          calcNs ts = (1000000000 * (fromIntegral $ Pb.sec ts))
+                      + (fromIntegral $ Pb.nsec ts)
+          stopNs :: Integer
+          stopNs = calcNs $ Pb.stop_time cd
+          startNs :: Integer
+          startNs = calcNs $ Pb.start_time cd
 
-addShotData :: (String -> ShotId)
-            -> CounterData
+addShotData :: MonadError String m
+            => (String -> ShotId)
             -> ShotCounterMap
-            -> ShotCounterMap
-addShotData shotIdFun cd shotMap = Map.insert shotId ctrMap' shotMap
-    where extractVal :: CounterValue -> CounterMap -> CounterMap
-          extractVal cv cmap =
+            -> Pb.CounterData
+            -> m ShotCounterMap
+addShotData shotIdFun shotMap cd =
+   do if shotId `Map.member` shotMap
+        then throwError $ "Duuplicate shotID: " ++ show shotId
+        else return $ Map.insert shotId (ctrMap', runTime cd) shotMap
+    where extractVal :: CounterMap -> CounterValue -> CounterMap
+          extractVal cmap cv =
              Map.insert (uToString $ counter_name cv)
                         (F.sum $ fmap toInteger $ counter_value_per_cpu cv)
                         cmap
           ctrMap' :: CounterMap
-          ctrMap' = F.foldr extractVal ctrMap (counters cd)
+          ctrMap' = F.foldl' extractVal Map.empty (Pb.counters cd)
           shotId :: ShotId
-          shotId = shotIdFun $ uToString $ shot_id cd
-          -- should always return Map.empty for NON-grouped shot ids
-          ctrMap :: CounterMap
-          ctrMap = Map.findWithDefault Map.empty shotId shotMap
+          shotId = shotIdFun $ uToString $ Pb.shot_id cd
 
-shotCounterMap :: (String -> ShotId) -> [CounterData] -> ShotCounterMap
-shotCounterMap shotIdFun cds = foldr (addShotData shotIdFun) Map.empty cds
+shotCounterMap :: MonadError String m
+               => (String -> ShotId)
+               -> [Pb.CounterData]
+               -> m ShotCounterMap
+shotCounterMap shotIdFun cds = foldM (addShotData shotIdFun) Map.empty cds
 
 allCounters :: ShotDataMap -> [CtrName]
-allCounters sm = nub $ concat $ map (Map.keys . fst) $ Map.elems sm
+allCounters sm = nub $ concat $ map (Map.keys . tt_fst) $ Map.elems sm
 
 printRTAB :: Bool -> ShotDataMap -> IO ()
 printRTAB ratios sm =
     do putStr "SHOT_ID\t"
        putStr "WORK\t"
+       putStr "TIME_NANO_DIFF\t"
        mapM_ (\c -> putStr $ c ++ "\t") allCtrs
        if ratios
           then mapM_ (\c -> putStr $ "RATIO_" ++ c ++ "\t") allCtrs
@@ -110,7 +148,7 @@ printRTAB ratios sm =
        where allCtrs = allCounters sm
              valueMap :: ShotId -> Map CtrName CtrVal
              valueMap sid =
-                 fst $ Map.findWithDefault (Map.empty, undefined) sid sm
+                 Map.findWithDefault Map.empty sid $ Map.map tt_fst sm
 
              strValueMap :: ShotId -> Map CtrName String
              strValueMap sid =
@@ -140,7 +178,11 @@ printRTAB ratios sm =
              printShot :: ShotId -> IO ()
              printShot sid =
                  do putStr $ (show sid) ++ "\t"
-                    putStr (Map.findWithDefault "NA" sid (Map.map (show.snd) sm))
+                    putStr (Map.findWithDefault "NA" sid
+                                                (Map.map (show.tt_trd) sm))
+                    putStr "\t"
+                    putStr (Map.findWithDefault "NA" sid
+                                                (Map.map (show.tt_snd) sm))
                     putStr "\t"
                     mapM_ (printCounter sid) allCtrs
                     if ratios
@@ -148,20 +190,16 @@ printRTAB ratios sm =
                        else return ()
                     putStr "\n"
 
-calcWorkFile :: ShotId -> FilePath
-calcWorkFile sid = "work_" ++ (show sid) ++ ".work"
+calcWorkFile :: ShotId -> FilePath'
+calcWorkFile sid = showString "work_" $ shows sid ".work"
 
-isCounterFile :: FilePath -> Bool
+isCounterFile :: FilePath' -> Bool
 isCounterFile f = ".ctrs" `isSuffixOf` takeFileName f
 
-findWorkFile :: ShotId -> [FilePath] -> Maybe FilePath
-findWorkFile sid files =
-    case (filter (calcWorkFile sid `isSuffixOf`) files) of
-      [] -> Nothing
-      f:[] -> Just f
-      _ -> Nothing
+findWorkFile :: ShotId -> WorkFileMap -> Maybe FilePath'
+findWorkFile sid files = Map.lookup sid files
 
-getWork :: [FilePath] -> ShotId -> IO (Maybe Double)
+getWork :: WorkFileMap -> ShotId -> IO (Maybe Double)
 getWork files sid =
     case findWorkFile sid files of
       Just file ->
@@ -169,10 +207,10 @@ getWork files sid =
              return $ readMay val
       Nothing -> return Nothing
 
-shotDataMap :: ShotCounterMap -> [FilePath] -> IO ShotDataMap
+shotDataMap :: ShotCounterMap -> WorkFileMap -> IO ShotDataMap
 shotDataMap scmap files =
     do mWorks <- mapM (getWork files) sids
-       return $ Map.intersectionWith (,) scmap (swmap mWorks)
+       return $ Map.intersectionWith joinData scmap (swmap mWorks)
        where sids = Map.keys scmap
              check :: (ShotId, Maybe Double) -> Maybe (ShotId, Double)
              check (f, mS) =
@@ -180,7 +218,9 @@ shotDataMap scmap files =
                    Nothing -> Nothing
                    Just s -> Just (f, s)
              swmap :: [Maybe Double] -> ShotWorkMap
-             swmap w = Map.fromList $ catMaybes (map check (zip sids w))
+             swmap w = Map.fromList $ mapMaybe check (zip sids w)
+             joinData :: (a, b) -> c -> (a, b, c)
+             joinData (a, b) c = (a, b, c)
 
 shotIdFromString :: Maybe Char -> String -> ShotId
 shotIdFromString mGroupChar s =
@@ -211,8 +251,8 @@ groupShotDataMap sdm maxRelErr =
     groupedShotIds = shotGroupIds $ Map.keys sdm
     accumCounterMaps :: [CounterMap] -> CounterMap
     accumCounterMaps cms = foldl' Map.union Map.empty cms
-    accumWork :: MonadError String m => [ShotId] -> [Double] -> m Double
-    accumWork sids ws =
+    accumDouble :: MonadError String m => [ShotId] -> [Double] -> m Double
+    accumDouble sids ws =
         if relstddev ws > maxRelErr
            then fail $ "relative standard deviation (" ++ (show $ relstddev ws)
                        ++ ") too high, shot ids: " ++ (show sids)
@@ -223,29 +263,33 @@ groupShotDataMap sdm maxRelErr =
         case sids of
           [] -> throwError "empty shot group --> cannot generate group id"
           firstShot:_ -> return $ si_shotGroupId firstShot
-    shotListData :: [ShotId] -> ([CounterMap], [Double])
-    shotListData sids = unzip $ catMaybes $ map (flip Map.lookup sdm) sids
-    accumShotDataMap :: MonadError String m => [ShotId] -> m (CounterMap, Double)
+    shotListData :: [ShotId] -> ([CounterMap], [TimeNanosecs], [Double])
+    shotListData sids = unzip3 $ mapMaybe (flip Map.lookup sdm) sids
+    accumShotDataMap :: MonadError String m
+                     => [ShotId]
+                     -> m (CounterMap, TimeNanosecs, Double)
     accumShotDataMap sids =
-       do let counters = accumCounterMaps $ fst (shotListData sids)
-          work <- accumWork sids $ snd (shotListData sids)
-          return (counters, work)
+       do let counters = accumCounterMaps $ tt_fst (shotListData sids)
+          time <- accumDouble sids $ tt_snd (shotListData sids)
+          work <- accumDouble sids $ tt_trd (shotListData sids)
+          return (counters, time, work)
 
 data MainOptions =
      MainOptions { mo_groupChar :: String
                  , mo_maxRelStdDev :: String
                  , mo_printRefCols :: Bool
+                 , mo_counterFile :: String
                  , mo_fileArgs :: [String]
                  } deriving (Typeable, Data, Eq)
 _EMPTY_MAIN_OPTIONS_ :: MainOptions
-_EMPTY_MAIN_OPTIONS_ = MainOptions "" "" False []
+_EMPTY_MAIN_OPTIONS_ = MainOptions "" "" False "" []
 
 instance Attributes MainOptions where
     attributes _ =
         group "Options"
             [ mo_groupChar    %> [ Help "Group shot ids by common prefix"
                                  , ArgHelp "GROUP-CHAR"
-                                 , Default ""
+                                 , Default ("" :: String)
                                  , Long ["group-char"]
                                  , Short ['g']
                                  ]
@@ -263,15 +307,49 @@ instance Attributes MainOptions where
                                  , Long ["print-ref-columns", "print-ref-cols"]
                                  , Short ['p']
                                  ]
+            , mo_counterFile %>  [ Help "Only repect counters listed in file"
+                                 , Default ("" :: String)
+                                 , Long ["counter-file"]
+                                 , Short ['c']
+                                 ]
             , mo_fileArgs     %> Extra True
             ]
 
 instance RecordCommand MainOptions where
     mode_summary _ = "BuildSLE"
 
+readGoodCounters :: FilePath' -> IO [CtrName]
+readGoodCounters f =
+    do contents <- readFile f
+       return $ map internalCounterName $ lines contents
+
+delBadCounters :: [CtrName] -> CounterMap -> CounterMap
+delBadCounters ctrs cmap = foldl' (flip Map.delete) cmap badCtrs
+    where badCtrs = Map.keys cmap \\ ctrs
+
+workFilesMap :: Maybe Char -> [FilePath'] -> WorkFileMap
+workFilesMap gc fps =
+    foldl' addFile Map.empty fps
+    where
+        addFile :: WorkFileMap -> FilePath' -> WorkFileMap
+        addFile fm fp =
+            if isWorkFile
+               then Map.insert shotId fp fm
+               else fm
+            where
+                shotId = {-# SCC "sI" #-} shotIdFromString gc sShotId
+                sShotId = {-# SCC "eSI" #-} takeWhile (/= '.') $
+                              drop 1 $ dropWhile (/= '_') fn
+                isWorkFile = {-# SCC "wfm:isWF" #-} "work_" `isPrefixOf` fn
+                fn = {-# SCC "wfm:takeFileName" #-} takeFileName fp
+
 main :: IO ()
 main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
     do let opt_files = mo_fileArgs opts
+           opt_counterFile =
+               case mo_counterFile opts of
+                 "" -> Nothing
+                 s -> Just s
        mGroupChar <-
            case mo_groupChar opts of
              g : [] -> return $ Just g
@@ -279,6 +357,9 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
              _ ->
                  do hPutStrLn stderr "WARNING: group char ignored (length)"
                     return Nothing
+       let workFiles :: WorkFileMap
+           workFiles = workFilesMap mGroupChar opt_files
+       hPutStrLn stderr $ "Processed work files: " ++ show (Map.size workFiles)
        maxRelStdDev <-
            case readMay $ mo_maxRelStdDev opts of
              Just v -> return v
@@ -286,7 +367,17 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
                  do hPutStrLn stderr "WARNING: max rel stddev param ignored"
                     return _ERROR_REL_STDDEV_
        mCDs <- mapM loadCounterDataProto $ filter isCounterFile opt_files
-       let smap = shotCounterMap (shotIdFromString mGroupChar) (catMaybes mCDs)
+       let eSmap = shotCounterMap (shotIdFromString mGroupChar) (catMaybes mCDs)
+       smapRaw <- case eSmap of
+                 Right r -> return r
+                 Left err -> putStrLn err >> exitFailure
+       goodCounters <-
+           case opt_counterFile of
+             Just f -> liftM Just $ readGoodCounters f
+             Nothing -> return Nothing
+       let smap = case goodCounters of
+             Just gcs -> Map.map (\(a,b) -> (delBadCounters gcs a, b)) smapRaw
+             Nothing -> smapRaw
            all_arg_files_basenames = map takeFileName opt_files
            all_sids = Map.keys smap
            work_file_available :: ShotId -> Bool
@@ -295,15 +386,15 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
            good_sids = filter work_file_available all_sids
            bad_sids = all_sids \\ good_sids
            smap' = foldr Map.delete smap bad_sids
-       sdmap <- shotDataMap smap' opt_files
+       sdmap <- shotDataMap smap' workFiles
        hPutStrLn stderr $ "group char: " ++ (show mGroupChar)
-       hPutStrLn stderr $ "GOOD sids: " ++ (show $ Map.keys sdmap)
+       --hPutStrLn stderr $ "GOOD sids: " ++ (show $ Map.keys sdmap)
        hPutStrLn stderr $ "Ignored sids: " ++ (show bad_sids)
-       hPutStrLn stderr $ "leaps <- regsubsets(unlist(t['WORK'])~" ++
-                          (intercalate "+" (map rCompatibleCounterName
-                          (allCounters sdmap))) ++
-                          ", data=t, force.in=c('CPU_CLK_UNHALTED', " ++
-                          "'INST_RETIRED'), nbest=10)"
+       --hPutStrLn stderr $ "leaps <- regsubsets(unlist(t['WORK'])~" ++
+       --                   (intercalate "+" (map rCompatibleCounterName
+       --                   (allCounters sdmap))) ++
+       --                   ", data=t, force.in=c('CPU_CLK_UNHALTED', " ++
+       --                   "'INST_RETIRED'), nbest=10)"
        case groupShotDataMap sdmap maxRelStdDev of
          Left err -> putStrLn err
          Right gsdmap ->

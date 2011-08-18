@@ -10,6 +10,7 @@
 #include <linux/ppdev.h>
 #include <linux/parport.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 size_t strlcpy(char *d, char const *s, size_t n) {
@@ -78,4 +79,18 @@ void parport_write_data(const int fd, unsigned char data) {
 void close_parport(const int fd) {
     assert_err("PPRELEASE", 0 == ioctl(fd, PPRELEASE));
     fprintf(stderr, "PARPORT: CLOSED SUCCESSFULLY\n");
+}
+
+/* borrowed from
+ * http://en.wikipedia.org/wiki/Time_Stamp_Counter
+ */
+__inline__ uint64_t rdtsc(void) {
+  uint32_t lo, hi;
+  __asm__ __volatile__ (      // serialize
+  "xorl %%eax,%%eax \n        cpuid"
+  ::: "%rax", "%rbx", "%rcx", "%rdx");
+  /* We cannot use "=A", since this would use %rax on x86_64 and return only
+   * the lower 32bits of the TSC */
+  __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+  return (uint64_t)hi << 32 | lo;
 }

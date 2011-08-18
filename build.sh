@@ -94,8 +94,9 @@ build "$BO" ctrbenchmark --std=gnu99 -o $BUILD/ctrbenchmark $CFLAGS $LDFLAGS \
 
 if which hprotoc &> /dev/null; then
     hprotoc -d../gensrc -I../protos ../protos/hs-perf-counters.proto > /dev/null
-    build_raw ghc "$BO" "BuildSLE" -Wall -o $BUILD/buildsle --make \
-        -i$HERE/gensrc $HERE/buildsle/*.hs
+    build_raw ghc "$BO" "BuildSLE" -O2 -Wall -o $BUILD/buildsle \
+         --make -i$HERE/gensrc $HERE/buildsle/*.hs \
+         -prof -auto-all -caf-all -fforce-recomp -rtsopts
 else
     echo '- not building BuildSLE (Build System of Linear Equations): haskell'
 fi

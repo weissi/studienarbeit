@@ -57,7 +57,7 @@ function go() {
         done
         echo
         T_START=$(date +%s)
-        do_measuring.sh -n -p "$(str_to_id $BM)" -o "$OUTDIR" "$RHOST" "$CTRS" "$BM"
+        do_measuring.sh -d -n -p "$(str_to_id $BM)" -o "$OUTDIR" "$RHOST" "$CTRS" "$BM"
         RET=$?
         let DIFF=$(date +%s)-$T_START || true
         echo "BENCHMARK DONE: return code=$RET, time=${DIFF}s"
