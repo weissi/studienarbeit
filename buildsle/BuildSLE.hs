@@ -238,6 +238,12 @@ shotGroupIds :: [ShotId] -> [[ShotId]]
 shotGroupIds sids = groupBy (\l r -> si_shotGroupId l == si_shotGroupId r)
                             (sort sids)
 
+fromEitherAccum :: forall k b. b -> [k] -> k -> Maybe b -> ([k], b)
+fromEitherAccum dfl acc key m =
+    case m of
+      Nothing -> (key:acc, dfl)
+      Just v -> (acc, v)
+
 groupShotDataMap :: MonadError String m
                  => ShotDataMap
                  -> Double
@@ -249,14 +255,25 @@ groupShotDataMap sdm maxRelErr =
     where
     groupedShotIds :: [[ShotId]]
     groupedShotIds = shotGroupIds $ Map.keys sdm
-    accumCounterMaps :: [CounterMap] -> CounterMap
-    accumCounterMaps cms = foldl' Map.union Map.empty cms
+    mCounterMaps :: Monad m => [CounterMap] -> [Map CtrName (m CtrVal)]
+    mCounterMaps cms = map (Map.map return) cms
+    accumCounterMaps :: MonadError String m => [CounterMap] -> m CounterMap
+    accumCounterMaps cms =
+       case maybeMap of
+         ([], m) -> return m
+         (errs, _) -> throwError $ "multiple values for counters: " ++ show errs
+         where maybeMap =
+                   Map.mapAccumWithKey (fromEitherAccum (-1)) [] $
+                       (foldl' (Map.unionWith (\_ _ -> Nothing))
+                              Map.empty $
+                              mCounterMaps cms :: Map CtrName (Maybe CtrVal))
     accumDouble :: MonadError String m => [ShotId] -> [Double] -> m Double
     accumDouble sids ws =
         if relstddev ws > maxRelErr
-           then fail $ "relative standard deviation (" ++ (show $ relstddev ws)
-                       ++ ") too high, shot ids: " ++ (show sids)
-                       ++ ", values: " ++ (show ws)
+           then throwError $ "relative standard deviation (" ++
+                             (show $ relstddev ws)
+                             ++ ") too high, shot ids: " ++ (show sids)
+                             ++ ", values: " ++ (show ws)
            else return $ mean ws
     shotGroupname :: MonadError String m => [ShotId] -> m ShotGroupId
     shotGroupname sids =
@@ -269,7 +286,7 @@ groupShotDataMap sdm maxRelErr =
                      => [ShotId]
                      -> m (CounterMap, TimeNanosecs, Double)
     accumShotDataMap sids =
-       do let counters = accumCounterMaps $ tt_fst (shotListData sids)
+       do counters <- accumCounterMaps $ tt_fst (shotListData sids)
           time <- accumDouble sids $ tt_snd (shotListData sids)
           work <- accumDouble sids $ tt_trd (shotListData sids)
           return (counters, time, work)
