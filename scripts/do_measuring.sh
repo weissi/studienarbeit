@@ -7,6 +7,7 @@ function err() {
     set +e
     echo "UNRECOVERABLE ERROR"
     if [ x$DATADUMPPID != x ]; then
+        echo "INFO: Telling datadump ($DATADUMPPID) to stop"
         kill -INT $DATADUMPPID
     fi
     exit 1
@@ -17,6 +18,7 @@ function die() {
     echo
     echo "ERROR: $@"
     if [ x$DATADUMPPID != x ]; then
+        echo "INFO: Telling datadump ($DATADUMPPID) to stop"
         kill -INT $DATADUMPPID
     fi
     exit 1
@@ -178,8 +180,8 @@ echo -n "Running remote benchmark: "
 START=$(date +%s)
 remote bash "$RSCRIPT"
 RET=$(netcat -l -p "$LPORT")
-scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
 scp -q "$RHOST":"/tmp/$(basename $REMLOG)" "$REMLOG"
+scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
 let DIFF=$(date +%s)-$START
 if [ "$RET" -eq "0" ]; then
     echo "OK (time=$DIFF)"
