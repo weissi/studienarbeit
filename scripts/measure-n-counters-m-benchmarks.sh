@@ -12,8 +12,16 @@ HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 
 function usage() {
-    echo "Usage: $0 REMOTE-HOST OUT-DIR COUNTER-FILE BENCHMARK-FILE"
+    echo "Usage: $0 [-C MAX] REMOTE-HOST OUT-DIR COUNTER-FILE BENCHMARK-FILE"
+    echo
+    echo "-C: maximal number of simultaneous counters, default: 8"
 }
+
+MAX_CTRS=8
+if [ "$1" = "-C" ]; then
+    MAX_CTRS="$2"
+    shift; shift
+fi
 
 test $# -eq 4 || { usage; exit 1; }
 
@@ -77,7 +85,6 @@ if [ ! -d "$OUTDIR" ]; then
     mkdir -p -- "$OUTDIR"
 fi
 
-MAX_CTRS=8
 RUNS=0
 CTR_STRING=""
 
@@ -91,9 +98,11 @@ TOTAL_RUNS=$(( ${#BENCHMARKS[@]} * ${#COUNTERS[@]} / $MAX_CTRS ))
 for BENCHMARK in "${BENCHMARKS[@]}"; do
     CTR_STRING=""
     CUR_CTRS=0
+    echo "INFO: warming up benchmark..."
+    go "$RHOST" "/tmp" "$BENCHMARK" "UOPS_ISSUED"
     for CTR in "${COUNTERS[@]}"; do
         if [ -z "$CTR" ]; then
-            echo "WARNING: empty counter"
+            echo "WARNING: empty counter definition"
             continue
         fi
         let CUR_CTRS=$CUR_CTRS+1 || true
