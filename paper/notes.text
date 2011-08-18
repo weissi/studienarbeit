@@ -11,3 +11,10 @@
   NI-DAQmx Base 3.4.0f2 does NOT support reference trigger
   capabilities on the USB-621x devices.
   --- SNAP ---
+
+- NMI-Watchdog aus:
+  sudo bash -c 'echo 0 >/proc/sys/kernel/watchdog'
+
+- C-States limiten:
+  $ cat /etc/modprobe.d/max-cstate.conf
+  options processor max_cstate=0
