@@ -139,7 +139,7 @@ if [ $TEST_AND_BUILD -eq 1 ]; then
     echo "OK"
 fi
 
-echo "Hint: logfile is '$LOG'"
+echo "INFO: logfile is '$LOG'"
 datadump "$DPFILE" $SHOTID &> "$LOG" &
 DATADUMPPID=$!
 echo -n "Waiting for sloooow NI call (e.g. 29s) "
@@ -180,8 +180,6 @@ echo -n "Running remote benchmark: "
 START=$(date +%s)
 remote bash "$RSCRIPT"
 RET=$(netcat -l -p "$LPORT")
-scp -q "$RHOST":"/tmp/$(basename $REMLOG)" "$REMLOG"
-scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
 let DIFF=$(date +%s)-$START
 if [ "$RET" -eq "0" ]; then
     echo "OK (time=$DIFF)"
@@ -189,6 +187,9 @@ else
     warn "remote benchmark failed, see log '$REMLOG'"
     echo "done, but FAILURE (time=$DIFF, ret=$RET)"
 fi
+scp -q "$RHOST":"/tmp/$(basename $REMLOG)" "$REMLOG"
+echo "INFO: remote log is '$REMLOG'"
+scp -q "$RHOST":"/tmp/$(basename $CTFILE)" "$CTFILE"
 
 if grep 'FINISHED!' "$LOG" &> /dev/null; then
     echo

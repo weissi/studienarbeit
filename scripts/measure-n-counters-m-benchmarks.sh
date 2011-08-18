@@ -10,6 +10,7 @@ set -e
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
+WARM_UP_TMP="/tmp/WARM-UP-TMP"
 
 function usage() {
     echo "Usage: $0 [-C MAX] REMOTE-HOST OUT-DIR COUNTER-FILE BENCHMARK-FILE"
@@ -99,7 +100,10 @@ for BENCHMARK in "${BENCHMARKS[@]}"; do
     CTR_STRING=""
     CUR_CTRS=0
     echo "INFO: warming up benchmark..."
-    go "$RHOST" "/tmp" "$BENCHMARK" "UOPS_ISSUED"
+    if [ ! -d "$WARM_UP_TMP" ]; then
+        mkdir -p -- "$WARM_UP_TMP"
+    fi
+    go "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "UOPS_ISSUED"
     for CTR in "${COUNTERS[@]}"; do
         if [ -z "$CTR" ]; then
             echo "WARNING: empty counter definition"
