@@ -89,6 +89,10 @@ int main(int argc, char **argv) {
         mtime = -1;
     }
 
+    dp_h = open_datapoints_file_output(fname, shot, NO_CHANNELS, CHAN_NAMES,
+                                       SMPL_RATE);
+    assert(NULL != dp_h);
+
     /* measure diffs */
     CHK(DAQmxBaseCreateTask("analog-inputs", &h));
     printf("chan setup '%s'(%p)\n", AI_CHANNELS, AI_CHANNELS);
@@ -104,8 +108,6 @@ int main(int argc, char **argv) {
 
     signal( SIGINT, (void (*)(int))sig_hnd );
 
-    dp_h = open_datapoints_file_output(fname, shot, NO_CHANNELS, CHAN_NAMES,
-                                       SMPL_RATE);
     printf("GOOOOOO!\n");
     if (0 < mtime) {
         t_end = mtime + time(NULL);

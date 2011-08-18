@@ -89,7 +89,10 @@ DP_HANDLE open_datapoints_file_output(const char *filename,
                                      ) {
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC,
                   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
-    assert(fd > 0);
+    if (fd < 0) {
+        perror(filename);
+        return NULL;
+    }
     dp_handle *h = (dp_handle *)malloc(sizeof(dp_handle));
     assert(NULL != h);
     assert(NULL != (h->shot_id = malloc(MAX_SHOT_ID_LEN)));
