@@ -93,10 +93,17 @@ build "$BO" ctrbenchmark --std=gnu99 -o $BUILD/ctrbenchmark $CFLAGS $LDFLAGS \
     $HERE/ctrbenchmark/*.c $HERE/ctrbenchmark/benchlets/*.c
 
 if which hprotoc &> /dev/null; then
+    if [ "$PROFILING" = "1" ]; then
+        PROF_OPTS="-prof -auto-all -caf-all -fforce-recomp -rtsopts"
+    else
+        PROF_OPTS=""
+    fi
+
     hprotoc -d../gensrc -I../protos ../protos/hs-perf-counters.proto > /dev/null
     build_raw ghc "$BO" "BuildSLE" -O2 -Wall -o $BUILD/buildsle \
          --make -i$HERE/gensrc $HERE/buildsle/*.hs \
-         -prof -auto-all -caf-all -fforce-recomp -rtsopts
+         $PROF_OPTS
+    echo "  (profiling opts: '$PROF_OPTS')"
 else
     echo '- not building BuildSLE (Build System of Linear Equations): haskell'
 fi
