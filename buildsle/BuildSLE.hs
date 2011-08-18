@@ -5,7 +5,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 import Prelude
-import Control.Monad (foldM)
+import Control.Monad (foldM, liftM)
 import Control.Monad.Error (MonadError(), throwError)
 import Data.List ( nub, isSuffixOf, foldl', groupBy, sort, (\\)
                  , intercalate, isPrefixOf)
@@ -318,13 +318,13 @@ instance Attributes MainOptions where
 instance RecordCommand MainOptions where
     mode_summary _ = "BuildSLE"
 
-readIgnoredCounters :: FilePath' -> IO [CtrName]
-readIgnoredCounters f =
+readGoodCounters :: FilePath' -> IO [CtrName]
+readGoodCounters f =
     do contents <- readFile f
        return $ map internalCounterName $ lines contents
 
-delCounters :: [CtrName] -> CounterMap -> CounterMap
-delCounters ctrs cmap = foldl' (flip Map.delete) cmap badCtrs
+delBadCounters :: [CtrName] -> CounterMap -> CounterMap
+delBadCounters ctrs cmap = foldl' (flip Map.delete) cmap badCtrs
     where badCtrs = Map.keys cmap \\ ctrs
 
 workFilesMap :: Maybe Char -> [FilePath'] -> WorkFileMap
@@ -371,11 +371,13 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
        smapRaw <- case eSmap of
                  Right r -> return r
                  Left err -> putStrLn err >> exitFailure
-       ignoredCounters <-
+       goodCounters <-
            case opt_counterFile of
-             Just f -> readIgnoredCounters f
-             Nothing -> return []
-       let smap = Map.map (\(a,b) -> (delCounters ignoredCounters a, b)) smapRaw
+             Just f -> liftM Just $ readGoodCounters f
+             Nothing -> return Nothing
+       let smap = case goodCounters of
+             Just gcs -> Map.map (\(a,b) -> (delBadCounters gcs a, b)) smapRaw
+             Nothing -> smapRaw
            all_arg_files_basenames = map takeFileName opt_files
            all_sids = Map.keys smap
            work_file_available :: ShotId -> Bool
