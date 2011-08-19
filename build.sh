@@ -42,15 +42,19 @@ function checklib() {
     ld $LDFLAGS -l"$1"
 }
 
-echo -n "- generating prots... "
-cd protos &> /dev/null
-for f in *.proto; do
-    if [ "$f" != "hs-perf-counters.proto" ]; then
-        protoc-c --c_out=../gensrc "$f"
-    fi
-done
-cd - &> /dev/null
-echo "done"
+if [ "$1" != "" -a "$1" != "protos" ]; then
+    echo "- skipping protos (not selected)"
+else
+    echo -n "- generating prots... "
+    cd protos &> /dev/null
+    for f in *.proto; do
+        if [ "$f" != "hs-perf-counters.proto" ]; then
+            protoc-c --c_out=../gensrc "$f"
+        fi
+    done
+    cd - &> /dev/null
+    echo "done"
+fi
 
 cd build
 
