@@ -5,10 +5,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 import Prelude
-import Control.Monad (foldM, liftM)
+import Control.Monad (foldM, liftM, when)
 import Control.Monad.Error (MonadError(), throwError)
 import Data.List ( nub, isSuffixOf, foldl', groupBy, sort, (\\)
-                 , intercalate, isPrefixOf)
+                 , intercalate, isPrefixOf, concatMap)
 import Data.Map (Map)
 import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Math.Statistics (mean, stddev)
@@ -99,8 +99,8 @@ loadCounterDataProto fn =
 runTime :: Pb.CounterData -> TimeNanosecs
 runTime cd = fromIntegral $ stopNs - startNs
     where calcNs :: Pb.Timestamp -> Integer
-          calcNs ts = (1000000000 * (fromIntegral $ Pb.sec ts))
-                      + (fromIntegral $ Pb.nsec ts)
+          calcNs ts = 1000000000 * fromIntegral (Pb.sec ts)
+                      + fromIntegral (Pb.nsec ts)
           stopNs :: Integer
           stopNs = calcNs $ Pb.stop_time cd
           startNs :: Integer
@@ -112,27 +112,27 @@ addShotData :: MonadError String m
             -> Pb.CounterData
             -> m ShotCounterMap
 addShotData shotIdFun shotMap cd =
-   do if shotId `Map.member` shotMap
-        then throwError $ "Duuplicate shotID: " ++ show shotId
-        else return $ Map.insert shotId (ctrMap', runTime cd) shotMap
-    where extractVal :: CounterMap -> CounterValue -> CounterMap
-          extractVal cmap cv =
-             Map.insert (uToString $ counter_name cv)
-                        (F.sum $ fmap toInteger $ counter_value_per_cpu cv)
-                        cmap
-          ctrMap' :: CounterMap
-          ctrMap' = F.foldl' extractVal Map.empty (Pb.counters cd)
-          shotId :: ShotId
-          shotId = shotIdFun $ uToString $ Pb.shot_id cd
+   if shotId `Map.member` shotMap
+     then throwError $ "Duplicate shotID: " ++ show shotId
+     else return $ Map.insert shotId (ctrMap', runTime cd) shotMap
+     where extractVal :: CounterMap -> CounterValue -> CounterMap
+           extractVal cmap cv =
+               Map.insert (uToString $ counter_name cv)
+                          (F.sum $ fmap toInteger $ counter_value_per_cpu cv)
+                          cmap
+           ctrMap' :: CounterMap
+           ctrMap' = F.foldl' extractVal Map.empty (Pb.counters cd)
+           shotId :: ShotId
+           shotId = shotIdFun $ uToString $ Pb.shot_id cd
 
 shotCounterMap :: MonadError String m
                => (String -> ShotId)
                -> [Pb.CounterData]
                -> m ShotCounterMap
-shotCounterMap shotIdFun cds = foldM (addShotData shotIdFun) Map.empty cds
+shotCounterMap shotIdFun = foldM (addShotData shotIdFun) Map.empty
 
 allCounters :: ShotDataMap -> [CtrName]
-allCounters sm = nub $ concat $ map (Map.keys . tt_fst) $ Map.elems sm
+allCounters sm = nub $ concatMap (Map.keys . tt_fst) (Map.elems sm)
 
 printRTAB :: Bool -> ShotDataMap -> IO ()
 printRTAB ratios sm =
@@ -140,9 +140,8 @@ printRTAB ratios sm =
        putStr "WORK\t"
        putStr "TIME_NANO_DIFF\t"
        mapM_ (\c -> putStr $ c ++ "\t") allCtrs
-       if ratios
-          then mapM_ (\c -> putStr $ "RATIO_" ++ c ++ "\t") allCtrs
-          else return ()
+       when ratios $
+           mapM_ (\c -> putStr $ "RATIO_" ++ c ++ "\t") allCtrs
        putStr "\n"
        mapM_ printShot (Map.keys sm)
        where allCtrs = allCounters sm
@@ -167,17 +166,17 @@ printRTAB ratios sm =
 
              printCounter :: ShotId -> String -> IO ()
              printCounter sid c =
-                 putStr ((Map.findWithDefault "NA\t" c (strValueMap sid))
-                                    ++ "\t")
+                 putStr (Map.findWithDefault "NA\t" c (strValueMap sid)
+                         ++ "\t")
 
              printCounterRatio :: ShotId -> String -> IO ()
              printCounterRatio sid c =
-                 putStr ((Map.findWithDefault "NA\t" c (strRatioMap sid))
-                                    ++ "\t")
+                 putStr (Map.findWithDefault "NA\t" c (strRatioMap sid)
+                         ++ "\t")
 
              printShot :: ShotId -> IO ()
              printShot sid =
-                 do putStr $ (show sid) ++ "\t"
+                 do putStr $ show sid ++ "\t"
                     putStr (Map.findWithDefault "NA" sid
                                                 (Map.map (show.tt_trd) sm))
                     putStr "\t"
@@ -185,9 +184,8 @@ printRTAB ratios sm =
                                                 (Map.map (show.tt_snd) sm))
                     putStr "\t"
                     mapM_ (printCounter sid) allCtrs
-                    if ratios
-                       then mapM_ (printCounterRatio sid) allCtrs
-                       else return ()
+                    when ratios $
+                       mapM_ (printCounterRatio sid) allCtrs
                     putStr "\n"
 
 calcWorkFile :: ShotId -> FilePath'
@@ -197,7 +195,7 @@ isCounterFile :: FilePath' -> Bool
 isCounterFile f = ".ctrs" `isSuffixOf` takeFileName f
 
 findWorkFile :: ShotId -> WorkFileMap -> Maybe FilePath'
-findWorkFile sid files = Map.lookup sid files
+findWorkFile = Map.lookup
 
 getWork :: WorkFileMap -> ShotId -> IO (Maybe Double)
 getWork files sid =
@@ -228,8 +226,8 @@ shotIdFromString mGroupChar s =
       Nothing -> ShotId s Nothing Nothing
       Just gc ->
          if gc `elem` s
-           then ShotId { si_shotGroupId = (takeWhile ((/=) gc) s)
-                       , si_subShotId = Just (drop 1 (dropWhile ((/=) gc) s))
+           then ShotId { si_shotGroupId = takeWhile (gc /=) s
+                       , si_subShotId = Just (drop 1 (dropWhile (gc /=) s))
                        , si_groupChar = mGroupChar
                        }
            else ShotId s Nothing Nothing
@@ -249,21 +247,21 @@ groupShotDataMap :: MonadError String m
                  -> Double
                  -> m ShotGroupDataMap
 groupShotDataMap sdm maxRelErr =
-    do groupNames <- sequence $ map shotGroupname groupedShotIds
-       shotGroupData <- sequence $ map accumShotDataMap groupedShotIds
+    do groupNames <- mapM shotGroupname groupedShotIds
+       shotGroupData <- mapM accumShotDataMap groupedShotIds
        return $ Map.fromList $ zip groupNames shotGroupData
     where
     groupedShotIds :: [[ShotId]]
     groupedShotIds = shotGroupIds $ Map.keys sdm
     mCounterMaps :: Monad m => [CounterMap] -> [Map CtrName (m CtrVal)]
-    mCounterMaps cms = map (Map.map return) cms
+    mCounterMaps = map (Map.map return)
     accumCounterMaps :: MonadError String m => [CounterMap] -> m CounterMap
     accumCounterMaps cms =
        case maybeMap of
          ([], m) -> return m
          (errs, _) -> throwError $ "multiple values for counters: " ++ show errs
          where maybeMap =
-                   Map.mapAccumWithKey (fromEitherAccum (-1)) [] $
+                   Map.mapAccumWithKey (fromEitherAccum (-1)) []
                        (foldl' (Map.unionWith (\_ _ -> Nothing))
                               Map.empty $
                               mCounterMaps cms :: Map CtrName (Maybe CtrVal))
@@ -271,9 +269,9 @@ groupShotDataMap sdm maxRelErr =
     accumDouble sids ws =
         if relstddev ws > maxRelErr
            then throwError $ "relative standard deviation (" ++
-                             (show $ relstddev ws)
-                             ++ ") too high, shot ids: " ++ (show sids)
-                             ++ ", values: " ++ (show ws)
+                             show (relstddev ws)
+                             ++ ") too high, shot ids: " ++ show sids
+                             ++ ", values: " ++ show ws
            else return $ mean ws
     shotGroupname :: MonadError String m => [ShotId] -> m ShotGroupId
     shotGroupname sids =
@@ -281,7 +279,7 @@ groupShotDataMap sdm maxRelErr =
           [] -> throwError "empty shot group --> cannot generate group id"
           firstShot:_ -> return $ si_shotGroupId firstShot
     shotListData :: [ShotId] -> ([CounterMap], [TimeNanosecs], [Double])
-    shotListData sids = unzip3 $ mapMaybe (flip Map.lookup sdm) sids
+    shotListData sids = unzip3 $ mapMaybe (`Map.lookup` sdm) sids
     accumShotDataMap :: MonadError String m
                      => [ShotId]
                      -> m (CounterMap, TimeNanosecs, Double)
@@ -308,7 +306,7 @@ instance Attributes MainOptions where
                                  , ArgHelp "GROUP-CHAR"
                                  , Default ("" :: String)
                                  , Long ["group-char"]
-                                 , Short ['g']
+                                 , Short "g"
                                  ]
             , mo_maxRelStdDev %> [ Help $ "Maximal relative standard deviation "
                                           ++ "when accumulating work"
@@ -317,17 +315,17 @@ instance Attributes MainOptions where
                                  , Long [ "maximimal-relative-stddev"
                                         , "max-rel-stddev"
                                         ]
-                                 , Short ['m']
+                                 , Short "m"
                                  ]
             , mo_printRefCols %> [ Help "Print reference columns"
                                  , Default True
                                  , Long ["print-ref-columns", "print-ref-cols"]
-                                 , Short ['p']
+                                 , Short "p"
                                  ]
             , mo_counterFile %>  [ Help "Only repect counters listed in file"
                                  , Default ("" :: String)
                                  , Long ["counter-file"]
-                                 , Short ['c']
+                                 , Short "c"
                                  ]
             , mo_fileArgs     %> Extra True
             ]
@@ -404,9 +402,9 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
            bad_sids = all_sids \\ good_sids
            smap' = foldr Map.delete smap bad_sids
        sdmap <- shotDataMap smap' workFiles
-       hPutStrLn stderr $ "group char: " ++ (show mGroupChar)
-       --hPutStrLn stderr $ "GOOD sids: " ++ (show $ Map.keys sdmap)
-       hPutStrLn stderr $ "Ignored sids: " ++ (show bad_sids)
+       hPutStrLn stderr $ "group char: " ++ show mGroupChar
+       --hPutStrLn stderr $ "GOOD sids: " ++ show $ Map.keys sdmap
+       hPutStrLn stderr $ "Ignored sids: " ++ show bad_sids
        --hPutStrLn stderr $ "leaps <- regsubsets(unlist(t['WORK'])~" ++
        --                   (intercalate "+" (map rCompatibleCounterName
        --                   (allCounters sdmap))) ++
@@ -415,8 +413,7 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
        case groupShotDataMap sdmap maxRelStdDev of
          Left err -> putStrLn err
          Right gsdmap ->
-             do printRTAB (mo_printRefCols opts) $
-                 case mGroupChar of
-                   Nothing -> sdmap
-                   Just _ -> Map.mapKeys (\k -> ShotId k Nothing Nothing) gsdmap
-       return ()
+             printRTAB (mo_printRefCols opts) $
+              case mGroupChar of
+                Nothing -> sdmap
+                Just _ -> Map.mapKeys (\k -> ShotId k Nothing Nothing) gsdmap
