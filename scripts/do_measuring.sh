@@ -53,11 +53,9 @@ function usage() {
 }
 
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd "$HERE/.."
-
 SHOTID="$(date +'%Y-%m-%d_%H-%M-%S')"
 SHOT_ID_PREFIX=""
-OUTDIR="measuring_data"
+OUTDIR="$HERE/../measuring_data"
 TEST_AND_BUILD=1
 DEL_RTAB=0
 
@@ -84,6 +82,10 @@ while getopts dns:p:o: OPT; do
             ;;
     esac
 done
+
+OUTDIR=$(cd "$OUTDIR" && pwd)
+
+cd "$HERE/.."
 
 shift $(( $OPTIND-1 ))
 
