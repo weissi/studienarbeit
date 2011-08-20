@@ -51,7 +51,11 @@ FORMULA=$(cat -- "$F" | \
           sed -e1d -e's/"(Intercept)" //g' -e's/^"/tabledata$/g' -e's/"//g' |\
           tr " \n" "*+" | sed -r 's/\+$//g')
 test $VERBOSE -eq 1 && { echo "#!/usr/bin/R"; }
-test $DO_R -eq 1    && { echo "model <- function(tabledata) $FORMULA"; }
+test $DO_R -eq 1    && {
+    echo "model <- function(tabledata) $FORMULA";
+    echo 'model_rel <- function(tabledata) data.frame('"$(
+        echo "$FORMULA" | sed 's#+#/tabledata$WORK, #g')"'/tabledata$WORK)'
+}
 test $VERBOSE -eq 1 && { echo; echo "# COUNTERS IN MODEL"; }
 test $DO_C -eq 1    && { sed 1,3d "$F" | cut -d'"' -f2 | tr . :; }
 test $VERBOSE -eq 1 && { echo; echo "# HUMAN READABLE"; }
