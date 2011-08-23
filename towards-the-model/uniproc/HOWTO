@@ -1,0 +1,44 @@
+#shell
+DATADIR=/local/tmp/weiss/measuring_data/2011-08-18_17-07-00
+#producing data (in screen)
+measure-n-counters-m-benchmarks.sh i30pc59 $DATADIR \
+    ~/good_counters ~/studienarbeit/towards-the-model-benchmarks |& \
+    tee /tmp/out
+
+#building the SLE
+buildsle -g@ -m 0.04 -pno * $DATADIR/* > /tmp/tab
+
+#R
+t <- read.table('/tmp/tab', header=T)
+library(leaps)
+leaps <- regsubsets( WORK~., data=t[2:ncol(t)], nvmax=11, nbest=5
+                   , force.in=c('TIME_NANO_DIFF', 'CPU_CLK_UNHALTED'
+                               , 'INST_RETIRED'), method='forward'
+                   )
+goodcols <- colnames(data.frame(summary(leaps)$which)
+                [,!apply(data.frame(summary(leaps)$which) == F, 2, all)])
+write.table(goodcols, '/tmp/great_counters.forward')
+leaps <- regsubsets( WORK~., data=t[2:ncol(t)], nvmax=11, nbest=5
+                   , force.in=c('TIME_NANO_DIFF', 'CPU_CLK_UNHALTED'
+                               , 'INST_RETIRED'), method='backward'
+                   )
+goodcols <- colnames(data.frame(summary(leaps)$which)
+                [,!apply(data.frame(summary(leaps)$which) == F, 2, all)])
+write.table(goodcols, '/tmp/great_counters.backward')
+
+#shell
+cat <(cat /tmp/great_counters.forward | sed 1,2d | cut -d'"' -f4 | sort) \
+    <(cat /tmp/great_counters.backward | sed 1,2d | cut -d'"' -f4 | sort) \
+    | sort | uniq > ~/great_counters
+buildsle -m 0.04 -g@ -pno -c ~/great_counters $DATADIR/* > /tmp/tab
+
+#R
+t <- read.table('/tmp/tab', header=T)
+leaps <- regsubsets( WORK~., data=t[2:ncol(t)], nvmax=11, nbest=5
+                   , force.in=c('TIME_NANO_DIFF', 'CPU_CLK_UNHALTED'
+                               , 'INST_RETIRED'), method='exhaustive'
+                   )
+write.table(coef(leaps, length(summary(leaps)$rsq)), '/tmp/model')
+
+#shell
+build-energy-model.sh /tmp/model

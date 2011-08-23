@@ -1,0 +1,19 @@
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 400.perlbench'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 401.bzip2'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 403.gcc'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 429.mcf'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 445.gobmk'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 456.hmmer'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 458.sjeng'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 462.libquantum'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 464.h264ref'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 471.omnetpp'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 473.astar'
+sudo -u weiss bash -c 'cd /home/weiss/spec/cpu2006 && . ./shrc && runspec --config weiss --size=train --noreportable --iterations=1 -o "" --action onlyrun 483.xalancbmk'
+sleep 10
+/home/weiss/studienarbeit/build/ctrbenchmark 10 mispredict
+/home/weiss/studienarbeit/build/ctrbenchmark 10 FP_ASSIST
+/home/weiss/studienarbeit/build/ctrbenchmark 10 REG_ADD
+/home/weiss/stream
+burnP6 & sleep 20; killall burnP6
+burnP6 & sleep 10; killall burnP6; sleep 10; burnP6 & sleep 10; killall burnP6
