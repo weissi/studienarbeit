@@ -11,6 +11,7 @@ set -e
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE/.."
 WARM_UP_TMP="/tmp/WARM-UP-TMP"
+DRY_RUN=0
 
 function usage() {
     echo "Usage: $0 [-C MAX] REMOTE-HOST OUT-DIR COUNTER-FILE BENCHMARK-FILE"
@@ -19,6 +20,10 @@ function usage() {
 }
 
 MAX_CTRS=8
+if [ "$1" = "-n" ]; then
+    DRY_RUN=1
+    shift
+fi
 if [ "$1" = "-C" ]; then
     MAX_CTRS="$2"
     shift; shift
@@ -40,7 +45,8 @@ function go() {
     local RHOST="$1"
     local OUTDIR="$2"
     local BM="$3"
-    local CTRS="$4"
+    local BMNAME="$4"
+    local CTRS="$5"
 
     if [ $(echo "$CTRS" | grep -o , | wc -l) -gt $MAX_CTRS ]; then
         echo "WARNING: Having more than $MAX_CTRS counters: $CTRS"
@@ -53,7 +59,8 @@ function go() {
         set +e
         echo
         echo "--------------------"
-        echo "PERFORMING BENCHMARK $RUNS of $TOTAL_RUNS: '$BM', try $try"
+        echo "PERFORMING BENCHMARK $RUNS of $TOTAL_RUNS: $BMNAME, try $try"
+        echo "CMD: $BM"
         echo "COUNTERS: '$CTRS'"
         echo
         pgrep datadump | while read DDPID; do
@@ -66,8 +73,19 @@ function go() {
         done
         echo
         T_START=$(date +%s)
-        do_measuring.sh -d -n -p "$(str_to_id $BM)" -o "$OUTDIR" "$RHOST" "$CTRS" "$BM"
-        RET=$?
+        if [ $DRY_RUN -ne 1 ]; then
+            do_measuring.sh -d -n -p "$BMNAME" -o "$OUTDIR" "$RHOST" "$CTRS" \
+                "$BM"
+            RET=$?
+        else
+            echo "DRY RUN"
+            echo "  PREFIX: '$BMNAME'"
+            echo "  OUTDIR: '$OUTDIR'"
+            echo "  RHOST: '$RHOST'"
+            echo "  CTRS: '$CTRS'"
+            echo "  CMD: '$BM'"
+            RET=0
+        fi
         let DIFF=$(date +%s)-$T_START || true
         echo "BENCHMARK DONE: return code=$RET, time=${DIFF}s"
         if [ $RET -eq 0 ]; then
@@ -76,7 +94,7 @@ function go() {
         set -e
     done
     if [ $RET -ne 0 ]; then
-        echo "ERROR: BENCHMARK '$BM' FAILED AFTER 3 TRIES, GIVING UP..."
+        echo "ERROR: BENCHMARK '$BMNAME' FAILED AFTER 3 TRIES, GIVING UP..."
     fi
     set -e
     return 0
@@ -90,20 +108,32 @@ RUNS=0
 CTR_STRING=""
 
 declare -a BENCHMARKS=( )
-while read LINE; do
-    BENCHMARKS[${#BENCHMARKS[@]}]=$LINE
+declare -a BENCHMARK_NAMES=( )
+while read P_KEYWORD P_NAME LINE; do
+    if [ "$P_KEYWORD" = "NAME" ]; then
+        BENCHMARK_NAMES[${#BENCHMARK_NAMES[@]}]=$P_NAME
+        BENCHMARKS[${#BENCHMARKS[@]}]=$LINE
+    else
+        LINE="${P_KEYWORD} ${P_NAME} ${LINE}"
+        BENCHMARK_NAMES[${#BENCHMARK_NAMES[@]}]=$(str_to_id "$LINE")
+        BENCHMARKS[${#BENCHMARKS[@]}]=$LINE
+    fi
 done < "$BENCHFILE"
 COUNTERS=( $( cat -- "$CTRFILE" ) )
-TOTAL_RUNS=$(( ${#BENCHMARKS[@]} * ${#COUNTERS[@]} / $MAX_CTRS ))
+TOTAL_RUNS=$(python -c "import math; print ${#BENCHMARKS[@]} * "\
+"    int(math.ceil(float(${#COUNTERS[@]}) / $MAX_CTRS) + 1)")
 
-for BENCHMARK in "${BENCHMARKS[@]}"; do
+for (( i=0; i<${#BENCHMARKS[@]}; i++ )); do
+    BENCHMARK="${BENCHMARKS[$i]}"
+    BENCHMARK_NAME="${BENCHMARK_NAMES[$i]}"
     CTR_STRING=""
     CUR_CTRS=0
     echo "INFO: warming up benchmark..."
     if [ ! -d "$WARM_UP_TMP" ]; then
         mkdir -p -- "$WARM_UP_TMP"
     fi
-    go "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "UOPS_ISSUED"
+    go "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "warmup-for-$BENCHMARK_NAME" \
+        "UOPS_ISSUED"
     for CTR in "${COUNTERS[@]}"; do
         if [ -z "$CTR" ]; then
             echo "WARNING: empty counter definition"
@@ -112,7 +142,7 @@ for BENCHMARK in "${BENCHMARKS[@]}"; do
         let CUR_CTRS=$CUR_CTRS+1 || true
 
         if [ $CUR_CTRS -gt $MAX_CTRS ]; then
-            go "$RHOST" "$OUTDIR" "$BENCHMARK" "$CTR_STRING"
+            go "$RHOST" "$OUTDIR" "$BENCHMARK" "$BENCHMARK_NAME" "$CTR_STRING"
             CUR_CTRS=1
             CTR_STRING=""
         fi
@@ -123,8 +153,6 @@ for BENCHMARK in "${BENCHMARKS[@]}"; do
             CTR_STRING="$CTR_STRING,$CTR"
         fi
     done
-    echo "counter file '$CTRFILE' done after $RUNS runs"
-    go "$RHOST" "$OUTDIR" "$BENCHMARK" "$CTR_STRING"
+    go "$RHOST" "$OUTDIR" "$BENCHMARK" "$BENCHMARK_NAME" "$CTR_STRING"
 done
-echo "benchmark file '$CTRFILE' done after $RUNS runs"
 exit 0
