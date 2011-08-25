@@ -15,28 +15,40 @@ function usage() {
     echo "-R: R only"
     echo "-C: Counters only"
     echo "-H: Human redable"
+    echo "-E: Event list string"
 }
 
 VERBOSE=1
 DO_R=1
 DO_C=1
 DO_H=1
+DO_E=1
 case "$1" in
     "-R")
         DO_C=0
         DO_H=0
+        DO_E=0
         VERBOSE=0
         shift
         ;;
     "-C")
         DO_R=0
         DO_H=0
+        DO_E=0
         VERBOSE=0
         shift
         ;;
     "-H")
         DO_R=0
         DO_C=0
+        DO_E=0
+        VERBOSE=0
+        shift
+        ;;
+    "-E")
+        DO_R=0
+        DO_C=0
+        DO_H=0
         VERBOSE=0
         shift
         ;;
@@ -62,3 +74,6 @@ test $VERBOSE -eq 1 && { echo; echo "# HUMAN READABLE"; }
 test $DO_H -eq 1    && { cat -- "$F" | \
     sed -e1d -e's/"(Intercept)" //g' -e's/"//g'  | \
     awk -F'[ ]' '{ print $2, "\t", $1 }'; }
+test $VERBOSE -eq 1 && { echo; echo "# EVENT LIST STRING"; }
+test $DO_E -eq 1    && { sed 1,3d "$F" | cut -d'"' -f2 | tr . : | \
+                         tr "\n" , | sed -r 's/^(.*),$/\1/g'; echo; }
