@@ -8,8 +8,6 @@ function err() {
 
 set -e
 
-HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-cd "$HERE/.."
 WARM_UP_TMP="/tmp/WARM-UP-TMP"
 DRY_RUN=0
 
@@ -33,8 +31,11 @@ test $# -eq 4 || { usage; exit 1; }
 
 RHOST="$1"
 OUTDIR="$2"
-CTRFILE="$3"
-BENCHFILE="$4"
+CTRFILE=$(cd $(dirname -- "$3") && pwd)/$(basename -- "$3")
+BENCHFILE=$(cd $(dirname -- "$4") && pwd)/$(basename -- "$4")
+
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd "$HERE/.."
 
 function str_to_id() {
     echo $* | tr -d -c a-zA-Z0-9_-
@@ -42,6 +43,12 @@ function str_to_id() {
 
 #<remote host> <output dir> <benchmark> <counters>
 function go() {
+    WARMUP_OPTS=""
+    if [ "$1" = "-w" ]; then
+        WARMUP_OPTS="-N"
+        shift
+    fi
+    test $# -eq 5
     local RHOST="$1"
     local OUTDIR="$2"
     local BM="$3"
@@ -74,8 +81,8 @@ function go() {
         echo
         T_START=$(date +%s)
         if [ $DRY_RUN -ne 1 ]; then
-            do_measuring.sh -d -n -p "$BMNAME" -o "$OUTDIR" "$RHOST" "$CTRS" \
-                "$BM"
+            do_measuring.sh $WARMUP_OPTS -d -n -p "$BMNAME" -o "$OUTDIR" \
+                "$RHOST" "$CTRS" "$BM"
             RET=$?
         else
             echo "DRY RUN"
@@ -84,6 +91,7 @@ function go() {
             echo "  RHOST: '$RHOST'"
             echo "  CTRS: '$CTRS'"
             echo "  CMD: '$BM'"
+            echo "  WARMUP_OPTS: '$WARMUP_OPTS'"
             RET=0
         fi
         let DIFF=$(date +%s)-$T_START || true
@@ -132,7 +140,7 @@ for (( i=0; i<${#BENCHMARKS[@]}; i++ )); do
     if [ ! -d "$WARM_UP_TMP" ]; then
         mkdir -p -- "$WARM_UP_TMP"
     fi
-    go "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "warmup-for-$BENCHMARK_NAME" \
+    go -w "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "warmup-for-$BENCHMARK_NAME" \
         "UOPS_ISSUED"
     for CTR in "${COUNTERS[@]}"; do
         if [ -z "$CTR" ]; then
