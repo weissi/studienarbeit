@@ -25,7 +25,7 @@ import qualified Data.Map as Map
 import Text.ProtocolBuffers.WireMessage (messageGet)
 import qualified HsPerfCounters.CounterData as Pb
 import qualified HsPerfCounters.Timestamp as Pb
-import HsPerfCounters.CounterValue(CounterValue(..))
+import qualified HsPerfCounters.CounterValue as Pb
 
 {-
 import Debug.Trace
@@ -115,13 +115,24 @@ addShotData shotIdFun shotMap cd =
    if shotId `Map.member` shotMap
      then throwError $ "Duplicate shotID: " ++ show shotId
      else return $ Map.insert shotId (ctrMap', runTime cd) shotMap
-     where extractVal :: CounterMap -> CounterValue -> CounterMap
-           extractVal cmap cv =
-               Map.insert (uToString $ counter_name cv)
-                          (F.sum $ fmap toInteger $ counter_value_per_cpu cv)
-                          cmap
+     where insertVals :: CounterMap -> Pb.CounterValue -> CounterMap
+           insertVals cmap cv =
+               if length (ctrVals cv) == 1
+                  then Map.insert (ctrName cv) (head $ ctrVals cv) cmap
+                  else cmap `Map.union` Map.fromList (postfixedCtrVals cv)
+           postfixedCtrVals :: Pb.CounterValue -> [(CtrName, CtrVal)]
+           postfixedCtrVals cv = zip (postfixedCtrNames cv)
+                                     (ctrVals cv)
+           ctrVals :: Pb.CounterValue -> [Integer]
+           ctrVals = F.toList . fmap toInteger . Pb.counter_value_per_cpu
+           ctrName :: Pb.CounterValue -> String
+           ctrName = uToString . Pb.counter_name
+           postfixedCtrNames :: Pb.CounterValue -> [String]
+           postfixedCtrNames cv = map (showString (ctrName cv) .
+                                       showString "@CPU" .
+                                       show) [1..]
            ctrMap' :: CounterMap
-           ctrMap' = F.foldl' extractVal Map.empty (Pb.counters cd)
+           ctrMap' = F.foldl' insertVals Map.empty (Pb.counters cd)
            shotId :: ShotId
            shotId = shotIdFun $ uToString $ Pb.shot_id cd
 
@@ -317,8 +328,8 @@ instance Attributes MainOptions where
                                         ]
                                  , Short "m"
                                  ]
-            , mo_printRefCols %> [ Help "Print reference columns"
-                                 , Default True
+            , mo_printRefCols %> [ Help "Print reference columns (BROKEN!)"
+                                 , Default False
                                  , Long ["print-ref-columns", "print-ref-cols"]
                                  , Short "p"
                                  ]
