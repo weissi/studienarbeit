@@ -36,13 +36,17 @@ function remote() {
     return $RET
 }
 
+function remotecp() {
+    scp "$1" "${RHOST}:$2"
+}
+
 function str_to_id() {
     echo $* | tr -d -c a-zA-Z0-9_-
 }
 
 function usage() {
-    echo "Usage $0 [-d] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] [-o OUT-DIR] "\
-"REMOTE-HOST COUNTERS BENCHMARK"
+    echo -n "Usage $0 [-d] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] [-o OUT-DIR] "
+    echo "[-b BENCHMARK-SCRIPT] REMOTE-HOST COUNTERS -b|BENCHMARK"
     echo
     echo "-n: no automatic tests and building"
     echo "-d: delete R table file after having calculated work"
@@ -58,8 +62,9 @@ SHOT_ID_PREFIX=""
 OUTDIR="$HERE/../measuring_data"
 TEST_AND_BUILD=1
 DEL_RTAB=0
+BENCHMARK_FILE=""
 
-while getopts dns:p:o: OPT; do
+while getopts dns:p:o:b: OPT; do
     case "$OPT" in
         p)
             SHOT_ID_PREFIX="$(str_to_id ${OPTARG})@"
@@ -76,6 +81,9 @@ while getopts dns:p:o: OPT; do
         d)
             DEL_RTAB=1
             ;;
+        b)
+            BENCHMARK_FILE="$OPTARG"
+            ;;
         [?])
             usage
             exit 1
@@ -84,19 +92,32 @@ while getopts dns:p:o: OPT; do
 done
 
 OUTDIR=$(cd "$OUTDIR" && pwd)
-
-cd "$HERE/.."
+if [ ! -z "$BENCHMARK_FILE" ]; then
+    echo "$BENCHMARK_FILE"
+    echo "$(dirname $BENCHMARK_FILE)"
+    BENCHMARK_FILE=$(cd "$(dirname $BENCHMARK_FILE)" && pwd)/\
+$(basename -- "$BENCHMARK_FILE")
+fi
 
 shift $(( $OPTIND-1 ))
 
-test $# -eq 3 || ( usage; exit 1; )
+if [ -z "$BENCHMARK_FILE" ]; then
+    test $# -eq 3 || ( usage; exit 1; )
+else
+    echo "$BENCHMARK_FILE"
+    test -f "$BENCHMARK_FILE" || ( echo "$BENCHMARK_FILE: not found"; exit 1; )
+    test $# -eq 2 || ( usage; exit 1; )
+fi
+
+cd "$HERE/.."
 
 RHOST="$1"
 COUNTERS="$2"
 RBENCH="$3"
 LHOST="i30pc26"
 LPORT="12345"
-RSCRIPT="__do_measuring_remote_script.sh"
+RSCRIPT="./__do_measuring_remote_script.sh"
+RRUNSCRIPT="./__do_measuring_remote_run_benchmark"
 
 SHOTID="${SHOT_ID_PREFIX}$SHOTID"
 
@@ -165,6 +186,16 @@ echo "OK ($DIFF s, pid=$DATADUMPPID)"
 sleep 1
 
 echo -n "Writing remote script: "
+if [ -z "$BENCHMARK_FILE" ]; then
+    remote tee "$RRUNSCRIPT" &> /dev/null <<EOF
+#!/bin/bash
+$RBENCH
+EOF
+else
+    remotecp "$BENCHMARK_FILE" "$RRUNSCRIPT" > /dev/null
+fi
+remote chmod +x "$RRUNSCRIPT"
+
 remote tee "$RSCRIPT" &> /dev/null <<EOF
 #!/bin/bash
 (
@@ -172,7 +203,7 @@ sleep 1
 killall sshd
 ps auxw
 /home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
-    -o "/tmp/$(basename $CTFILE)" -r "$RBENCH" -e "$COUNTERS"
+    -o "/tmp/$(basename $CTFILE)" -r "$RRUNSCRIPT" -e "$COUNTERS"
 echo \$? | nc "$LHOST" -q 0 "$LPORT"
 ) < /dev/null &> "/tmp/$(basename $REMLOG)" &
 EOF
