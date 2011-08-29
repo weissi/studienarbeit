@@ -76,4 +76,6 @@ test $DO_H -eq 1    && { cat -- "$F" | \
     awk -F'[ ]' '{ print $2, "\t", $1 }'; }
 test $VERBOSE -eq 1 && { echo; echo "# EVENT LIST STRING"; }
 test $DO_E -eq 1    && { sed 1,3d "$F" | cut -d'"' -f2 | tr . : | \
+                         grep -Ev '^CPU[0-9]_TIME_NANOS' | \
+                         sed 's/:CPU[0-9]$//g' | sort | uniq | \
                          tr "\n" , | sed -r 's/^(.*),$/\1/g'; echo; }
