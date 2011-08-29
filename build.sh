@@ -81,6 +81,14 @@ build "$BO" "dataexport" --std=gnu99 -o $BUILD/dataexport $CFLAGS $LDFLAGS \
     $HERE/dataexport/*.c $HERE/libdatapoints/datapoints.c \
     $HERE/gensrc/*.c $HERE/libmisc/*.c
 
+build "$BO" "fastcalcwork" --std=gnu99 -o $BUILD/fastcalcwork $CFLAGS \
+    $LDFLAGS \
+    -lprotobuf -lprotobuf-c -lrt \
+    -pedantic -Wall -Werror \
+    -ggdb \
+    $HERE/fastcalcwork/*.c $HERE/libdatapoints/datapoints.c \
+    $HERE/gensrc/*.c $HERE/libmisc/*.c
+
 if checklib pfm &> /dev/null; then
     build "$BO" "dumpcounters" -o $BUILD/dumpcounters $CFLAGS $LDFLAGS \
         -lpfm -lprotobuf -lprotobuf-c -lrt \

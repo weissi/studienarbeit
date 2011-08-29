@@ -45,11 +45,12 @@ function str_to_id() {
 }
 
 function usage() {
-    echo -n "Usage $0 [-d] [-N] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] "
+    echo -n "Usage $0 [-f] [-d] [-N] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] "
     echo -n "[-o OUT-DIR] [-b BENCHMARK-SCRIPT] [-t SCRIPT] "
     echo -n "REMOTE-HOST COUNTERS "
     echo "-b|BENCHMARK"
     echo
+    echo "-f: enable fast mode (for calculating work)"
     echo "-n: no automatic tests and building"
     echo "-d: delete R table file after having calculated work"
     echo "-N: no measuring (dry-run)"
@@ -69,8 +70,9 @@ DO_MEASURING=1
 DEL_RTAB=0
 BENCHMARK_FILE=""
 TSCRIPT=""
+FAST=0
 
-while getopts dNns:p:o:b:t: OPT; do
+while getopts fdNns:p:o:b:t: OPT; do
     case "$OPT" in
         p)
             SHOT_ID_PREFIX="$(str_to_id ${OPTARG})@"
@@ -95,6 +97,9 @@ while getopts dNns:p:o:b:t: OPT; do
             ;;
         t)
             TSCRIPT="$OPTARG"
+            ;;
+        f)
+            FAST=1
             ;;
         [?])
             usage
@@ -285,18 +290,24 @@ if [ $DO_MEASURING -ne 0 ]; then
         set -e
     done
 
-    echo -n "Exporting data to '$EXFILE' "
-    dataexport "$DPFILE" > "$EXFILE"
-    echo "OK"
+    if [ $FAST -eq 0 ]; then
+        echo -n "Exporting data to '$EXFILE' "
+        dataexport "$DPFILE" > "$EXFILE"
+        echo "OK"
 
-    echo -n "Calculating work to '$CWFILE' "
-    calculate_work.sh -s "$EXFILE" > "$CWFILE"
-    echo "OK"
+        echo -n "Calculating work to '$CWFILE' "
+        calculate_work.sh -s "$EXFILE" > "$CWFILE"
+        echo "OK"
 
-    if [ $DEL_RTAB -gt 0 ]; then
-        echo -n "Deleting R table file '$EXFILE' "
-        rm -- "$EXFILE"
-        echo OK
+        if [ $DEL_RTAB -gt 0 ]; then
+            echo -n "Deleting R table file '$EXFILE' "
+            rm -- "$EXFILE"
+            echo OK
+        fi
+    else
+        echo -n "Calculating work to '$CWFILE' "
+        calculate_work.sh -s -f "$DPFILE" > "$CWFILE"
+        echo "OK"
     fi
 
     if [ ! -z "$TSCRIPT" ]; then
