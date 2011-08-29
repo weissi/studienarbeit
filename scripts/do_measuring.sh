@@ -46,12 +46,14 @@ function str_to_id() {
 
 function usage() {
     echo -n "Usage $0 [-d] [-N] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] "
-    echo -n "[-o OUT-DIR] [-b BENCHMARK-SCRIPT] REMOTE-HOST COUNTERS "
+    echo -n "[-o OUT-DIR] [-b BENCHMARK-SCRIPT] [-t SCRIPT] "
+    echo -n "REMOTE-HOST COUNTERS "
     echo "-b|BENCHMARK"
     echo
     echo "-n: no automatic tests and building"
     echo "-d: delete R table file after having calculated work"
     echo "-N: no measuring (dry-run)"
+    echo "-t: transform script (execute SCRIPT file.dpts &)"
     echo
     echo "Defaults:"
     echo "  SHOT-ID-PREFIX: none"
@@ -66,8 +68,9 @@ TEST_AND_BUILD=1
 DO_MEASURING=1
 DEL_RTAB=0
 BENCHMARK_FILE=""
+TSCRIPT=""
 
-while getopts dNns:p:o:b: OPT; do
+while getopts dNns:p:o:b:t: OPT; do
     case "$OPT" in
         p)
             SHOT_ID_PREFIX="$(str_to_id ${OPTARG})@"
@@ -89,6 +92,9 @@ while getopts dNns:p:o:b: OPT; do
             ;;
         N)
             DO_MEASURING=0
+            ;;
+        t)
+            TSCRIPT="$OPTARG"
             ;;
         [?])
             usage
@@ -291,6 +297,11 @@ if [ $DO_MEASURING -ne 0 ]; then
         echo -n "Deleting R table file '$EXFILE' "
         rm -- "$EXFILE"
         echo OK
+    fi
+
+    if [ ! -z "$TSCRIPT" ]; then
+        echo "Doing transformation ($TSCRIPT $DPFILE) in background."
+        "$TSCRIPT" "$DPFILE" &
     fi
 fi
 

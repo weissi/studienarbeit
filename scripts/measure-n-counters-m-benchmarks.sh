@@ -82,7 +82,7 @@ function go() {
         T_START=$(date +%s)
         if [ $DRY_RUN -ne 1 ]; then
             do_measuring.sh $WARMUP_OPTS -d -n -p "$BMNAME" -o "$OUTDIR" \
-                "$RHOST" "$CTRS" "$BM"
+                -t bzip2 "$RHOST" "$CTRS" "$BM"
             RET=$?
         else
             echo "DRY RUN"
