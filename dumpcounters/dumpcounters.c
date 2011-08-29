@@ -422,9 +422,6 @@ measure(void)
             exit(1);
     }
 
-    if (!options.no_parport) {
-        parport_write_data(options.parport_fd, 0xFF);
-    }
     for(c=cmin ; c < cmax; c++)
         setup_cpu(c, cfd);
 
@@ -434,6 +431,9 @@ measure(void)
      */
 
     /* START CPUs */
+    if (!options.no_parport) {
+        parport_write_data(options.parport_fd, 0xFF);
+    }
     assert(0 == clock_gettime(CLOCK_REALTIME, &start_t));
     for(c=cmin ; c < cmax; c++) {
         start_cpu(c);
@@ -451,15 +451,15 @@ measure(void)
         stop_cpu(c);
     }
     assert(0 == clock_gettime(CLOCK_REALTIME, &stop_t));
+    if (!options.no_parport) {
+        parport_write_data(options.parport_fd, 0x00);
+    }
 
     for(c = cmin; c < cmax; c++) {
         fprintf(stderr, "# -----\n");
         read_cpu(c, event_values);
     }
 
-    if (!options.no_parport) {
-        parport_write_data(options.parport_fd, 0x00);
-    }
     write_dump_data(&start_t, &stop_t, ncpus, options.nevents[0], event_values);
 
     for (int i = 0; i < options.nevents[0]; i++) {
