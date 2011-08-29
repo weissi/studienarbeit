@@ -16,11 +16,12 @@ F="$1"
 
 #from
 function uint32_le_decode() {
-    s=$(dd if="$F" bs=1 skip="$1" count=4 2> /dev/null)
-    hex=0x$(printf "%s" \
-          "${s:7:1}${s:6:1}${s:5:1}${s:4:1}${s:3:1}${s:2:1}${s:1:1}${s:0:1}" | \
-          od -t x1 -An | tr -dc '[:alnum:]')
-    python -c "print $hex"
+    PYPRG="
+import struct
+with open('$F', 'r') as f:
+    f.seek($1)
+    print struct.unpack('<I', f.read(4))[0]"
+    python -c "$PYPRG"
 }
 
 #from to
