@@ -195,8 +195,8 @@ if [ $DO_MEASURING -ne 0 ]; then
             echo -n "."
             TMP=$DIFF
         fi
-        if [ $DIFF -gt 60 ]; then
-            die "something went wrong, waited 60s and nothing happened"
+        if [ $DIFF -gt 120 ]; then
+            die "something went wrong, waited 120s and nothing happened"
         fi
     done
     let DIFF=1+$(date +%s)-$START
