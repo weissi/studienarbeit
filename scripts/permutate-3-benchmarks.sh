@@ -42,7 +42,7 @@ for (( i=0; i<${#BENCHMARKS[@]}; i++ )); do
             NAME="$(s2id ${BMNS[$i]})_$(s2id ${BMNS[$j]})_$(s2id ${BMNS[$k]})"
             CMD1="taskset 1 ${BENCHMARKS[$i]}"
             CMD2="taskset 2 ${BENCHMARKS[$j]}"
-            CMD3="taskset 3 ${BENCHMARKS[$k]}"
+            CMD3="taskset 4 ${BENCHMARKS[$k]}"
             echo "NAME $NAME $CMD1 & $CMD2 & $CMD3 & wait"
         done
     done
