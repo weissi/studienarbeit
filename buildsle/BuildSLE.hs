@@ -107,17 +107,18 @@ runTime cd = fromIntegral $ stopNs - startNs
           startNs = calcNs $ Pb.start_time cd
 
 addShotData :: MonadError String m
-            => (String -> ShotId)
+            => Bool
+            -> (String -> ShotId)
             -> ShotCounterMap
             -> Pb.CounterData
             -> m ShotCounterMap
-addShotData shotIdFun shotMap cd =
+addShotData pfCPU shotIdFun shotMap cd =
    if shotId `Map.member` shotMap
      then throwError $ "Duplicate shotID: " ++ show shotId
      else return $ Map.insert shotId (ctrMap', runTime cd) shotMap
      where insertVals :: CounterMap -> Pb.CounterValue -> CounterMap
            insertVals cmap cv =
-               if length (ctrVals cv) == 1
+               if length (ctrVals cv) == 1 && not pfCPU
                   then Map.insert (ctrName cv) (head $ ctrVals cv) cmap
                   else cmap `Map.union` Map.fromList (postfixedCtrVals cv)
            postfixedCtrVals :: Pb.CounterValue -> [(CtrName, CtrVal)]
@@ -137,10 +138,11 @@ addShotData shotIdFun shotMap cd =
            shotId = shotIdFun $ uToString $ Pb.shot_id cd
 
 shotCounterMap :: MonadError String m
-               => (String -> ShotId)
+               => Bool
+               -> (String -> ShotId)
                -> [Pb.CounterData]
                -> m ShotCounterMap
-shotCounterMap shotIdFun = foldM (addShotData shotIdFun) Map.empty
+shotCounterMap pfCPU shotIdFun = foldM (addShotData pfCPU shotIdFun) Map.empty
 
 allCounters :: ShotDataMap -> [CtrName]
 allCounters sm = nub $ concatMap (Map.keys . tt_fst) (Map.elems sm)
@@ -304,11 +306,12 @@ data MainOptions =
      MainOptions { mo_groupChar :: String
                  , mo_maxRelStdDev :: String
                  , mo_printRefCols :: Bool
+                 , mo_postfixCPU :: Bool
                  , mo_counterFile :: String
                  , mo_fileArgs :: [String]
                  } deriving (Typeable, Data, Eq)
 _EMPTY_MAIN_OPTIONS_ :: MainOptions
-_EMPTY_MAIN_OPTIONS_ = MainOptions "" "" False "" []
+_EMPTY_MAIN_OPTIONS_ = MainOptions "" "" False False "" []
 
 instance Attributes MainOptions where
     attributes _ =
@@ -332,6 +335,11 @@ instance Attributes MainOptions where
                                  , Default False
                                  , Long ["print-ref-columns", "print-ref-cols"]
                                  , Short "p"
+                                 ]
+            , mo_postfixCPU   %> [ Help "Postfix CPU number when only one CPU"
+                                 , Default False
+                                 , Long ["postfix-cpu"]
+                                 , Short "P"
                                  ]
             , mo_counterFile %>  [ Help "Only repect counters listed in file"
                                  , Default ("" :: String)
@@ -393,7 +401,9 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
                  do hPutStrLn stderr "WARNING: max rel stddev param ignored"
                     return _ERROR_REL_STDDEV_
        mCDs <- mapM loadCounterDataProto $ filter isCounterFile opt_files
-       let eSmap = shotCounterMap (shotIdFromString mGroupChar) (catMaybes mCDs)
+       let eSmap = shotCounterMap (mo_postfixCPU opts)
+                                  (shotIdFromString mGroupChar)
+                                  (catMaybes mCDs)
        smapRaw <- case eSmap of
                  Right r -> return r
                  Left err -> putStrLn err >> exitFailure
