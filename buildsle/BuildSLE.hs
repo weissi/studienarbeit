@@ -21,6 +21,9 @@ import Text.ProtocolBuffers.Basic (uToString)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as F
 import qualified Data.Map as Map
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import qualified Data.Text.Read as T
 import qualified System.Console.CmdLib as CL
 
 import Text.ProtocolBuffers.WireMessage (messageGet)
@@ -34,9 +37,9 @@ strace a = trace (show a) a
 -}
 
 type ShotGroupId = String
-data ShotId = ShotId { si_shotGroupId :: ShotGroupId
-                     , si_subShotId :: Maybe String
-                     , si_groupChar :: Maybe Char
+data ShotId = ShotId { si_shotGroupId :: ! ShotGroupId
+                     , si_subShotId :: ! (Maybe String)
+                     , si_groupChar :: ! (Maybe Char)
                      } deriving (Eq, Ord)
 type CtrName = String
 type CtrVal = Integer
@@ -49,10 +52,10 @@ instance Show ShotId where
         fromMaybe "" mSubShotId
 
 data ShotData = ShotData
-    { sd_counterMap :: CounterMap
-    , sd_time :: TimeNanosecs
-    , sd_numCPUs :: Int
-    , sd_work :: Double
+    { sd_counterMap :: ! CounterMap
+    , sd_time :: ! TimeNanosecs
+    , sd_numCPUs :: ! Int
+    , sd_work :: ! Double
     }
 
 type CounterMap = Map CtrName CtrVal
@@ -226,10 +229,12 @@ findWorkFile = Map.lookup
 getWork :: WorkFileMap -> ShotId -> IO (Maybe Double)
 getWork files sid =
     case findWorkFile sid files of
-      Just file ->
-          do val <- readFile file
-             return $ readMay val
       Nothing -> return Nothing
+      Just file ->
+          do val <- T.readFile file
+             case T.double val of
+               Right (v, _) -> return $ Just v
+               Left _ -> return Nothing
 
 shotDataMap :: ShotCounterMap -> WorkFileMap -> IO ShotDataMap
 shotDataMap scmap files =
