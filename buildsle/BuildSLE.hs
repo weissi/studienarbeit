@@ -5,15 +5,15 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 import Prelude
-import Control.Monad (foldM, liftM, when)
+import System.Console.CmdLib ((%>))
+import Control.Monad (foldM, liftM, when, replicateM_)
 import Control.Monad.Error (MonadError(), throwError)
 import Data.List ( nub, isSuffixOf, foldl', groupBy, sort, (\\)
-                 , intercalate, isPrefixOf, concatMap)
+                 , intercalate, isPrefixOf, concatMap, group, unzip4)
 import Data.Map (Map)
 import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Math.Statistics (mean, stddev)
 import Safe (readMay)
-import System.Console.CmdLib
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import System.IO (hPutStrLn, stderr)
@@ -21,6 +21,7 @@ import Text.ProtocolBuffers.Basic (uToString)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as F
 import qualified Data.Map as Map
+import qualified System.Console.CmdLib as CL
 
 import Text.ProtocolBuffers.WireMessage (messageGet)
 import qualified HsPerfCounters.CounterData as Pb
@@ -47,11 +48,18 @@ instance Show ShotId where
         showString (maybe "" (:[]) mGroupChar) $
         fromMaybe "" mSubShotId
 
+data ShotData = ShotData
+    { sd_counterMap :: CounterMap
+    , sd_time :: TimeNanosecs
+    , sd_numCPUs :: Int
+    , sd_work :: Double
+    }
+
 type CounterMap = Map CtrName CtrVal
-type ShotCounterMap = Map ShotId (CounterMap, TimeNanosecs)
+type ShotCounterMap = Map ShotId (CounterMap, TimeNanosecs, Int)
 type ShotWorkMap = Map ShotId Double
-type ShotDataMap = Map ShotId (CounterMap, TimeNanosecs, Double)
-type ShotGroupDataMap = Map ShotGroupId (CounterMap, TimeNanosecs, Double)
+type ShotDataMap = Map ShotId ShotData
+type ShotGroupDataMap = Map ShotGroupId ShotData
 
 type FilePath' = String
 type WorkFileMap = Map ShotId FilePath'
@@ -77,15 +85,6 @@ rCompatibleCounterName = tr ':' '.'
 
 internalCounterName :: String -> CtrName
 internalCounterName = tr '.' ':'
-
-tt_fst :: (a, b, c) -> a
-tt_fst (a, _, _) = a
-
-tt_snd :: (a, b, c) -> b
-tt_snd (_, b, _) = b
-
-tt_trd :: (a, b, c) -> c
-tt_trd (_, _, c) = c
 
 loadCounterDataProto :: FilePath' -> IO (Maybe Pb.CounterData)
 loadCounterDataProto fn =
@@ -115,12 +114,14 @@ addShotData :: MonadError String m
 addShotData pfCPU shotIdFun shotMap cd =
    if shotId `Map.member` shotMap
      then throwError $ "Duplicate shotID: " ++ show shotId
-     else return $ Map.insert shotId (ctrMap', runTime cd) shotMap
+     else return $ Map.insert shotId
+                              (ctrMap', runTime cd, numCPUs)
+                              shotMap
      where insertVals :: CounterMap -> Pb.CounterValue -> CounterMap
            insertVals cmap cv =
-               if length (ctrVals cv) == 1 && not pfCPU
-                  then Map.insert (ctrName cv) (head $ ctrVals cv) cmap
-                  else cmap `Map.union` Map.fromList (postfixedCtrVals cv)
+               if pfCPU
+                  then cmap `Map.union` Map.fromList (postfixedCtrVals cv)
+                  else Map.insert (ctrName cv) (sum $ ctrVals cv) cmap
            postfixedCtrVals :: Pb.CounterValue -> [(CtrName, CtrVal)]
            postfixedCtrVals cv = zip (postfixedCtrNames cv)
                                      (ctrVals cv)
@@ -130,12 +131,14 @@ addShotData pfCPU shotIdFun shotMap cd =
            ctrName = uToString . Pb.counter_name
            postfixedCtrNames :: Pb.CounterValue -> [String]
            postfixedCtrNames cv = map (showString (ctrName cv) .
-                                       showString "@CPU" .
+                                       showString ":CPU" .
                                        show) [1..]
            ctrMap' :: CounterMap
            ctrMap' = F.foldl' insertVals Map.empty (Pb.counters cd)
            shotId :: ShotId
            shotId = shotIdFun $ uToString $ Pb.shot_id cd
+           numCPUs :: Int
+           numCPUs = fromIntegral $ Pb.cpu_count cd
 
 shotCounterMap :: MonadError String m
                => Bool
@@ -145,22 +148,25 @@ shotCounterMap :: MonadError String m
 shotCounterMap pfCPU shotIdFun = foldM (addShotData pfCPU shotIdFun) Map.empty
 
 allCounters :: ShotDataMap -> [CtrName]
-allCounters sm = nub $ concatMap (Map.keys . tt_fst) (Map.elems sm)
+allCounters sm = nub $ concatMap (Map.keys . sd_counterMap) (Map.elems sm)
 
 printRTAB :: Bool -> ShotDataMap -> IO ()
 printRTAB ratios sm =
     do putStr "SHOT_ID\t"
        putStr "WORK\t"
        putStr "TIME_NANO_DIFF\t"
+       mapM_ (\t -> putStr $ "CPU" ++ show t ++ "_TIME_NANOS\t") [1..maxCPUs]
        mapM_ (\c -> putStr $ c ++ "\t") allCtrs
        when ratios $
            mapM_ (\c -> putStr $ "RATIO_" ++ c ++ "\t") allCtrs
        putStr "\n"
        mapM_ printShot (Map.keys sm)
-       where allCtrs = allCounters sm
+       where maxCPUs :: Int
+             maxCPUs = Map.fold (\mv -> max (sd_numCPUs mv)) 0 sm
+             allCtrs = allCounters sm
              valueMap :: ShotId -> Map CtrName CtrVal
              valueMap sid =
-                 Map.findWithDefault Map.empty sid $ Map.map tt_fst sm
+                 Map.findWithDefault Map.empty sid $ Map.map sd_counterMap sm
 
              strValueMap :: ShotId -> Map CtrName String
              strValueMap sid =
@@ -191,15 +197,22 @@ printRTAB ratios sm =
              printShot sid =
                  do putStr $ show sid ++ "\t"
                     putStr (Map.findWithDefault "NA" sid
-                                                (Map.map (show.tt_trd) sm))
+                                                (Map.map (show.sd_work) sm))
                     putStr "\t"
-                    putStr (Map.findWithDefault "NA" sid
-                                                (Map.map (show.tt_snd) sm))
+                    putStr rTime
                     putStr "\t"
+                    replicateM_ numCPUs $ putStr (rTime ++ "\t")
+                    replicateM_ (maxCPUs-numCPUs) $ putStr "0\t"
                     mapM_ (printCounter sid) allCtrs
                     when ratios $
                        mapM_ (printCounterRatio sid) allCtrs
                     putStr "\n"
+                 where numCPUs :: Int
+                       numCPUs = Map.findWithDefault 0 sid
+                                                     (Map.map sd_numCPUs sm)
+                       rTime :: String
+                       rTime = Map.findWithDefault "NA" sid
+                                                   (Map.map (show.sd_time) sm)
 
 calcWorkFile :: ShotId -> FilePath'
 calcWorkFile sid = showString "work_" $ shows sid ".work"
@@ -230,8 +243,13 @@ shotDataMap scmap files =
                    Just s -> Just (f, s)
              swmap :: [Maybe Double] -> ShotWorkMap
              swmap w = Map.fromList $ mapMaybe check (zip sids w)
-             joinData :: (a, b) -> c -> (a, b, c)
-             joinData (a, b) c = (a, b, c)
+             joinData :: (CounterMap, TimeNanosecs, Int) -> Double -> ShotData
+             joinData (a, b, c) d =
+                 ShotData { sd_counterMap = a
+                          , sd_time = b
+                          , sd_numCPUs = c
+                          , sd_work = d
+                          }
 
 shotIdFromString :: Maybe Char -> String -> ShotId
 shotIdFromString mGroupChar s =
@@ -286,21 +304,30 @@ groupShotDataMap sdm maxRelErr =
                              ++ ") too high, shot ids: " ++ show sids
                              ++ ", values: " ++ show ws
            else return $ mean ws
+    accumCPUs :: MonadError String m => [ShotId] -> [Int] -> m Int
+    accumCPUs sids cpus = if length (group cpus) /= 1
+                             then throwError $ "unequal CPU count!"
+                             else return $ cpus !! 0
     shotGroupname :: MonadError String m => [ShotId] -> m ShotGroupId
     shotGroupname sids =
         case sids of
           [] -> throwError "empty shot group --> cannot generate group id"
           firstShot:_ -> return $ si_shotGroupId firstShot
-    shotListData :: [ShotId] -> ([CounterMap], [TimeNanosecs], [Double])
-    shotListData sids = unzip3 $ mapMaybe (`Map.lookup` sdm) sids
+    shotListData :: [ShotId] -> [ShotData]
+    shotListData sids = mapMaybe (`Map.lookup` sdm) sids
     accumShotDataMap :: MonadError String m
                      => [ShotId]
-                     -> m (CounterMap, TimeNanosecs, Double)
+                     -> m ShotData
     accumShotDataMap sids =
-       do counters <- accumCounterMaps $ tt_fst (shotListData sids)
-          time <- accumDouble sids $ tt_snd (shotListData sids)
-          work <- accumDouble sids $ tt_trd (shotListData sids)
-          return (counters, time, work)
+       do counters <- accumCounterMaps $ map sd_counterMap (shotListData sids)
+          time <- accumDouble sids $ map sd_time (shotListData sids)
+          nCPUs <- accumCPUs sids $ map sd_numCPUs (shotListData sids)
+          work <- accumDouble sids $ map sd_work (shotListData sids)
+          return $ ShotData { sd_counterMap = counters
+                            , sd_time = time
+                            , sd_numCPUs = nCPUs
+                            , sd_work = work
+                            }
 
 data MainOptions =
      MainOptions { mo_groupChar :: String
@@ -309,47 +336,50 @@ data MainOptions =
                  , mo_postfixCPU :: Bool
                  , mo_counterFile :: String
                  , mo_fileArgs :: [String]
-                 } deriving (Typeable, Data, Eq)
+                 } deriving (CL.Typeable, CL.Data, Eq)
 _EMPTY_MAIN_OPTIONS_ :: MainOptions
 _EMPTY_MAIN_OPTIONS_ = MainOptions "" "" False False "" []
 
-instance Attributes MainOptions where
+instance CL.Attributes MainOptions where
     attributes _ =
-        group "Options"
-            [ mo_groupChar    %> [ Help "Group shot ids by common prefix"
-                                 , ArgHelp "GROUP-CHAR"
-                                 , Default ("" :: String)
-                                 , Long ["group-char"]
-                                 , Short "g"
+        CL.group "Options"
+            [ mo_groupChar    %> [ CL.Help "Group shot ids by common prefix"
+                                 , CL.ArgHelp "GROUP-CHAR"
+                                 , CL.Default ("" :: String)
+                                 , CL.Long ["group-char"]
+                                 , CL.Short "g"
                                  ]
-            , mo_maxRelStdDev %> [ Help $ "Maximal relative standard deviation "
+            , mo_maxRelStdDev %> [ CL.Help $ "Maximal relative standard "
+                                          ++ "deviation "
                                           ++ "when accumulating work"
-                                 , Default _ERROR_REL_STDDEV_
-                                 , ArgHelp "MAX-REL-STDDEV"
-                                 , Long [ "maximimal-relative-stddev"
+                                 , CL.Default _ERROR_REL_STDDEV_
+                                 , CL.ArgHelp "MAX-REL-STDDEV"
+                                 , CL.Long [ "maximimal-relative-stddev"
                                         , "max-rel-stddev"
                                         ]
-                                 , Short "m"
+                                 , CL.Short "m"
                                  ]
-            , mo_printRefCols %> [ Help "Print reference columns (BROKEN!)"
-                                 , Default False
-                                 , Long ["print-ref-columns", "print-ref-cols"]
-                                 , Short "p"
+            , mo_printRefCols %> [ CL.Help "Print reference columns (BROKEN!)"
+                                 , CL.Default False
+                                 , CL.Long [ "print-ref-columns"
+                                           , "print-ref-cols"
+                                           ]
+                                 , CL.Short "p"
                                  ]
-            , mo_postfixCPU   %> [ Help "Postfix CPU number when only one CPU"
-                                 , Default False
-                                 , Long ["postfix-cpu"]
-                                 , Short "P"
+            , mo_postfixCPU   %> [ CL.Help "Postfix CPU instead of sum"
+                                 , CL.Default False
+                                 , CL.Long ["postfix-cpu"]
+                                 , CL.Short "P"
                                  ]
-            , mo_counterFile %>  [ Help "Only repect counters listed in file"
-                                 , Default ("" :: String)
-                                 , Long ["counter-file"]
-                                 , Short "c"
+            , mo_counterFile %>  [ CL.Help "Only repect counters listed in file"
+                                 , CL.Default ("" :: String)
+                                 , CL.Long ["counter-file"]
+                                 , CL.Short "c"
                                  ]
-            , mo_fileArgs     %> Extra True
+            , mo_fileArgs     %> CL.Extra True
             ]
 
-instance RecordCommand MainOptions where
+instance CL.RecordCommand MainOptions where
     mode_summary _ = "BuildSLE"
 
 readGoodCounters :: FilePath' -> IO [CtrName]
@@ -378,7 +408,7 @@ workFilesMap gc fps =
                 fn = {-# SCC "wfm:takeFileName" #-} takeFileName fp
 
 main :: IO ()
-main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
+main = CL.getArgs >>= CL.executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
     do let opt_files = mo_fileArgs opts
            opt_counterFile =
                case mo_counterFile opts of
@@ -412,7 +442,8 @@ main = getArgs >>= executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
              Just f -> liftM Just $ readGoodCounters f
              Nothing -> return Nothing
        let smap = case goodCounters of
-             Just gcs -> Map.map (\(a,b) -> (delBadCounters gcs a, b)) smapRaw
+             Just gcs -> Map.map (\(a, b, c) -> (delBadCounters gcs a, b, c))
+                                 smapRaw
              Nothing -> smapRaw
            all_arg_files_basenames = map takeFileName opt_files
            all_sids = Map.keys smap
