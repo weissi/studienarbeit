@@ -9,7 +9,7 @@ import System.Console.CmdLib ((%>))
 import Control.Monad (foldM, liftM, when, replicateM_)
 import Control.Monad.Error (MonadError(), throwError)
 import Data.List ( nub, isSuffixOf, foldl', groupBy, sort, (\\)
-                 , intercalate, isPrefixOf, concatMap, group, unzip4)
+                 , intercalate, isPrefixOf, concatMap, group)
 import Data.Map (Map)
 import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Math.Statistics (mean, stddev)
@@ -21,7 +21,6 @@ import Text.ProtocolBuffers.Basic (uToString)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Foldable as F
 import qualified Data.Map as Map
-import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Text.Read as T
 import qualified System.Console.CmdLib as CL
@@ -165,7 +164,7 @@ printRTAB ratios sm =
        putStr "\n"
        mapM_ printShot (Map.keys sm)
        where maxCPUs :: Int
-             maxCPUs = Map.fold (\mv -> max (sd_numCPUs mv)) 0 sm
+             maxCPUs = Map.fold (max . sd_numCPUs) 0 sm
              allCtrs = allCounters sm
              valueMap :: ShotId -> Map CtrName CtrVal
              valueMap sid =
@@ -311,15 +310,16 @@ groupShotDataMap sdm maxRelErr =
            else return $ mean ws
     accumCPUs :: MonadError String m => [ShotId] -> [Int] -> m Int
     accumCPUs sids cpus = if length (group cpus) /= 1
-                             then throwError $ "unequal CPU count!"
-                             else return $ cpus !! 0
+                             then throwError "unequal CPU count!"
+                             else return $ head cpus
+
     shotGroupname :: MonadError String m => [ShotId] -> m ShotGroupId
     shotGroupname sids =
         case sids of
           [] -> throwError "empty shot group --> cannot generate group id"
           firstShot:_ -> return $ si_shotGroupId firstShot
     shotListData :: [ShotId] -> [ShotData]
-    shotListData sids = mapMaybe (`Map.lookup` sdm) sids
+    shotListData = mapMaybe (`Map.lookup` sdm)
     accumShotDataMap :: MonadError String m
                      => [ShotId]
                      -> m ShotData
@@ -328,11 +328,11 @@ groupShotDataMap sdm maxRelErr =
           time <- accumDouble sids $ map sd_time (shotListData sids)
           nCPUs <- accumCPUs sids $ map sd_numCPUs (shotListData sids)
           work <- accumDouble sids $ map sd_work (shotListData sids)
-          return $ ShotData { sd_counterMap = counters
-                            , sd_time = time
-                            , sd_numCPUs = nCPUs
-                            , sd_work = work
-                            }
+          return ShotData { sd_counterMap = counters
+                          , sd_time = time
+                          , sd_numCPUs = nCPUs
+                          , sd_work = work
+                          }
 
 data MainOptions =
      MainOptions { mo_groupChar :: String
