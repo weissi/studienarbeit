@@ -1,0 +1,34 @@
+#shell
+ONE_CPU_DIR=/local/tmp/weiss/measuring_data/2011-08-18_17-07-00
+TWO_CPU_DIR=/local/tmp/weiss/measuring_data/2011-08-25_18-45-00
+THREE_CPU_DIR=/local/tmp/weiss/measuring_data/2011-08-29_19-06-30
+
+cd $ONE_CPU_DIR
+buildsle -m 0.04 -g@ * -c \
+    ~/studienarbeit/towards-the-model/two-core/counters > /tmp/uni-tab
+cd $TWO_CPU_DIR
+buildsle * > /tmp/two-tab
+cd $THREE_CPU_DIR
+buildsle * > /tmp/three-tab
+
+#R
+unitab <- read.table('/tmp/uni-tab', header=T)
+twotab <- read.table('/tmp/two-tab', header=T)
+threetab <- read.table('/tmp/three-tab', header=T)
+tmptab <- merge(threetab, twotab, all=T)
+mtab <- merge(tmptab, unitab, all=T)
+mtab[is.na(mtab)] <- 0
+model <- lm(WORK~., data=mtab[2:ncol(mtab)])
+write.table(model$coefficients, '/tmp/three-model')
+
+#shell
+build-energy-model.sh -R /tmp/three-model
+
+#R
+
+#<PASTE OUTPUT TO R>
+
+calc_err <- function(real, calc) abs(real-calc)/real
+mtab$ERR <- calc_err(mtab$WORK, model(mtab))
+mtab[order(mtab$ERR),][c('SHOT_ID', 'WORK', 'ERR')]
+
