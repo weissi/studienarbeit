@@ -129,19 +129,20 @@ while read P_KEYWORD P_NAME LINE; do
 done < "$BENCHFILE"
 COUNTERS=( $( cat -- "$CTRFILE" ) )
 TOTAL_RUNS=$(python -c "import math; print ${#BENCHMARKS[@]} * "\
-"    int(math.ceil(float(${#COUNTERS[@]}) / $MAX_CTRS) + 1)")
+"    int(math.ceil(float(${#COUNTERS[@]}) / $MAX_CTRS))")
+#"    int(math.ceil(float(${#COUNTERS[@]}) / $MAX_CTRS) + 1)") #INCLUDES WARMUP
 
 for (( i=0; i<${#BENCHMARKS[@]}; i++ )); do
     BENCHMARK="${BENCHMARKS[$i]}"
     BENCHMARK_NAME="${BENCHMARK_NAMES[$i]}"
     CTR_STRING=""
     CUR_CTRS=0
-    echo "INFO: warming up benchmark..."
-    if [ ! -d "$WARM_UP_TMP" ]; then
-        mkdir -p -- "$WARM_UP_TMP"
-    fi
-    go -w "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "warmup-for-$BENCHMARK_NAME" \
-        "UOPS_ISSUED"
+    #echo "INFO: warming up benchmark..."
+    #if [ ! -d "$WARM_UP_TMP" ]; then
+    #    mkdir -p -- "$WARM_UP_TMP"
+    #fi
+    #go -w "$RHOST" "$WARM_UP_TMP" "$BENCHMARK" "warmup-for-$BENCHMARK_NAME" \
+    #    "UOPS_ISSUED"
     for CTR in "${COUNTERS[@]}"; do
         if [ -z "$CTR" ]; then
             echo "WARNING: empty counter definition"
