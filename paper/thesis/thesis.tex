@@ -1,20 +1,43 @@
-\documentclass[a4paper]{scrreprt}
+\documentclass[12pt, a4paper]{book}
 
-\usepackage[english]{babel}
+% language
+\usepackage[american]{babel}
 \usepackage[utf8]{inputenc}
 
+% watermark
 \usepackage{draftwatermark}
 \SetWatermarkText{DRAFT}
 \SetWatermarkScale{4.0}
 
+% bib
+\bibliographystyle{plain}
+
+% make it look good
 \setlength{\parskip}{1.3ex}
 \setlength{\parindent}{1.3em}
 
 \usepackage{amsmath}
+\usepackage{url}
+\usepackage[per=fraction]{siunitx}
+\usepackage{listings}
+
+% because the template had it :-)
+\usepackage{cite}
+\usepackage{fancyhdr}
+\usepackage{chngpage}
 
 \usepackage{hyperref}
 
-\usepackage[per=fraction]{siunitx}
+\hypersetup {
+   pdfauthor={Johannes Wei\ss},
+   pdftitle={Multi-Core Energy Accounting},
+   pdfsubject={Study Thesis},
+   pdfkeywords={multi-core, energy, accounting, Linux}
+}
+
+
+% KITize it :-)
+\usepackage{kitthesiscover}
 
 \input{commands}
 
@@ -22,37 +45,32 @@
 
 \begin{document}
 
-\pagestyle{empty}
+\selectlanguage{american}
 
-\title{Multi-Core Energy Accounting}
-\author{Johannes Weiß\\
-        \JWemail{mcea@johannesweiss.eu}}
-\date{\today}
-\maketitle
-\thispagestyle{empty}
-\pagestyle{empty}
-
-\maketitle
-
-\tableofcontents
+\input{title}
 
 \input{abstract}
 
-\input{introduction}
-
-\input{methodology}
-
-\input{results}
-
-\input{discussion}
-
 \input{acknowledgments}
+
+\mainmatter
+\tableofcontents
+
+\input{introduction}
 
 \input{related-work}
 
+\input{methodology}
+
+\input{implementation}
+
+\input{discussion}
+
 \input{conclusion}
 
-\bibliographystyle{alpha}
+\backmatter
+
+\addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{bibliography}
 
 \end{document}
