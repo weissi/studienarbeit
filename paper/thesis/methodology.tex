@@ -9,6 +9,7 @@ How did I solve the problem?
 \end{itemize}
 
 \JWltwo{Calculation of the Eletrical Work}
+\label{sec:calc-work}
 
 From elementary physics
 
@@ -38,7 +39,10 @@ Hence, integrating will result in the electrical work
   W = \int P_{CPU}(t)dt.
 \end{equation}
 
+
+%-------------------------------------------------------------------------------
 \JWltwo{Measuring Setup}
+\label{sec:measuring-setup}
 
 \JWlthree{Measuring Device}
 
@@ -48,5 +52,110 @@ from \JWenterprise{http://www.ni.com}{National Instruments} because it supports
 high sampling rates up to 250000 samples per second
 (\SI{250}{\kilo\samples\per\second}) and is very
 accurate (accuracy $< \SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
+
+
+%-------------------------------------------------------------------------------
+\JWltwo{Data Formats}
+
+\JWlthree{Voltage Data Point Files}
+\label{sec:datapoint-files}
+
+\JWlthree{Counter Files}
+\label{sec:counter-files}
+
+%-------------------------------------------------------------------------------
+\JWltwo{Tools}
+
+Since the building of a reasonable energy model is not an easy task, numerous
+tools have been used. Most of the tools were developed specifically for the
+purpose of this study thesis. All of them are open-sourced and available on
+\JWnamedlink{https://github.com/weissi/studienarbeit}{GitHub}.
+
+In this chapter, we will give an overview of the software used, both standard
+software and tools developed specifically to be able to write this paper.
+
+\JWlthree{Standard Software}
+
+\begin{itemize}
+
+\item \JWTprotobuf for saving and loading of all kinds of data
+
+\item \JWnamedlink{http://www.r-project.org/}{R} for statistical computations
+
+\item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{leaps package}
+      , a R library for regression subset selection (to minimize the set of
+      available performance counters)
+
+\item \JWnamedlink{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}
+      {lm library}, a R library used to fit linear models
+
+\item \JWnamedlink{http://kernel.org}{Linux Kernel}
+
+\item \JWnamedlink{http://gnu.org}{numerous GNU tools}
+
+\end{itemize}
+
+
+\JWlthree{Special Developments}
+
+
+\JWlfour{\JWTlibdp}
+
+\JWTlibdp is responsible for loading and saving the measured data points from
+and to the \JWTprotobuf files. It's API is straight forward and it is able to
+handle very big files. The API can be found in
+\JWpath{libdatapoints/datapoints.h}.
+
+
+\JWlfour{\JWTfcw}
+
+\JWTfcw can calculate the electrical work from data points files very quickly.
+As explained in section \ref{sec:calc-work} it integrates to electrical power.
+But since we obtain discrete data by sampling (see section
+\ref{sec:measuring-setup}) the integration can be done quite fast:
+
+\JWtodo{integral P = sum P * diff}
+
+A typical call to \JWTfcw looks like
+
+\begin{lstlisting}[style=Shell]
+fastcalcwork captured-17:15:00.dpts CPU 0.01 TRIGGER
+\end{lstlisting}
+
+Using the command line above, \JWTfcw will calculate the electrical work with a
+measuring resistor of \SI{0.01}{\ohm}. The measured data points will be taken
+from column \texttt{CPU}, the analog trigger's (see section
+\ref{sec:measuring-setup}) value from \texttt{TRIGGER}.
+
+
+\JWlfour{\JWTdc}
+
+\JWTdc is the tool for retrieving the performance counter's values on the target
+machine. Giving it a set of performance counters and a command to execute, it
+will record the counters while the command is running. It always works
+system-wide and saves values by counter and by CPU enabled.
+
+A working example:
+
+\begin{lstlisting}[style=Shell]
+dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED -r ls
+\end{lstlisting}
+
+The exact data format is documented in \JWpath{protos/perf-counters.proto}.
+
+\JWlfour{\JWTde}
+
+\JWTde exports data point files (see section \ref{sec:datapoint-files}) to a
+format \JWTR can easily use.
+
+\JWtodo{bib ref to R table format}.
+
+\JWlfour{\JWTdd}
+
+\JWlfour{\JWTcbs suite}
+
+\JWlfour{\JWTbsle}
+
+\JWlfour{high-level scripts}
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

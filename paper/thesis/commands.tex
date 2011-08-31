@@ -3,10 +3,34 @@
 \newcommand{\JWemph}[1]{\emph{#1}}
 \newcommand{\JWenterprise}[2]{\href{#1}{#2}}
 \newcommand{\JWproduct}[2]{\href{#1}{#2}}
+\newcommand{\JWnamedlink}[2]{\href{#1}{#2}}
 \newcommand{\JWlone}[1]{\chapter{#1}}
 \newcommand{\JWltwo}[1]{\section{#1}}
 \newcommand{\JWlthree}[1]{\subsection{#1}}
+\newcommand{\JWlfour}[1]{\subsubsection{#1}}
+\newcommand{\JWcmdline}[1]{\begin{verbatim}\$ #1\end{verbatim}}
+\newcommand{\JWtool}[1]{\texttt{#1}}
 \def\TReg{\textsuperscript{\textregistered}}
 \def\TCop{\textsuperscript{\textcopyright}}
 \def\TTra{\textsuperscript{\texttrademark}}
 \def\samples{S}
+\newcommand{\JWpath}[1]{\texttt{#1}}
+\newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
+
+\newcommand{\JWTlibdp}{\JWtool{libdatapoints}}
+%\newcommand{\JWTfcw}{\JWtool{fastcalcwork}}
+\def\JWTfcw{\JWtool{fastcalcwork}}
+\def\JWTR{\texttt{R}}
+\newcommand{\JWTdc}{\JWtool{dumpcounters}}
+\newcommand{\JWTdd}{\JWtool{datadump}}
+\newcommand{\JWTde}{\JWtool{dataexport}}
+\newcommand{\JWTcbs}{\JWtool{ctrbenchmark}}
+\newcommand{\JWTbsle}{\JWtool{BuildSLE}}
+\newcommand{\JWTprotobuf}
+  {\JWproduct{http://code.google.com/apis/protocolbuffers/}
+             {Google Protocol Buffers}}
+
+\lstset{language=C,basicstyle=\ttfamily,commentstyle=\ttfamily}
+\lstdefinestyle{Shell}{delim=[il][\bfseries]{BB}}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\lstset{backgroundcolor=\color{lightgray}}
