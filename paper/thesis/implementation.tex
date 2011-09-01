@@ -1,3 +1,164 @@
 \JWlone{Implementation}
 
+%#  DATA FORMATS  ##############################################################
+\JWltwo{Data Formats}
+\label{sec:data-formats}
+
+In this section the in memory and on disk data formats will be presented. The
+basic protocol is \JWTprotobuf.
+
+%-  voltage drop data point files  ---------------------------------------------
+\JWlthree{Voltage Drop Data Point Files}
+\label{sec:datapoint-files}
+
+
+%-  performance counter files  -------------------------------------------------
+\JWlthree{Counter Files}
+\label{sec:counter-files}
+
+
+%#  TOOLS  #####################################################################
+\JWltwo{Tools}
+\label{sec:tools}
+
+Since the building of a reasonable energy model is not an easy task, numerous
+tools have been used. Most of the tools were developed specifically for the
+purpose of this study thesis. All of them are open-sourced and available on
+\JWnamedlink{https://github.com/weissi/studienarbeit}{GitHub}.
+
+In this chapter, we will give an overview of the software used, both standard
+software and tools developed specifically to be able to write this paper.
+
+
+%-  standard software  ---------------------------------------------------------
+\JWlthree{Standard Software}
+\label{sec:standard-software}
+
+\begin{itemize}
+
+\item \JWTprotobuf for saving and loading of all kinds of data
+
+\item \JWnamedlink{http://www.r-project.org/}{R} for statistical computations
+
+\item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{leaps package}
+      , a R library for regression subset selection (to minimize the set of
+      available performance counters)
+
+\item \JWnamedlink{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}
+      {lm library}, a R library used to fit linear models
+
+\item \JWnamedlink{http://kernel.org}{Linux Kernel}
+
+\item \JWnamedlink{http://gnu.org}{numerous GNU tools}
+
+\end{itemize}
+
+
+%-  special developments  ------------------------------------------------------
+\JWlthree{Special Developments}
+\label{sec:special-developments}
+
+
+\JWlfour{\JWTlibdp}
+
+\JWTlibdp is responsible for loading and saving the measured data points from
+and to the \JWTprotobuf files. It's API is straight forward and it is able to
+handle very big files. The API can be found in
+\JWpath{libdatapoints/datapoints.h}.
+
+
+\JWlfour{\JWTfcw}
+
+\JWTfcw can calculate the electrical work from data points files very quickly.
+As explained in section \ref{sec:calc-work} it integrates to electrical power.
+But since we obtain discrete data by sampling (see section
+\ref{sec:measuring-setup}) the integration can be done quite fast:
+
+\JWtodo{integral P = sum P * diff}
+
+A typical call to \JWTfcw looks like
+
+\begin{lstlisting}[style=Shell]
+fastcalcwork captured-17:15:00.dpts CPU 0.01 TRIGGER
+\end{lstlisting}
+
+Using the command line above, \JWTfcw will calculate the electrical work with a
+measuring resistor of \SI{0.01}{\ohm}. The measured data points will be taken
+from column \texttt{CPU}, the analog trigger's (see section
+\ref{sec:measuring-setup}) value from \texttt{TRIGGER}.
+
+
+\JWlfour{\JWTdc}
+
+\JWTdc is the tool for retrieving the performance counter's values on the target
+machine. Giving it a set of performance counters and a command to execute, it
+will record the counters while the command is running. It always works
+system-wide and saves values by counter and by CPU enabled.
+
+A working example:
+
+\begin{lstlisting}[style=Shell]
+dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED -r ls
+\end{lstlisting}
+
+The exact data format is documented in \JWpath{protos/perf-counters.proto}.
+
+\JWlfour{\JWTde}
+
+\JWTde exports data point files (see section \ref{sec:datapoint-files}) to a
+format \JWTR can easily use.
+
+\JWtodo{bib ref to R table format}.
+
+\JWlfour{\JWTdd}
+
+\JWlfour{\JWTcbs suite}
+
+\JWlfour{\JWTbsle}
+
+\JWlfour{high-level scripts}
+
+
+%#  METHODS OF ANALYSIS  #######################################################
+\JWltwo{Methods of Analysis}
+\label{sec:methods-of-analysis}
+
+In this section the mathematical and formal methods to find a good subset of
+events and their coefficients is presented.
+
+
+%#  TOWARD THE ENERGY MODEL  ###################################################
+\JWltwo{Toward the Energy Model}
+\label{sec:towards-the-model}
+
+In this chapter a description of the steps toward the final energy model(s) is
+given.
+
+
+%-  BENCHMARKS  ----------------------------------------------------------------
+\JWlthree{The set of Benchmarks}
+\label{sec:benchmarks}
+
+How and which benchmarks did I choose?
+
+
+%-  SUBSET OF USEFUL COUNTERS  -------------------------------------------------
+\JWlthree{Finding a useful Subset of Events}
+
+\begin{itemize}
+
+\item 1 CPU, all events, rotational
+
+\item 1 CPU enabled, chosen events
+
+\item 2 CPUs enabled, chosen events
+
+\item 3 CPUs enabled, chosed events
+
+\item 4 CPUs enabled, chosed events
+
+\end{itemize}
+
+
+
 % vim: set spell spelllang=en_us fileencoding=utf8 :
