@@ -26,7 +26,7 @@
 \usepackage{fancyhdr}
 \usepackage{chngpage}
 
-\usepackage{hyperref}
+\usepackage[plainpages=false]{hyperref}
 
 \hypersetup {
    pdfauthor={Johannes Wei\ss},
@@ -45,6 +45,8 @@
 
 \begin{document}
 
+\pagenumbering{roman}
+
 \selectlanguage{american}
 
 \input{title}
@@ -56,6 +58,8 @@
 \mainmatter
 \tableofcontents
 
+\pagenumbering{arabic}
+
 \input{introduction}
 
 \input{related-work}
@@ -64,7 +68,7 @@
 
 \input{implementation}
 
-\input{discussion}
+\input{evaluation}
 
 \input{conclusion}
 
