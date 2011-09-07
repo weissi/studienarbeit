@@ -7,6 +7,16 @@
 In this section the in memory and on disk data formats will be presented. The
 basic protocol is \JWTprotobuf.
 
+%-  shot ids  ------------------------------------------------------------------
+\JWlthree{Shot IDs}
+\label{sec:shot-ids}
+
+A shot ID (shot identifier) is a string value uniquely identifiying one
+measuring experiment. More precisely it's a character string containing only a
+defined set of ASCII characters. The following regular expression shoud match
+all allowed shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
+
+
 %-  voltage drop data point files  ---------------------------------------------
 \JWlthree{Voltage Drop Data Point Files}
 \label{sec:datapoint-files}
@@ -15,6 +25,28 @@ basic protocol is \JWTprotobuf.
 %-  performance counter files  -------------------------------------------------
 \JWlthree{Counter Files}
 \label{sec:counter-files}
+
+
+%-  work files  ----------------------------------------------------------------
+\JWlthree{Work Files}
+\label{sec:work-files}
+
+The content of the work files is really just the electrical work of a certain
+measuring experiment in Joule. The file format is the ASCII representation of a
+floating point value followed by optional garbage (separated by an ASCII space
+or newline). In contrast to the other file formats, the work file's file names
+have to match the following format: \verb%work_<SHOT-ID>_.work% (e.g.
+\verb%work_SPEC-gcc@2011-08-31_16-07-46.work%).
+
+A valid work file could look like
+
+\begin{lstlisting}[style=Shell]
+$ hexdump -C work_SPEC-gcc@2011-08-31_16-07-46.work
+0000  37 34 2e 30 31 35 32 35  36 0a   |74.015256.|
+000a
+\end{lstlisting}.
+
+
 
 
 %#  TOOLS  #####################################################################
@@ -50,6 +82,9 @@ software and tools developed specifically to be able to write this paper.
 \item \JWnamedlink{http://kernel.org}{Linux Kernel}
 
 \item \JWnamedlink{http://gnu.org}{numerous GNU tools}
+
+\item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
+      {\texttt{libpfm4}} for reading the performance counters from userspace
 
 \end{itemize}
 
@@ -116,33 +151,12 @@ format \JWTR can easily use.
 
 \JWlfour{\JWTbsle}
 
+\JWTbsle is a \JWnamedlink{http://haskell.org}{Haskell} program which is able
+\emph{build} the \emph{s}ystem of \emph{l}inear \emph{e}quations. It takes
+several counter files (\ref{sec:counter-files}) and the corresponding work files
+(\ref{sec:work-files}) as input and outputs a system of linear equations.
+
 \JWlfour{high-level scripts}
-
-
-%#  METHODS OF ANALYSIS  #######################################################
-\JWltwo{Methods of Analysis}
-\label{sec:methods-of-analysis}
-
-In this section the mathematical and formal methods to find a good subset of
-events and their coefficients is presented.
-
-\begin{itemize}
-
-\item Take all counters,
-
-\item eliminate equal counters,
-
-\item eliminate linear dependent counters,
-
-\item generate the 5 best models of sizes 1..size(counters),
-
-\item eliminate all counters which appear in no model.
-
-\item Perform exhaustive search on the still-living counters.
-
-\end{itemize}
-
-
 %#  TOWARD THE ENERGY MODEL  ###################################################
 \JWltwo{Toward the Energy Model}
 \label{sec:towards-the-model}
