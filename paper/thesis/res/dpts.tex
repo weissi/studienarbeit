@@ -1,0 +1,24 @@
+\begin{verbatim}
+byte 0x03;                            # \
+byte 0x01;                            #  THESE BYTES FORM THE FILE
+byte 0x86;                            #  FORMAT'S MAGIC BYTES
+byte 0x01;                            # /
+
+byte version;                         # THE FORMAT'S VERSION: 0x1
+
+uint32_t header_length;               # LENGTH OF FOLLOWING PROTOCOL BUFFER IN
+                                      # BYTES (ENCODING: LITTLE ENDIAN)
+
+<Protocol Buffer type 'MessageData'>  # THE "HEADER" PROTO BUF
+
+REPEATED FOR EVERY CHUNK:
+    byte 0x03;                        # \
+    byte 0x01;                        #  THESE BYTES FORM THE FILE
+    byte 0x86;                        #  CHUNK'S MAGIC BYTES
+    byte 0x02;                        # /
+
+    uint32_t message_length;          # LENGTH OF FOLLOWING PROTOCOL BUFFER IN
+                                      # BYTES (ENCODING: LITTLE ENDIAN)
+
+    <Protocol Buffer type 'DataSet'>  # THE DATA OF ONE CHUNK
+\end{verbatim}

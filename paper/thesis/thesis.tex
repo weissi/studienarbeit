@@ -27,14 +27,15 @@
 \usepackage{fancyhdr}
 \usepackage{chngpage}
 
+% I need them :-)
 \usepackage[plainpages=false]{hyperref}
-
 \hypersetup {
    pdfauthor={Johannes Wei\ss},
    pdftitle={Multi-Core Energy Accounting},
    pdfsubject={Study Thesis},
    pdfkeywords={multi-core, energy, accounting, Linux}
 }
+\usepackage{appendix}
 
 
 % KITize it :-)
@@ -79,6 +80,8 @@
 
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{bibliography}
+
+\input{appendix}
 
 \end{document}
 % vim: set spell spelllang=en_us fileencoding=utf8 :

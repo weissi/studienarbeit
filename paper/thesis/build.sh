@@ -23,6 +23,10 @@ function try_pdflatex() {
 ./clean.sh
 
 set -e
+../scripts/texify-verb.sh ../../protos/measured-data.proto > res/pb-dpts.tex
+../scripts/texify-verb.sh ../../libdatapoints/dump-format.text > res/dpts.tex
+../scripts/texify-verb.sh ../../protos/perf-counters.proto > res/pb-ctrs.tex
+../scripts/texify-verb.sh ../../protos/generic.proto > res/pb-generic.tex
 try_pdflatex $TEXOPTS thesis
 bibtex build/thesis
 pdflatex $TEXOPTS -interaction=batchmode thesis

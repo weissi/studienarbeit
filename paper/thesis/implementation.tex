@@ -4,8 +4,12 @@
 \JWltwo{Data Formats}
 \label{sec:data-formats}
 
-In this section the in memory and on disk data formats will be presented. The
-basic protocol is \JWTprotobuf.
+This chapter will give a rough outline of the formats used to store data between
+the various phases of the analysis. The lingua franca for most complex on disc
+formats are the schrieblesque \JWTprotobuf. Though, when interfacing with
+external software such as \JWTR, other formats had to be chosen. The choice in
+favour of Protocol Buffers has been made because of \emph{think XML, but
+smaller, faster, and simpler} (which is incidentally their  slogan).
 
 %-  shot ids  ------------------------------------------------------------------
 \JWlthree{Shot IDs}
@@ -16,10 +20,49 @@ measuring experiment. More precisely it's a character string containing only a
 defined set of ASCII characters. The following regular expression shoud match
 all allowed shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
 
+Such shot IDs are always used to associated power and performance event
+measurings.
+
 
 %-  voltage drop data point files  ---------------------------------------------
-\JWlthree{Voltage Drop Data Point Files}
+\JWlthree{Electrical Power Data Point Files}
 \label{sec:datapoint-files}
+
+The main matter of the \emph{electrical power data point files} (called
+\emph{data point files} for simplicity) is to log the CPU's power consumation by
+time. As described in chapter \ref{sec:measuring-setup}, voltage drops are
+measured and electrical power and work are only calculated later on. This is
+why data point files do literally contain voltage drop values by time.
+But since the only reason they exist is to serve as calculation input later on,
+they are named after their future meaning.
+
+For practical reasons the representation was designed rather flexible: It
+supports arbitrary sampling rates, an arbitrary number of (named) channels and
+high-resolution timestamps (up to \SI{1}{\nano\second}).
+
+While doing the research for this thesis, three channels have been recorded with
+a sampling rate of \SI{50}{\kilo\samples\per\second}: \texttt{CPU} -- the CPU's
+voltage drops, \texttt{BOARD} -- the mainboard's voltage drops (unused) and
+\texttt{TRIGGER} -- the trigger cable used to mark the periods of time the
+other machine counted performance events.
+
+The data point files are also one notable exception of the \emph{Protocol
+Buffers for everything} principle in this work. As \cite{google11pbtechniques}
+states the Procotol Buffers were not designed to handle large messages
+but are great as individual messages \emph{within} a large data set. So (as you
+can see in appendix \ref{sec:fmt:datapoints}) small Protocol Buffer messages
+are streamed one after another. The size of one of these chunks is not
+specified. Usually one makes up a chunk when he receives one from a measuring
+device. The rule of thumb is: Make them as large as practical, but not too large
+since we only record one timestamp per chunk. The data points inside each chunk
+are considered as distributed equally.
+
+
+\ref{sec:fmt:datapoints}
+
+
+
+
 
 
 %-  performance counter files  -------------------------------------------------
@@ -157,6 +200,8 @@ several counter files (\ref{sec:counter-files}) and the corresponding work files
 (\ref{sec:work-files}) as input and outputs a system of linear equations.
 
 \JWlfour{high-level scripts}
+
+
 %#  TOWARD THE ENERGY MODEL  ###################################################
 \JWltwo{Toward the Energy Model}
 \label{sec:towards-the-model}
