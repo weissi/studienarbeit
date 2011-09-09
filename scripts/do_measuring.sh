@@ -165,7 +165,7 @@ if [ $TEST_AND_BUILD -eq 1 ]; then
     test $DIFF -lt 3 || die "ssh not working correctly, took $DIFF s"
     echo "OK"
 
-    echo -n "Testing password-free sudo: "
+    echo -n "Testing password-free remote sudo: "
     START=$(date +%s)
     remote sudo true
     let DIFF=1+$(date +%s)-$START
