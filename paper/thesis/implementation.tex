@@ -58,16 +58,21 @@ since we only record one timestamp per chunk. The data points inside each chunk
 are considered as distributed equally.
 
 
-\ref{sec:fmt:datapoints}
-
-
-
-
-
-
 %-  performance counter files  -------------------------------------------------
 \JWlthree{Counter Files}
 \label{sec:counter-files}
+
+The \emph{counter files} are used to save the performance event counter values
+after the completion of one measuring experiment. Having the performance event
+counter's values and the electrical work of one measuring experiment is an
+essential part toward calculating an energy model (see chapter
+\ref{sec:towards-the-model}). The match of corresponding data point files
+(chapter \ref{sec:datapoint-files}) and counter files is done using the shot ID
+(chapter \ref{sec:shot-ids}).
+
+The counter files' on-disc representation is -- except for some magic bytes --
+a Protocol Buffers-only format. For the technical definition see appendix
+\ref{sec:pb:counter-files}.
 
 
 %-  work files  ----------------------------------------------------------------
@@ -113,6 +118,13 @@ software and tools developed specifically to be able to write this paper.
 
 \item \JWTprotobuf for saving and loading of all kinds of data
 
+\item \JWnamedlink{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/protocol-buffers}
+                  {protocol-buffers} for parsing Protocol Buffer files and
+generating code in Haskell
+
+\item \JWnamedlink{http://code.google.com/p/protobuf-c/}{protobuf-c}
+      for parsing Protocol Buffer files in generating code in C
+
 \item \JWnamedlink{http://www.r-project.org/}{R} for statistical computations
 
 \item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{leaps package}
@@ -129,6 +141,8 @@ software and tools developed specifically to be able to write this paper.
 \item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
       {\texttt{libpfm4}} for reading the performance counters from userspace
 
+\item \JWTnidaqmxbase for interfacing \JWPni
+
 \end{itemize}
 
 
@@ -140,9 +154,9 @@ software and tools developed specifically to be able to write this paper.
 \JWlfour{\JWTlibdp}
 
 \JWTlibdp is responsible for loading and saving the measured data points from
-and to the \JWTprotobuf files. It's API is straight forward and it is able to
-handle very big files. The API can be found in
-\JWpath{libdatapoints/datapoints.h}.
+and to the data point files (see chapter \ref{sec:datapoint-files}). It's API is
+straight forward and the library is able to handle very big files. The API can
+be found in \JWpath{libdatapoints/datapoints.h}.
 
 
 \JWlfour{\JWTfcw}
@@ -168,29 +182,61 @@ from column \texttt{CPU}, the analog trigger's (see section
 
 \JWlfour{\JWTdc}
 
-\JWTdc is the tool for retrieving the performance counter's values on the target
-machine. Giving it a set of performance counters and a command to execute, it
-will record the counters while the command is running. It always works
-system-wide and saves values by counter and by CPU enabled.
+\JWTdc is the tool for retrieving the performance event's counter values on the
+target machine. Giving it a set of performance events and a command to execute,
+it will record the events while the task is running. It always works
+system-widely and saves values by counter and by CPU enabled. Along the way it
+also controls the trigger cable (see chapter \ref{sec:measuring-setup}).  That
+is crucial to be sure examining the same time intervals for counting performance
+events and measuring electrical power.
 
-A working example:
+A working example executing \texttt{/bin/ls} and counting
+\texttt{CPU\_CLK\_UNHALTED} and \texttt{INST\_RETIRED} along the way:
 
 \begin{lstlisting}[style=Shell]
-dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED -r ls
+dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED \
+             -o ls_clock-cycles_inst-retired.ctrs \
+             -r /bin/ls
 \end{lstlisting}
 
-The exact data format is documented in \JWpath{protos/perf-counters.proto}.
+After the executing, the file \texttt{ls\_clock-cycles\_inst-retired.ctrs} will
+contain the performance event counters' values. The file format is described in
+chapter \ref{sec:counter-files}.
+
 
 \JWlfour{\JWTde}
 
-\JWTde exports data point files (see section \ref{sec:datapoint-files}) to a
-format \JWTR can easily use.
+\JWTde exports data point files (see section \ref{sec:datapoint-files}) to
+\JWTR's \texttt{read.table} format \cite{r11data}.
 
-\JWtodo{bib ref to R table format}.
 
 \JWlfour{\JWTdd}
 
+\JWTdd is the tool used to dump the measuring data to data point files (see
+chapter \ref{sec:datapoint-files}). It currently records the three channels
+\texttt{CPU}, \texttt{BOARD} and \texttt{TRIGGER} with a sampling rate of
+\SI{50}{\kilo\samples\per\second} using \JWTnidaqmxbase (see chapters
+\ref{sec:standard-software} and \ref{sec:measuring-device}) to a file.
+Again, the usage is quite simple and straight forward:
+
+\begin{lstlisting}[style=Shell]
+datadump out.dpts my-shot-id
+\end{lstlisting}
+
+The sample would save the measuring experiment \texttt{my-shot-id}'s data to the
+file \texttt{out.dpts}. The record would run until a \texttt{SIGINT} signal is
+caught. Optionally a third parameter representing the desired maximal running
+time in seconds is supported.
+
+
 \JWlfour{\JWTcbs suite}
+
+\JWTcbs suite is a frontend making it really easy to write and use
+microbenchmarks.  It was primarily meant to stress inividual performance event
+counters, hence its name. Because, in the end, this tool was not really used to
+gain the results, it it not described in depth. Working samples can be found in
+the directory \JWpath{ctrbenchmark/benchlets/}.
+
 
 \JWlfour{\JWTbsle}
 
@@ -199,7 +245,44 @@ format \JWTR can easily use.
 several counter files (\ref{sec:counter-files}) and the corresponding work files
 (\ref{sec:work-files}) as input and outputs a system of linear equations.
 
+Given that \JWTR was always used to post-process the results of \JWTbsle it's
+obvious that, again, \JWTR's \texttt{read.table} \cite{r11data} format is
+outputted.
+
+
 \JWlfour{high-level scripts}
+
+As one could understand until here, there are a lot of simple tools. To make up
+the ensemble many of these have to be invoked correctly with each other. Since,
+that's not a trivial task, some high-level scripted have been developed. Most
+notably this is \JWTdomeasuring.
+
+\begin{lstlisting}[style=Shell]
+$ do_measuring.sh -f \
+                  -s 2011-09-09_15-41-32 \
+                  -p demo-shot \
+                  -o /tmp/demo-shot \
+                  i30pc59 \
+                  'CPU_CLK_UNHALTED,INST_RETIRED' \
+                  /bin/ls
+No other 'datadump' running: OK
+Checking if NI device 3923:7272 is plugged: OK
+Testing password-free SSH: OK
+Testing password-free sudo: OK
+Building: OK
+Remote building: OK
+INFO: logfile is '/tmp/measuring_log_[...].log'
+Waiting for sloooow NI call (e.g. 29s) .[...].OK[...]
+Writing remote script: OK
+Running remote benchmark: OK (time=1)
+INFO: remote log is '/tmp/remote-[...].log'
+Telling datadump to stop (SIGINT): OK
+Waiting for dump process (23472) to finish ....OK
+Calculating work to 'work_[...].work' OK
+Doing transformation
+
+GREAT SUCCESS, EVERYTHING WENT FINE :-)
+\end{lstlisting}
 
 
 %#  TOWARD THE ENERGY MODEL  ###################################################
