@@ -9,7 +9,14 @@ How did I solve the problem?
 \JWltwo{Big Picture of the Setup}
 \label{sec:big-pic}
 
-figure and text:
+see figure \ref{fig:overview} and text:
+
+\begin{figure}
+  \centering
+    \includegraphics[width=\textwidth]{fig/measuring-overview.eps}
+  \caption{Measuring setup overview}
+  \label{fig:overview}
+\end{figure}
 
 \begin{itemize}
 
@@ -146,7 +153,7 @@ After having seen (section \ref{sec:model-properties}) what exactly makes up a
 model, it crucial to find a small and powerful set of performance events we
 actually use. It's not practical to take into account all the events the
 microprocessor is aware of. Today's processors offer a lot more events then they
-have counters to count them at once \cite{intel2011softdev}.
+have counters to count them at once \cite{intel2011softdev1}.
 
 The approach to find a reasonable subset of $N$ events (of $A$ available) used
 in this work can be summed up to:

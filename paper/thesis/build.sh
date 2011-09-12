@@ -1,5 +1,13 @@
 #!/bin/bash
 
+STEP="main program"
+function err() {
+    echo "UNEXCEPTION ERROR (in $STEP)"
+    exit 1
+}
+
+trap err ERR
+
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 TEXOPTS="-output-directory build -halt-on-error"
 cd "$HERE"
@@ -23,14 +31,20 @@ function try_pdflatex() {
 ./clean.sh
 
 set -e
+STEP="texification of ressources)"
 ../scripts/texify-verb.sh ../../protos/measured-data.proto > res/pb-dpts.tex
 ../scripts/texify-verb.sh ../../libdatapoints/dump-format.text > res/dpts.tex
 ../scripts/texify-verb.sh ../../protos/perf-counters.proto > res/pb-ctrs.tex
 ../scripts/texify-verb.sh ../../protos/generic.proto > res/pb-generic.tex
+STEP="pdflatex run 1"
 try_pdflatex $TEXOPTS thesis
+STEP="bibtex"
 bibtex build/thesis
-pdflatex $TEXOPTS -interaction=batchmode thesis
+STEP="pdflatex run 2"
+try_pdflatex $TEXOPTS thesis
+STEP="pdflatex run 3"
 pdflatex $TEXOPTS -halt-on-error thesis
+STEP="main program"
 cp build/thesis.pdf .
 
 echo BUILD SUCCESSFUL
