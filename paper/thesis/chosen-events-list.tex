@@ -1,0 +1,84 @@
+\begin{itemize}
+
+\item \JWctr{CPU\_CLK\_UNHALTED}
+\begin{quotation}
+This is an architectural event that counts the number of thread cycles while the
+thread is not in a halt state. The thread enters the halt state when it is
+running the HLT instruction. The core frequency may change from time to time due
+to power or thermal throttling. For this reason, this event may have a changing
+ratio with regards to wall clock time.
+\end{quotation}
+
+\item \JWctr{INST\_RETIRED}
+\begin{quotation}
+This event counts the number of instructions retired from execution. For
+instructions that consist of multiple micro-ops, this event counts the
+retirement of the last micro-op of the instruction. Counting continues during
+hardware interrupts, traps, and inside interrupt handlers. Notes:
+\JWctr{INST\_RETIRED.ANY} is counted by a designated fixed counter, leaving the
+four ( eight when Hyperthreading is disabled ) programmable counters available
+for other events. \JWctr{INST\_RETIRED.ANY\_P} is counted by a programmable
+counter and it is an architectural performance event. Counting: Faulting
+executions of GETSEC / VM entry / VM Exit / MWait will not count as retired
+instructions.
+\end{quotation}
+
+\item \JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}
+\begin{quotation}
+This is a non-precise version (that is, does not use PEBS) of the event that
+counts far branch instructions retired.
+\end{quotation}
+
+\item \JWctr{DSB2MITE\_SWITCHES}
+\begin{quotation}
+This event counts the number of the Decode Stream Buffer (DSB)-to-MITE switches
+including all misses because of missing Decode Stream Buffer (DSB) cache and
+u-arch forced misses. Note: Invoking MITE requires two or three cycles delay.
+\end{quotation}
+
+\item \JWctr{DSB\_FILL:ALL\_CANCEL}
+\begin{quotation}
+This event counts the number of times when a valid Decode Stream Buffer (DSB)
+fill has been actually cancelled not because of exceeding the way limit.
+Cancelling Decode Stream Buffer (DSB) fill may also result, for example, from
+Decode Stream Buffer Queue (DSBQ) snoop hits. This is because the Decode Stream
+Buffer (DSB) full hit is guaranteed to delivery from Decode Stream Buffer (DSB).
+In the B step a four-bit counter will count the number of cancel operations and
+will reverse the priority upon look ing up the same set.
+\end{quotation}
+
+\item \JWctr{ILD\_STALL:IQ\_FULL}
+\begin{quotation}
+This event counts stall cycles when instructions cannot be written because IQ is
+full. Note: If there is no Resource Allocation Table (RAT) stalls, it indicates
+the decoders issue.
+\end{quotation}
+
+\item \JWctr{L2\_RQSTS:PF\_HIT}
+\begin{quotation}
+This event counts the number of requests from the L2 hardware prefetchers that
+hit L2 cache. LLC prefetch new types
+\end{quotation}
+
+\item \JWctr{LD\_BLOCKS:ALL\_BLOCK}
+\begin{quotation}
+Number of cases where any load ends up with a valid block-code written to the
+load buffer (including blocks due to Memory Order Buffer (MOB), Data Cache Unit
+(DCU), TLB, but load has no DCU miss)
+\end{quotation}
+
+\item \JWctr{LD\_BLOCKS:DATA\_UNKNOWN}
+\begin{quotation}
+This event counts the number of load operations delayed due to store buffer
+blocks, preceding store operations with known addresses but unknown data.
+Counting happens according to the final blocking codes. This does not include
+inline wakeups.
+\end{quotation}
+
+\item \JWctr{UOPS\_DISPATCHED:STALL\_CYCLES}
+\begin{quotation}
+This event counts cycles during which no uops were dispatched from the
+Reservation Station (RS) per thread.
+\end{quotation}
+
+\end{itemize}
