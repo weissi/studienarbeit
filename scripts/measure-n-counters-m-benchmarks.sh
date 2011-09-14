@@ -109,7 +109,9 @@ function go() {
 }
 
 if [ ! -d "$OUTDIR" ]; then
-    mkdir -p -- "$OUTDIR"
+    if [ $DRY_RUN -ne 1 ]; then
+        mkdir -p -- "$OUTDIR"
+    fi
 fi
 
 RUNS=0

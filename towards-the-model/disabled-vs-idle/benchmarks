@@ -1,0 +1,5 @@
+NAME true taskset 1 /bin/true
+NAME sleep-30 taskset 1 sleep 30
+NAME burnP6-30 taskset 1 bash -c 'burnP6 & sleep 30; killall burnP6; wait'
+NAME stream taskset 1 /home/weiss/stream
+NAME REG-ADD taskset 1 /home/weiss/studienarbeit/build/ctrbenchmark 10 REG_ADD

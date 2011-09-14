@@ -1,0 +1,33 @@
+#screen
+measure-n-counters-m-benchmarks.sh -C 20 i30pc59 2011-09-14_17-23-30 \
+    ~/studienarbeit/towards-the-model/v2/counters+syscalls \
+    ~/studienarbeit/towards-the-model/v2/permutated-benchmarks \
+    |& tee /tmp/out
+
+#shell
+cd /local/tmp/weiss/measuring_data
+buildsle -m 0.04 -c ~/studienarbeit/towards-the-model/v2/counters \
+    2011-08-25_18-45-00/* 2011-08-29_19-06-30/* \
+    2011-08-31_17-03-00/* 2011-09-14_17-23-30/* disabled-vs-idle-*/* \
+    syscall/* \
+    > /tmp/v2tab
+
+#R
+tab <- read.table('/tmp/v2tab', header=T)
+mtab <- tab[tab$WORK > 50,]     #sort out everything which used < 50J
+0 == length(mtab[is.na(mtab)])  # == TRUE?
+model <- lm(WORK~0+., data=mtab[2:ncol(mtab)])
+write.table(model$coefficients, '/tmp/model')
+
+#shell
+# remove NA cols
+build-energy-model.sh -R /tmp/model
+
+#R
+
+#<PASTE OUTPUT TO R>
+
+calc_err <- function(real, calc) abs(real-calc)/real
+otab <- mtab
+otab$MWORK <- model(mtab)
+otab$ERR <- calc_err(mtab$WORK, model(mtab))
