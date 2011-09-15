@@ -1,0 +1,20 @@
+#buildsle -g @ -m 0.14 -c ~/studienarbeit/towards-the-model/v2/counters \
+#    2011-08-08_23-26-46/* 2011-08-13_11-33-20/* > /tmp/test
+test <- read.table('/tmp/test', header=T)
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/1cpu-bench-errs.eps'
+          ,paper='special', width=10, height=5, horizontal=F)
+boxplot( data.frame( model          = 100*calc_err(test$WORK, model(test))
+                   , cpu_time_based = 100*calc_err(test$WORK, simplemodel(test))
+                   )
+       , horizontal=T, xlab='Percent Error', ylab='Method')
+dev.off()
+
+#create 'tab' as in /home/weiss/studienarbeit/towards-the-model/v2/HOWTO
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/Ncpu-bench-errs.eps'
+          ,paper='special', width=10, height=5, horizontal=F)
+boxplot( data.frame( model          = 100*calc_err(tab$WORK, model(tab))
+                   , cpu_time_based = 100*calc_err(tab$WORK, simplemodel(tab))
+                   )
+       , horizontal=T, xlab='Percent Error', ylab='Method', ylim=c(0, 40))
+dev.off()
+
