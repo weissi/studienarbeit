@@ -468,7 +468,7 @@ main = CL.getArgs >>= CL.executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
        --                   ", data=t, force.in=c('CPU_CLK_UNHALTED', " ++
        --                   "'INST_RETIRED'), nbest=10)"
        case groupShotDataMap sdmap maxRelStdDev of
-         Left err -> putStrLn err
+         Left err -> hPutStrLn stderr err
          Right gsdmap ->
              printRTAB (mo_printRefCols opts) $
               case mGroupChar of
