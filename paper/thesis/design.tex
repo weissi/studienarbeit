@@ -33,10 +33,36 @@ see figure \ref{fig:overview} and text:
 \JWltwo{Measuring Setup in Detail}
 \label{sec:measuring-setup}
 
-In this chapter the measuring setup in detail is presented. See figures
-\ref{fig:circuit} and \ref{fig:potential-equalizer}.
+To fit the energy model later on, the current flows of the CPU and the
+motherboard have to be measured. Using four-terminal sensing \cite{wiki:FTW}
+voltage drops across the impedance can be measured to deduce the current flow.
 
-Four-terminal sensing \cite{wiki:FTS}.
+Because the \emph{Computer under Examination (CuE)} and the \emph{Examining
+Workstation (EW)} (see figure \ref{fig:overview}) have to agree about the
+examination (time) interval a trigger wire is used. It is realized as a simple
+analog signal using the parallel port's \emph{high} and \emph{low} voltages.
+
+This can be summed up to simply measuring three potential differences. Since the
+measuring device (chapter \ref{sec:mesuring-device}) provides up to eight
+differential, analog input channels that seems very easy at the first sight.
+Unfortunately there are two caveats here: On the one hand according to the
+user's manual \cite{NIManual2009} the best accuracy can be achieved in range of
+\SI{-200}{\milli\volt} and \SI{200}{\milli\volt}. On the other hand the overall
+potential differences should not exceed $\pm$\SI{10.4}{\volt}
+\cite{NISpec2009}.
+
+Choosing adequate impedances for the \JWchan{CPU} (R = \SI{10}{\milli\ohm}) and
+\JWchan{BOARD} (R = \SI{5}{\milli\ohm}) channels (see figure \ref{fig:circuit})
+worked out well. The parallel port trigger wire has been a problem in the a
+problem at first, though. The parallel port has a potential difference range of
+$>$\SI{200}{\milli\volt} and our test machine's port had a very different
+potential niveau than the \JWchan{CPU} and \JWchan{BOARD} channels exceeding the
+allowed range of $\pm$\SI{10.4}{\volt}. The potential equalizer illustrated in
+figure \ref{fig:potential-equalizer} solves both problems very well.
+
+Finally three differential channels \JWchan{CPU}, \JWchan{BOARD} and
+\JWchan{TRIGGER} in the range of $\pm$\SI{200}{\milli\volt} and alike potential
+levels can be connected to the measuring device.
 
 \begin{figure}
   \centering
@@ -68,9 +94,10 @@ Four-terminal sensing \cite{wiki:FTS}.
 %-  wiring scheme  -------------------------------------------------------------
 \JWlthree{Wiring Scheme}
 
-In this section a figure of the wiring scheme will be presented. It will contain
-every wire, resistor and transistor. It will also include the voltage adjustment
-circuit.
+The measuring setup is assembled as depicted by figures \ref{fig:circuit} and
+\ref{fig:potential-equalizer}. While researching for this thesis, three channels
+have been measured: Channel \JWchan{CPU} measuring the voltage drops caused by
+the CPU's current flow (as shown in \ref{fig:circuit}).
 
 
 %-  measuring device  ----------------------------------------------------------
