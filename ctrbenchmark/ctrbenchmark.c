@@ -37,6 +37,14 @@ int main(int argc, char **argv) {
     char *benchlet_prefixes[1024] = { "", NULL };
 
     if (argc < 2) {
+        fprintf(stderr,
+                "ctrbenchmark, Copyright (C)2011, "
+                "Johannes Weiß <weiss@tux4u.de>\n");
+        fprintf(stderr,
+                "This program comes with ABSOLUTELY NO WARRANTY; "
+                "for details type `show w'.\n"
+                "This is free software, and you are welcome to redistribute it"
+                "\nunder certain conditions; type `show c' for details.\n\n");
         errx(1, "Usage: %s RUNNING-TIME [BENCHLETS...]", argv[0]);
     }
 

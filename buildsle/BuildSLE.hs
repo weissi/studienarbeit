@@ -431,7 +431,15 @@ workFilesMap gc fps =
 
 main :: IO ()
 main = CL.getArgs >>= CL.executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
-    do let opt_files = mo_fileArgs opts
+    do hPutStrLn stderr $
+           "BuildSLE, Copyright (C)2011, " ++
+           "Johannes Weiß <weiss@tux4u.de>"
+       hPutStrLn stderr $
+           "This program comes with ABSOLUTELY NO WARRANTY; " ++
+           "for details type `show w'.\n" ++
+           "This is free software, and you are welcome to redistribute it" ++
+           "\nunder certain conditions; type `show c' for details.\n"
+       let opt_files = mo_fileArgs opts
            opt_counterFile =
                case mo_counterFile opts of
                  "" -> Nothing

@@ -43,6 +43,14 @@ int main(int argc, char **argv) {
     bool last_trigger_state = 0;
 
     if (5 != argc) {
+        fprintf(stderr,
+                "fastcalcwork, Copyright (C)2011, "
+                "Johannes Weiß <weiss@tux4u.de>\n");
+        fprintf(stderr,
+                "This program comes with ABSOLUTELY NO WARRANTY; "
+                "for details type `show w'.\n"
+                "This is free software, and you are welcome to redistribute it"
+                "\nunder certain conditions; type `show c' for details.\n\n");
         fprintf(stderr, "Usage: %s INPUT.dpts TAB-COL RESIST-VAL TRIGGER-COL\n",
                 argv[0]);
         exit(1);

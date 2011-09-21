@@ -94,6 +94,14 @@ int main(int argc, char **argv) {
     DP_DATA_POINT **dp_data = malloc(sizeof(DP_DATA_POINT *) * NO_CHANNELS);
 
     if (argc != 3 && argc != 4) {
+        fprintf(stderr,
+                "datadump, Copyright (C)2011, "
+                "Johannes Weiß <weiss@tux4u.de>\n");
+        fprintf(stderr,
+                "This program comes with ABSOLUTELY NO WARRANTY; "
+                "for details type `show w'.\n"
+                "This is free software, and you are welcome to redistribute it"
+                "\nunder certain conditions; type `show c' for details.\n\n");
         fprintf(stderr, "Usage: %s FILENAME SHOT-ID [MEASURING-TIME]\n",
                 argv[0]);
         exit(1);
