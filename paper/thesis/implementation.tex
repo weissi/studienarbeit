@@ -6,8 +6,8 @@
 
 This chapter will give a rough outline of the formats used to store data between
 the various phases of the analysis. The lingua franca for most complex on disc
-formats are the schrieblesque \JWTprotobuf. Though, when interfacing with
-external software such as \JWTR, other formats had to be chosen. The choice in
+formats are the schrieblesque \JWTprotobuf{}. Though, when interfacing with
+external software such as \JWTR{}, other formats had to be chosen. The choice in
 favour of Protocol Buffers has been made because of \emph{think XML, but
 smaller, faster, and simpler} (which is incidentally their  slogan).
 
@@ -116,7 +116,7 @@ software and tools developed specifically to be able to write this paper.
 
 \begin{itemize}
 
-\item \JWTprotobuf for saving and loading of all kinds of data
+\item \JWTprotobuf{} for saving and loading of all kinds of data
 
 \item \JWnamedlink{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/protocol-buffers}
                   {protocol-buffers} for parsing Protocol Buffer files and
@@ -141,7 +141,7 @@ generating code in Haskell
 \item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
       {\texttt{libpfm4}} for reading the performance counters from userspace
 
-\item \JWTnidaqmxbase for interfacing \JWPni
+\item \JWTnidaqmxbase{} for interfacing \JWPni
 
 \end{itemize}
 
@@ -153,7 +153,7 @@ generating code in Haskell
 
 \JWlfour{\JWTlibdp}
 
-\JWTlibdp is responsible for loading and saving the measured data points from
+\JWTlibdp{} is responsible for loading and saving the measured data points from
 and to the data point files (see chapter \ref{sec:datapoint-files}). It's API is
 straight forward and the library is able to handle very big files. The API can
 be found in \JWpath{libdatapoints/datapoints.h}.
@@ -161,20 +161,20 @@ be found in \JWpath{libdatapoints/datapoints.h}.
 
 \JWlfour{\JWTfcw}
 
-\JWTfcw can calculate the electrical work from data points files very quickly.
+\JWTfcw{} can calculate the electrical work from data points files very quickly.
 As explained in section \ref{sec:calc-work} it integrates to electrical power.
 But since we obtain discrete data by sampling (see section
 \ref{sec:measuring-setup}) the integration can be done quite fast:
 
 \JWtodo{integral P = sum P * diff}
 
-A typical call to \JWTfcw looks like
+A typical call to \JWTfcw{} looks like
 
 \begin{lstlisting}[style=Shell]
 fastcalcwork captured-17:15:00.dpts CPU 0.01 TRIGGER
 \end{lstlisting}
 
-Using the command line above, \JWTfcw will calculate the electrical work with a
+Using the command line above, \JWTfcw{} will calculate the electrical work with a
 measuring resistor of \SI{0.01}{\ohm}. The measured data points will be taken
 from column \texttt{CPU}, the analog trigger's (see section
 \ref{sec:measuring-setup}) value from \texttt{TRIGGER}.
@@ -182,9 +182,9 @@ from column \texttt{CPU}, the analog trigger's (see section
 
 \JWlfour{\JWTdc}
 
-\JWTdc is the tool for retrieving the performance event's counter values on the
-target machine. Giving it a set of performance events and a command to execute,
-it will record the events while the task is running. It always works
+\JWTdc{} is the tool for retrieving the performance event's counter values on
+the target machine. Giving it a set of performance events and a command to
+execute, it will record the events while the task is running. It always works
 system-widely and saves values by counter and by CPU enabled. Along the way it
 also controls the trigger cable (see chapter \ref{sec:measuring-setup}).  That
 is crucial to be sure examining the same time intervals for counting performance
@@ -206,16 +206,16 @@ chapter \ref{sec:counter-files}.
 
 \JWlfour{\JWTde}
 
-\JWTde exports data point files (see section \ref{sec:datapoint-files}) to
+\JWTde{} exports data point files (see section \ref{sec:datapoint-files}) to
 \JWTR's \texttt{read.table} format \cite{r11data}.
 
 
 \JWlfour{\JWTdd}
 
-\JWTdd is the tool used to dump the measuring data to data point files (see
+\JWTdd{} is the tool used to dump the measuring data to data point files (see
 chapter \ref{sec:datapoint-files}). It currently records the three channels
 \texttt{CPU}, \texttt{BOARD} and \texttt{TRIGGER} with a sampling rate of
-\SI{50}{\kilo\samples\per\second} using \JWTnidaqmxbase (see chapters
+\SI{50}{\kilo\samples\per\second} using \JWTnidaqmxbase{} (see chapters
 \ref{sec:standard-software} and \ref{sec:measuring-device}) to a file.
 Again, the usage is quite simple and straight forward:
 
@@ -229,9 +229,9 @@ caught. Optionally a third parameter representing the desired maximal running
 time in seconds is supported.
 
 
-\JWlfour{\JWTcbs suite}
+\JWlfour{\JWTcbs{} suite}
 
-\JWTcbs suite is a frontend making it really easy to write and use
+\JWTcbs{} suite is a frontend making it really easy to write and use
 microbenchmarks.  It was primarily meant to stress inividual performance event
 counters, hence its name. Because, in the end, this tool was not really used to
 gain the results, it it not described in depth. Working samples can be found in
@@ -240,13 +240,13 @@ the directory \JWpath{ctrbenchmark/benchlets/}.
 
 \JWlfour{\JWTbsle}
 
-\JWTbsle is a \JWnamedlink{http://haskell.org}{Haskell} program which is able
+\JWTbsle{} is a \JWnamedlink{http://haskell.org}{Haskell} program which is able
 \emph{build} the \emph{s}ystem of \emph{l}inear \emph{e}quations. It takes
 several counter files (\ref{sec:counter-files}) and the corresponding work files
 (\ref{sec:work-files}) as input and outputs a system of linear equations.
 
-Given that \JWTR was always used to post-process the results of \JWTbsle it's
-obvious that, again, \JWTR's \texttt{read.table} \cite{r11data} format is
+Given that \JWTR{} was always used to post-process the results of \JWTbsle{}
+it's obvious that, again, \JWTR's \texttt{read.table} \cite{r11data} format is
 outputted.
 
 
@@ -255,7 +255,7 @@ outputted.
 As one could understand until here, there are a lot of simple tools. To make up
 the ensemble many of these have to be invoked correctly with each other. Since,
 that's not a trivial task, some high-level scripted have been developed. Most
-notably this is \JWTdomeasuring.
+notably this is \JWTdomeasuring{}.
 
 \begin{lstlisting}[style=Shell]
 $ do_measuring.sh -f \
