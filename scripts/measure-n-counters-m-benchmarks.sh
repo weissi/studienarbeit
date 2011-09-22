@@ -12,15 +12,20 @@ WARM_UP_TMP="/tmp/WARM-UP-TMP"
 DRY_RUN=0
 
 function usage() {
-    echo "Usage: $0 [-C MAX] REMOTE-HOST OUT-DIR COUNTER-FILE BENCHMARK-FILE"
+    echo -n "Usage: $0 [-n] [-w] [-i] [-C MAX] REMOTE-HOST OUT-DIR COUNTER-FILE"
+    echo " BENCHMARK-FILE"
     echo
     echo "-C: maximal number of simultaneous counters, default: 8"
+    echo "-n: dry run"
+    echo "-w: non-recorded warm-up run for each benchmark"
+    echo "-i: always append MAX counters, counter set increases per benchmark"
 }
 
 WARMUP=0
 MAX_CTRS=8
+INCREASING=0
 
-while getopts nwC: OPT; do
+while getopts inwC: OPT; do
     case "$OPT" in
         n)
             DRY_RUN=1
@@ -30,6 +35,9 @@ while getopts nwC: OPT; do
             ;;
         C)
             MAX_CTRS="$OPTARG"
+            ;;
+        i)
+            INCREASING=1
             ;;
         [?])
             usage
@@ -68,8 +76,8 @@ function go() {
     local BMNAME="$4"
     local CTRS="$5"
 
-    if [ $(echo "$CTRS" | grep -o , | wc -l) -gt $MAX_CTRS ]; then
-        echo "WARNING: Having more than $MAX_CTRS counters: $CTRS"
+    if [ $(echo "$CTRS" | grep -o , | wc -l) -gt $MAX_CTRS -a $INCREASING -ne 1 ]; then
+        echo "BUG: Having more than $MAX_CTRS counters: $CTRS"
         exit 1
     fi
 
@@ -169,7 +177,9 @@ for (( i=0; i<${#BENCHMARKS[@]}; i++ )); do
         if [ $CUR_CTRS -gt $MAX_CTRS ]; then
             go "$RHOST" "$OUTDIR" "$BENCHMARK" "$BENCHMARK_NAME" "$CTR_STRING"
             CUR_CTRS=1
-            CTR_STRING=""
+            if [ $INCREASING -ne 1 ]; then
+                CTR_STRING=""
+            fi
         fi
 
         if [ -z "$CTR_STRING" ]; then
