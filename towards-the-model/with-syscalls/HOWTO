@@ -1,0 +1,32 @@
+#shell
+cd /local/tmp/weiss/measuring_data
+buildsle 2011-08-31_17-03-00/* 2011-09-14_17-23-30/* disabled-vs-idle-*/* \
+    syscall/* \
+    > /tmp/syscall-tab
+
+#R
+stab <- read.table('/tmp/syscall-tab', header=T)
+smtab <- stab[stab$WORK > 50,]     #sort out everything which used < 50J
+0 == length(smtab[is.na(smtab)])  # == TRUE?
+smodel <- lm(WORK~0+., data=smtab[2:ncol(smtab)])
+write.table(smodel$coefficients, '/tmp/smodel')
+
+#shell
+# remove NA cols
+build-energy-model.sh -R /tmp/smodel
+
+#<PASTE OUTPUT TO R>
+
+sotab <- smtab
+sotab$MWORK <- smodel(smtab)
+sotab$ERR <- calc_err(smtab$WORK, smodel(smtab))
+
+
+
+
+
+
+
+
+
+
