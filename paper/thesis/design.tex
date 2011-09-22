@@ -1,15 +1,10 @@
 \JWlone{Design}
 \label{sec:design}
 
-How did I solve the problem?
-
-
 
 %#  BIG PICTURE  ###############################################################
 \JWltwo{Big Picture of the Setup}
 \label{sec:big-pic}
-
-see figure \ref{fig:overview} and text:
 
 \begin{figure}
   \centering
@@ -18,32 +13,28 @@ see figure \ref{fig:overview} and text:
   \label{fig:overview}
 \end{figure}
 
-\begin{itemize}
+As figure \ref{fig:overview} illustrates an additional workstation - the
+\emph{Examining Workstation (EW)} has been used while evolving this thesis. The
+\emph{System under Test (SuT)} counts the CPU's performance events itself and
+the EW records the energy consumation in the meantime. These two datasets have
+thereafter been used to build up the energy model.
 
-\item Instrumented Sandy Bridge computer counter performance events and is 
-      connected to
-
-\item measuring computer which records voltage drops using
-
-\item NI USB-6218.
-
-\end{itemize}
 
 %#  MEASURING SETUP IN DETAIL  #################################################
 \JWltwo{Measuring Setup in Detail}
 \label{sec:measuring-setup}
 
 To fit the energy model later on, the current flows of the CPU and the
-motherboard's \SI{12}{\volt} wires have to be measured. Using four-terminal
+motherboard's \SI{12}{\volt} supply have to be measured. Using four-terminal
 sensing \cite{wiki:FTS} voltage drops across the sensing resistor can be
 measured to deduce the current flow. The motherboard's \SI{12}{\volt} current
-flow has been measured in this thesis because it was unclear if the CPU obtains
-all power from its own \SI{12}{\volt} current supply.
+flow has been measured in this thesis because it was unclear if the CPU is
+entirely fed by its own \SI{12}{\volt} power supply.
 
-Because the \emph{System under Test (SuT)} and the \emph{Examining
-Workstation (EW)} (see figure \ref{fig:overview}) have to agree about the
-examination (time) interval a trigger wire is used. It is realized as a simple
-analog signal using the parallel port's \emph{high} and \emph{low} voltages.
+Because the SuT and the EW (see figure \ref{fig:overview}) have to agree about
+the examination (time) interval a trigger wire is used. It is realized as a
+simple analog signal using the parallel port's \emph{high} and \emph{low}
+voltages.
 
 This can be summed up to simply measuring three potential differences. Since the
 measuring device (chapter \ref{sec:measuring-device}) provides up to eight

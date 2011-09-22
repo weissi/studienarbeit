@@ -1,7 +1,5 @@
 \JWlone{Introduction}
 
-What is the problem?
-
 Energy is a crucial resource especially for mobile devices. Since the energy
 available is either limited -- on mobile devices, or can become expensive -- on
 devices connected to the regular power grid, we should use as little as
@@ -11,11 +9,11 @@ maximize the energy-efficiency, this reaction is not always appropriate. A lower
 CPU frequency is not always the more energy-efficient
 \cite{weissel2002process,snowdon2010operating}.
 
-To intelligently minimize the usage, an accounting of the energy used
-by each task of its own is the basis. For every process running on an operating
-system, the current contribution to the machine's power should be known. To
-later on account the energy used the overall energy usage per process should be
-recorded, too.
+To intelligently minimize the usage, an accounting of the energy for each task
+of its own is the basis. For every running process, the operating system should
+be aware of the present contribution to the machine's total power consumption.
+Additionally, for accounting purposes the overall energy consumed by a process
+should be known after its termination.
 
 Thus, for being able to develop good power management strategies, a good live
 power/energy estimation is critical. The approach used in this study thesis is
@@ -32,13 +30,9 @@ serve as a customer cost-model for computing centers \cite{Bertran2010}, because
 it reflects, much more accurately the real costs than simple computing time
 based models. Another possible application in that field are migration decisions
 of either virtual machines between real machines in clusters or processes
-between processing units \cite{merkel10rcscheduling}.
+between processing units \cite{merkel10rcscheduling}. Power-aware scheduling can
+also help to improve the efficiency.
 
-\begin{itemize}
-
-\item Increase Efficiency
-
-\end{itemize}
 
 %-  charges and restrictions  --------------------------------------------------
 \JWltwo{Charges and Restrictions}
