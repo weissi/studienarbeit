@@ -26,47 +26,9 @@ resources
 
 \item Big problem classes as in the following sub sections.
 
-\end{itemize}
-
-
-%-  no advances features  ------------------------------------------------------
-\JWlthree{No DVFS, Hyper-Threading, ACPI Processor States, Turbo Mode, Linux
-Dynamic Tics}
-\label{sec:no-advances-features}
-
-Because of the limited amount of time and the start from scratch of this thesis,
-some enery-relevant processor and operating system features have been disabled.
-Since all of these either should work with the current model or individually
-raise some kind of events, this is not seen as a major drawback of this work.
-Future work may certainly be able to flawlessly integrate them into the known
-model. In particular the feature which lasted disabled were:
-
-\begin{itemize}
-
-\item Dynamic Frequency and Voltage Scaling \cite{wiki:DVFS}
-
-\item Hyper-Threading \cite{wiki:HT}
-
-\item ACPI Processor States other than C0 \cite{wiki:ACPI}
-
-\item Intel\TReg{} Turbo Boost Technology 2.0 \cite{wiki:IntelTurboBoost}
+\item Disabled Processor Features (chapter \ref{sec:restrictions})
 
 \end{itemize}
-
-
-%-  no auxiliary processing units  ---------------------------------------------
-\JWlthree{No Auxiliary Processing Units}
-\label{sec:no-aux-units}
-
-In addition to the advanced processor and operating system features meantioned
-in chapter \ref{sec:no-advanced-features}, all auxiliary processing units could
-not be taken into account. The problem with the auxiliary processing units such
-as the floating point unit (FPU), MMX\cite{wiki:MMX}, SSE\cite{wiki:SSE} and
-AVX\cite{wiki:AVX} is that they are not or not well covered by the CPU's
-performance events (see \cite{intel2011events}). So, they act somehow as a
-black box not reveiling the work they do internally. That makes it virtually
-impossible to count their energy with the current model.
-
 
 
 % #  OUTLOOK  ##################################################################

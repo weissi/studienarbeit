@@ -34,10 +34,13 @@ see figure \ref{fig:overview} and text:
 \label{sec:measuring-setup}
 
 To fit the energy model later on, the current flows of the CPU and the
-motherboard have to be measured. Using four-terminal sensing \cite{wiki:FTS}
-voltage drops across the impedance can be measured to deduce the current flow.
+motherboard's \SI{12}{\volt} wires have to be measured. Using four-terminal
+sensing \cite{wiki:FTS} voltage drops across the sensing resistor can be
+measured to deduce the current flow. The motherboard's \SI{12}{\volt} current
+flow has been measured in this thesis because it was unclear if the CPU obtains
+all power from its own \SI{12}{\volt} current supply.
 
-Because the \emph{Computer under Examination (CuE)} and the \emph{Examining
+Because the \emph{System under Test (SuT)} and the \emph{Examining
 Workstation (EW)} (see figure \ref{fig:overview}) have to agree about the
 examination (time) interval a trigger wire is used. It is realized as a simple
 analog signal using the parallel port's \emph{high} and \emph{low} voltages.
@@ -66,22 +69,24 @@ potential differences may not exceed $\pm$\SI{10.4}{\volt}
   \label{fig:potential-equalizer}
 \end{figure}
 
-Choosing adequate impedances for the \JWchan{CPU} (R = \SI{10}{\milli\ohm}) and
-\JWchan{BOARD} (R = \SI{5}{\milli\ohm}) channels (see figure \ref{fig:circuit})
-worked out well. The parallel port trigger wire has been a problem in the a
-problem at first, though. The parallel port has a potential difference range of
-$>$\SI{200}{\milli\volt} and our test machine's port had a very different
-potential niveau than the \JWchan{CPU} and \JWchan{BOARD} channels, exceeding
-the allowed range of $\pm$\SI{10.4}{\volt}. The potential equalizer illustrated
-in figure \ref{fig:potential-equalizer} solves both problems very well.
+Choosing adequate sensing resistors for the \JWchan{CPU} (R =
+\SI{10}{\milli\ohm}) and \JWchan{BOARD} (R = \SI{5}{\milli\ohm}) channels (see
+figure \ref{fig:circuit}) worked out well. The parallel port trigger wire has
+been a problem in the a problem at first, though. The parallel port has a
+potential difference range of $>$\SI{200}{\milli\volt} and our test machine's
+port had a very different potential niveau than the \JWchan{CPU} and
+\JWchan{BOARD} channels, exceeding the allowed range of $\pm$\SI{10.4}{\volt}.
+The potential equalizer illustrated in figure \ref{fig:potential-equalizer}
+solves both problems very well.
 
-Finally three differential channels \JWchan{CPU}, \JWchan{BOARD} and
-\JWchan{TRIGGER} in the range of $\pm$\SI{200}{\milli\volt} and alike potential
-levels can be connected to the measuring device. The performance events get
-counted on the CuE itself which controls the trigger wire, too: The trigger is
-set to \emph{On} directly before executing the program to examine and is set to
-\emph{Off} promptly after its termination. An exemplary plot of an examination
-can be found in figure \ref{fig:cpu-power-trig}.
+Finally three differential channels \JWchan{CPU}, \JWchan{BOARD} (\SI{12}{\volt}
+current supply only!) and \JWchan{TRIGGER} in the range of
+$\pm$\SI{200}{\milli\volt} and alike potential levels can be connected to the
+measuring device. The performance events get counted on the SuT itself which
+controls the trigger wire, too: The trigger is set to \emph{On} directly before
+executing the program to examine and is set to \emph{Off} promptly after its
+termination. An exemplary plot of an examination can be found in figure
+\ref{fig:cpu-power-trig}.
 
 \begin{figure}
   \centering
@@ -168,7 +173,7 @@ In this work, an energy model is considered as a linear formula. A system with
 $N$ CPUs/cores which is able to monitor $M$ performance events per core
 simultaneously is described here. Additionally to the per-core event counters,
 $K$ system-wide event counters make the model up. In the formal description (see
-section \ref{sec:model-pratical} for the practical implementation) we assume
+section \ref{sec:towards-the-model} for the practical implementation) we assume
 four functions providing the actual values:
 
 \begin{itemize}
@@ -203,7 +208,7 @@ microprocessor.
 \label{sec:min-events}
 
 After having seen (section \ref{sec:model-properties}) what exactly makes up a
-model, it crucial to find a small and powerful set of performance events we
+model, it crucial to find a small and meaningful set of performance events we
 actually use. It's not practical to take into account all the events the
 microprocessor is aware of. Today's processors offer a lot more events then they
 have counters to count them at once \cite{intel2011softdev1}.

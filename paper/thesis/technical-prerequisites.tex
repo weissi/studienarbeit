@@ -59,21 +59,22 @@ follows (\cite{intel2011spec}):
 
 
 %-  PMU  -----------------------------------------------------------------------
-\JWlthree{Performance Measuring Unit}
+\JWlthree{Performance Monitoring Unit}
 \label{sec:pmu}
 
-The CPU's \emph{Performance Measuring Unit} (PMU) is present since the
+The CPU's \emph{Performance Monitoring Unit} (PMU) is present since the
 Intel\TReg{} Pentium processor. Using this unit you are able to monitor several
 of the CPU's performance parameters, originally meant for tuning system and
-compiler performance \cite{intel2011softdev3b}.
+application performance (mostly used by compiler developers)
+\cite{intel2011softdev3b}.
 
 In prior work (\cite{bellosa2000benefits,snowdon2010operating,
-weissel2002process,kellner03tempcontrol,bertran2010decomposable} and many
-others) some of these performance events have proven to be somehow related to
-the power consumption of the CPU. As the selection of the events and the degree
-of their correlation to energy highly varies between CPUs (or at least CPU
-microarchitectures) this has been done again in this work. This time for the
-Intel\TReg{} Sandy Bridge microarchitecture and in particular the \JWPcpu{}.
+weissel2002process,kellner03tempcontrol,bertran2010decomposable}) some of these
+performance events have proven to be somehow related to the power consumption of
+the CPU. As the selection of the events and the degree of their correlation to
+energy highly varies between CPUs (or at least CPU microarchitectures) this has
+been done again in this work. This time for the Intel\TReg{} Sandy Bridge
+microarchitecture and in particular the \JWPcpu{}.
 
 Examining the documentation \cite{intel2011events} approximalely 184 events have
 been found available and usable. Because the CPU is only able to count eight
