@@ -337,29 +337,75 @@ form the energy model presented in this paper.
 
 In this section the final energy model is presented:
 
-\JWtodo{Tabelle dritte Spalte: max(n/CPU\_CLK\_CYCLES)}
-
 \JWtodo{Tabelle vierte Spalte: max-betrag(P)}
 
-\begin{tabular}{l r}
+\begin{tabular}{l r r}
 
-(pseudo-)Event                         & Energetical Weight \\
+(pseudo-)Event &
+Energetical&
+Maximal Frequency\\
+& Weight & compared to\\
+& & \JWctr{CPU\_CLK\_UNHALTED} \\
+
 \hline
-\textit{time core 1 is enabled} [\si{\nano\second}] & \SI{9.758}{\nano\joule} \\
-\textit{time core 2 is enabled} [\si{\nano\second}] & \SI{3.864}{\nano\joule} \\
-\textit{time core 3 is enabled} [\si{\nano\second}] & \SI{3.591}{\nano\joule} \\
-\textit{time core 4 is enabled} [\si{\nano\second}] & \SI{4.183}{\nano\joule} \\
+\textit{time core 1 is enabled} [\si{\nano\second}] &
+\SI{9.758}{\nano\joule} &
+$\infty$ \\
+
+\textit{time core 2 is enabled} [\si{\nano\second}] &
+\SI{3.864}{\nano\joule} &
+$\infty$ \\
+
+\textit{time core 3 is enabled} [\si{\nano\second}] &
+\SI{3.591}{\nano\joule} &
+$\infty$ \\
+
+\textit{time core 4 is enabled} [\si{\nano\second}] &
+\SI{4.183}{\nano\joule} &
+$\infty$ \\
+
 \hline
-\JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}  & \SI{10307.985}{\nano\joule} \\
-\JWctr{DSB\_FILL:ALL\_CANCEL}          & \SI{15.716}{\nano\joule} \\
-\JWctr{DSB2MITE\_SWITCHES}             & \SI{7.712}{\nano\joule} \\
-\JWctr{LD\_BLOCKS:ALL\_BLOCK}          & \SI{5.757}{\nano\joule} \\
-\JWctr{CPU\_CLK\_UNHALTED}             & \SI{2.835}{\nano\joule} \\
-\JWctr{L2\_RQSTS:PF\_HIT}              & \SI{-42.799}{\nano\joule} \\
-\JWctr{LD\_BLOCKS:DATA\_UNKNOWN}       & \SI{-6.718}{\nano\joule} \\
-\JWctr{UOPS\_DISPATCHED:STALL\_CYCLES} & \SI{-1.692}{\nano\joule} \\
-\JWctr{ILD\_STALL:IQ\_FULL}            & \SI{-0.950}{\nano\joule} \\
-\JWctr{INST\_RETIRED}                  & \SI{-0.021}{\nano\joule} \\
+
+\JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}  &
+\SI{10307.985}{\nano\joule} &
+0.05\% \\
+
+\JWctr{DSB\_FILL:ALL\_CANCEL} &
+\SI{15.716}{\nano\joule} &
+2.60\% \\
+
+\JWctr{DSB2MITE\_SWITCHES} &
+\SI{7.712}{\nano\joule} &
+5.31\% \\
+
+\JWctr{LD\_BLOCKS:ALL\_BLOCK} &
+\SI{5.757}{\nano\joule} &
+83.28\% \\
+
+\JWctr{CPU\_CLK\_UNHALTED} &
+\SI{2.835}{\nano\joule} &
+100.00\% \\
+
+\JWctr{L2\_RQSTS:PF\_HIT} &
+\SI{-42.799}{\nano\joule} &
+1.23\% \\
+
+\JWctr{LD\_BLOCKS:DATA\_UNKNOWN} &
+\SI{-6.718}{\nano\joule} &
+83.28\% \\
+
+\JWctr{UOPS\_DISPATCHED:STALL\_CYCLES} &
+\SI{-1.692}{\nano\joule} &
+72.44\% \\
+
+\JWctr{ILD\_STALL:IQ\_FULL} &
+\SI{-0.950}{\nano\joule} &
+18.17\% \\
+
+\JWctr{INST\_RETIRED} &
+\SI{-0.021}{\nano\joule} &
+245.01\% \\
+
 \hline
 
 \end{tabular}

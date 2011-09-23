@@ -27,7 +27,7 @@ postscript( file='/home/weiss/studienarbeit/paper/thesis/fig/cpu-power-trig.eps'
           , paper='special', width=10, height=4, horizontal=F)
 plot( m$t[1:nrow(m) %% 1000 == 0], (12 * m$CPU[1:nrow(m) %% 1000 == 0])/0.01
     , type='l', xlab='t [s]', ylab='P [W]'
-    , main='CPU (black) and BOARD (blue) power, TRIGGER wire (red)'
+    , main='CPU (black) and BOARD (blue) 12V power, TRIGGER wire (red)'
     , sub='core 1: stream, core 2: SPEC/471.omnetpp, core 3: SPEC/456.hmmer, core 4: mispredict'
     )
 lines( m$t[1:nrow(m) %% 1000 == 0], (12 * m$BOARD[1:nrow(m) %% 1000 == 0])/0.005
@@ -36,4 +36,52 @@ lines( m$t[1:nrow(m) %% 1000 == 0], (12 * m$BOARD[1:nrow(m) %% 1000 == 0])/0.005
 lines( m$t[1:nrow(m) %% 1000 == 0]
      , 68 * (m$TRIGGER[1:nrow(m) %% 1000 == 0] > 0.03), type='l', col='red'
      )
+dev.off()
+
+#
+#buildsle -pyes /local/tmp/weiss/measuring_data/*.{work,ctrs} > /tmp/all-in-all
+t <- read.table('/tmp/all-in-all', header=T)
+t[is.na(t)] <- 0
+t[is.null(t)] <- 0
+t[is.nan(t)] <- 0
+round(100*max(t$RATIO_CPU_CLK_UNHALTED), 2)
+round(100*max(t$RATIO_INST_RETIRED), 2)
+round(100*max(t$RATIO_BR_INST_RETIRED.FAR_BRANCH), 2)
+round(100*max(t$RATIO_DSB2MITE_SWITCHES), 2)
+round(100*max(t$RATIO_DSB_FILL.ALL_CANCEL), 2)
+round(100*max(t$RATIO_ILD_STALL.IQ_FULL), 2)
+round(100*max(t$RATIO_L2_RQSTS.PF_HIT), 2)
+round(100*max(t$RATIO_LD_BLOCKS.ALL_BLOCK), 2)
+round(100*max(t$RATIO_LD_BLOCKS.DATA_UNKNOWN), 2)
+round(100*max(t$RATIO_UOPS_DISPATCHED.STALL_CYCLES), 2)
+
+#
+#cd /local/tmp/weiss/measuring_data/costs-measure-increasing-counters
+#buildsle * > /tmp/ctr-costs
+csts <- read.table('/tmp/ctr-costs', header=T)
+csts$CTRS <- apply(csts, 1, function(r) 10-length(which(is.na(r))))
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/ctr-csts-cycles.eps'
+          ,paper='special', width=10, height=6, horizontal=F)
+plot( 1:10, replicate(10, median(csts$CPU_CLK_UNHALTED/(10^9), na.rm=T)), type='l'
+    , ylim=c( min(csts$CPU_CLK_UNHALTED/(10^9), na.rm=TRUE)
+            , max(csts$CPU_CLK_UNHALTED/(10^9), na.rm=TRUE))
+    , xlab='number of recorded performance events'
+    , ylab='Unhalted Giga Clock Cycles needed to complete'
+    , main='Relation between Number of Counters and Clock Cycles'
+    , sub='Considering 5 executions of SPECint 2006/473.astar (median in red)'
+    , col='red'
+    )
+boxplot(CPU_CLK_UNHALTED/(10^9)~CTRS, data=csts, add=T)
+dev.off()
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/ctr-csts-power.eps'
+          ,paper='special', width=10, height=6, horizontal=F)
+csts$AVG_POWER <- csts$WORK/(csts$TIME_NANO_DIFF/1000000000)
+boxplot(AVG_POWER~CTRS, data=csts
+    , ylim=c(min(csts$AVG_POWER), max(csts$AVG_POWER))
+    , xlab='number of recorded performance events'
+    , ylab='Average Power consumed [W]'
+    , main='Relation between Number of Counters and Electrical Work'
+    , sub='Considering 5 executions of SPECint 2006/473.astar (median in red)'
+    )
+abline(h=median(csts$AVG_POWER), col='red')
 dev.off()
