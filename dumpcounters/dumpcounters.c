@@ -44,6 +44,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <sys/stat.h>
 
 #include <utils.h>
 
