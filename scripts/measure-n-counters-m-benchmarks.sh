@@ -19,13 +19,15 @@ function usage() {
     echo "-n: dry run"
     echo "-w: non-recorded warm-up run for each benchmark"
     echo "-i: always append MAX counters, counter set increases per benchmark"
+    echo "-D: don't actually record counters"
 }
 
 WARMUP=0
 MAX_CTRS=8
 INCREASING=0
+DUMMY_OPTS=""
 
-while getopts inwC: OPT; do
+while getopts inwC:D OPT; do
     case "$OPT" in
         n)
             DRY_RUN=1
@@ -38,6 +40,9 @@ while getopts inwC: OPT; do
             ;;
         i)
             INCREASING=1
+            ;;
+        D)
+            DUMMY_OPTS="-D /home/weiss/studienarbeit/scripts/sudo_dummy_dumpcounters"
             ;;
         [?])
             usage
@@ -102,8 +107,8 @@ function go() {
         echo
         T_START=$(date +%s)
         if [ $DRY_RUN -ne 1 ]; then
-            do_measuring.sh $WARMUP_OPTS -f -d -n -p "$BMNAME" -o "$OUTDIR" \
-                -t bzip2 "$RHOST" "$CTRS" "$BM"
+            do_measuring.sh $DUMMY_OPTS $WARMUP_OPTS -f -d -n -p "$BMNAME" \
+                -o "$OUTDIR" -t bzip2 "$RHOST" "$CTRS" "$BM"
             RET=$?
         else
             echo "DRY RUN"
@@ -113,6 +118,7 @@ function go() {
             echo "  CTRS: '$CTRS'"
             echo "  CMD: '$BM'"
             echo "  WARMUP_OPTS: '$WARMUP_OPTS'"
+            echo "  DUMMY_OPTS: '$DUMMY_OPTS'"
             RET=0
         fi
         let DIFF=$(date +%s)-$T_START || true

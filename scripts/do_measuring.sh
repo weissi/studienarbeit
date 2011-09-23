@@ -46,7 +46,7 @@ function str_to_id() {
 
 function usage() {
     echo -n "Usage $0 [-f] [-d] [-N] [-n] [-s SHOT-ID] [-p SHOT-ID-PREFIX] "
-    echo -n "[-o OUT-DIR] [-b BENCHMARK-SCRIPT] [-t SCRIPT] "
+    echo -n "[-o OUT-DIR] [-b BENCHMARK-SCRIPT] [-t SCRIPT] [-D DC-BINARY]"
     echo -n "REMOTE-HOST COUNTERS "
     echo "-b|BENCHMARK"
     echo
@@ -55,6 +55,7 @@ function usage() {
     echo "-d: delete R table file after having calculated work"
     echo "-N: no measuring (dry-run)"
     echo "-t: transform script (execute SCRIPT file.dpts &)"
+    echo "-D: use DC-BINARY as the REMOTE dumpcounters binary"
     echo
     echo "Defaults:"
     echo "  SHOT-ID-PREFIX: none"
@@ -71,8 +72,9 @@ DEL_RTAB=0
 BENCHMARK_FILE=""
 TSCRIPT=""
 FAST=0
+DC_BINARY="/home/weiss/studienarbeit/scripts/sudo_dumpcounters"
 
-while getopts fdNns:p:o:b:t: OPT; do
+while getopts fdNns:p:o:b:t:D: OPT; do
     case "$OPT" in
         p)
             SHOT_ID_PREFIX="$(str_to_id ${OPTARG})@"
@@ -100,6 +102,9 @@ while getopts fdNns:p:o:b:t: OPT; do
             ;;
         f)
             FAST=1
+            ;;
+        D)
+            DC_BINARY="$OPTARG"
             ;;
         [?])
             usage
@@ -223,7 +228,7 @@ remote tee "$RSCRIPT" &> /dev/null <<EOF
 sleep 1
 killall sshd
 ps auxw
-/home/weiss/studienarbeit/scripts/sudo_dumpcounters -s "$SHOTID" \
+$DC_BINARY -s "$SHOTID" \
     -o "/tmp/$(basename $CTFILE)" -r "$RRUNSCRIPT" -e "$COUNTERS"
 echo \$? | nc "$LHOST" -q 0 "$LPORT"
 ) < /dev/null &> "/tmp/$(basename $REMLOG)" &
