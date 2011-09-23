@@ -14,7 +14,6 @@ int main(int argc, char **argv) {
     dp_error err;
     DP_DATA_POINT **data;
     unsigned int spc;
-    struct timespec ref_tp = { 0 };
     struct timespec last_tp = { .tv_sec = 0, .tv_nsec = 0 };
     struct timespec tp;
     double tbte;
@@ -65,9 +64,8 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-        } else {
-            ref_tp = tp;
         }
+
         free_dataset(h, data);
         last_tp = tp;
     }
