@@ -1,0 +1,40 @@
+\appendix
+\appendixpage
+\addappheadtotoc
+
+\renewcommand\thesection{\Alph{section}}
+\chapter{Appendix}
+
+\JWlappendix{Performance Event Selection and Description}
+\label{appendix:chosen-events}
+
+This section lists all the performance events which form the energy model
+presented in this work. The descriptive texts are all taken from
+\cite{intel2011events}.
+
+\input{chosen-events-list.tex}
+
+
+\JWlappendix{File Formats}
+
+\JWlsubappendix{Data Points File's Format}
+\label{sec:fmt:datapoints}
+For the definition of the Protocol Buffers used, see appendices
+\ref{sec:pb:datapoints} and \ref{sec:pb:generic}. For the definition of the
+Protocol Buffer's language see their
+\JWnamedlink{http://code.google.com/apis/protocolbuffers/docs/proto.html}{web
+site}.
+
+\input{res/dpts}
+
+\JWlsubappendix{Generic Protocol Buffers}
+\label{sec:pb:generic}
+\input{res/pb-generic}
+
+\JWlsubappendix{Data Points Protocol Buffers}
+\label{sec:pb:datapoints}
+\input{res/pb-dpts}
+
+\JWlsubappendix{Performance Event Counter Protocol Buffers}
+\label{sec:pb:counter-files}
+\input{res/pb-ctrs}

@@ -1,10 +1,8 @@
 1 Informationen
 ---------------
-- Abgabe: 15.09.2011 (DEADline: 01.10.2011)
+- Abgabe: 01.10.2011
 - Anzahl Seiten: 60 - 80
-- Anzahl Seiten/Tag: 1
 - Resttage: http://goo.gl/hMfOU
-- needed pages/day: http://goo.gl/2mLyu
 
 2 Zeitplan
 ----------
@@ -15,4 +13,5 @@ ERL? | Datum bis fertig   | Task
 [x]  | 07.07.2011         | MIT SCHREIBEN BEGINNEN
 [x]  | 10.07.2011         | Als proto bufs in einfaches R Worksheet
 [x]  | 15.08.2011         | fertiges Energiemodell für 1CPU
-[ ]  | 01.09.2011         | 10 Seiten Text
+[x]  | 01.09.2011         | 10 Seiten Text
+[ ]  | 01.10.2011         | ABGABE

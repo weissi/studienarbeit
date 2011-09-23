@@ -1,0 +1,39 @@
+#buildsle -g @ -m 0.14 -c ~/studienarbeit/towards-the-model/v2/counters \
+#    2011-08-08_23-26-46/* 2011-08-13_11-33-20/* > /tmp/test
+test <- read.table('/tmp/test', header=T)
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/1cpu-bench-errs.eps'
+          ,paper='special', width=10, height=4, horizontal=F)
+boxplot( data.frame( model          = 100*calc_err(test$WORK, model(test))
+                   , cpu_time_based = 100*calc_err(test$WORK, simplemodel(test))
+                   )
+       , horizontal=T, xlab='Percent Error', ylab='Method')
+dev.off()
+
+#create 'tab' as in /home/weiss/studienarbeit/towards-the-model/v2/HOWTO
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/Ncpu-bench-errs.eps'
+          ,paper='special', width=10, height=4, horizontal=F)
+boxplot( data.frame( model          = 100*calc_err(tab$WORK, model(tab))
+                   , cpu_time_based = 100*calc_err(tab$WORK, simplemodel(tab))
+                   )
+       , horizontal=T, xlab='Percent Error', ylab='Method', ylim=c(0, 40))
+dev.off()
+
+#
+#cp /local/tmp/weiss/measuring_data/2011-09-14_17-23-30/measured_stream_SPEC-omnetpp_SPEC-hmmer_mispredict@2011-09-15_00-38-16.dpts.bz2 /tmp/foo.dpts.bz2
+#cd /tmp && bunzip2 foo.dpts.bz2
+#dataexport foo.dpts  > foo.rtab
+m <- read.table('/tmp/foo.dpts', header=T)
+postscript( file='/home/weiss/studienarbeit/paper/thesis/fig/cpu-power-trig.eps'
+          , paper='special', width=10, height=4, horizontal=F)
+plot( m$t[1:nrow(m) %% 1000 == 0], (12 * m$CPU[1:nrow(m) %% 1000 == 0])/0.01
+    , type='l', xlab='t [s]', ylab='P [W]'
+    , main='CPU (black) and BOARD (blue) power, TRIGGER wire (red)'
+    , sub='core 1: stream, core 2: SPEC/471.omnetpp, core 3: SPEC/456.hmmer, core 4: mispredict'
+    )
+lines( m$t[1:nrow(m) %% 1000 == 0], (12 * m$BOARD[1:nrow(m) %% 1000 == 0])/0.005
+     , type='l', col='blue'
+     )
+lines( m$t[1:nrow(m) %% 1000 == 0]
+     , 68 * (m$TRIGGER[1:nrow(m) %% 1000 == 0] > 0.03), type='l', col='red'
+     )
+dev.off()

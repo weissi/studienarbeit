@@ -1,20 +1,46 @@
-\documentclass[a4paper]{scrreprt}
+\documentclass[12pt, a4paper]{book}
 
-\usepackage[english]{babel}
+% language
+\usepackage[american]{babel}
 \usepackage[utf8]{inputenc}
 
+% watermark
 \usepackage{draftwatermark}
 \SetWatermarkText{DRAFT}
 \SetWatermarkScale{4.0}
 
+% bib
+\bibliographystyle{plain}
+
+% make it look good
 \setlength{\parskip}{1.3ex}
 \setlength{\parindent}{1.3em}
 
 \usepackage{amsmath}
-
-\usepackage{hyperref}
-
+\usepackage{url}
 \usepackage[per=fraction]{siunitx}
+%\sisetup{per-mode = symbol}%
+\usepackage{listings}
+
+% because the template had it :-)
+\usepackage{cite}
+\usepackage{fancyhdr}
+\usepackage{chngpage}
+
+% I need them :-)
+\usepackage[plainpages=false]{hyperref}
+\hypersetup {
+   pdfauthor={Johannes Wei\ss},
+   pdftitle={Multi-Core Energy Accounting},
+   pdfsubject={Study Thesis},
+   pdfkeywords={multi-core, energy, accounting, Linux}
+}
+\usepackage{appendix}
+\usepackage{longtable}
+
+
+% KITize it :-)
+\usepackage{kitthesiscover}
 
 \input{commands}
 
@@ -22,38 +48,41 @@
 
 \begin{document}
 
-\pagestyle{empty}
+\pagenumbering{roman}
 
-\title{Multi-Core Energy Accounting}
-\author{Johannes Weiß\\
-        \JWemail{mcea@johannesweiss.eu}}
-\date{\today}
-\maketitle
-\thispagestyle{empty}
-\pagestyle{empty}
+\selectlanguage{american}
 
-\maketitle
+\input{title}
 
+%\input{abstract}
+
+%\input{acknowledgments}
+
+\mainmatter
 \tableofcontents
 
-\input{abstract}
+\pagenumbering{arabic}
 
 \input{introduction}
 
-\input{methodology}
+%\input{related-work}
 
-\input{results}
+\input{technical-prerequisites}
 
-\input{discussion}
+\input{design}
 
-\input{acknowledgments}
+\input{implementation}
 
-\input{related-work}
+\input{evaluation}
 
 \input{conclusion}
 
-\bibliographystyle{alpha}
+\backmatter
+
+\addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{bibliography}
+
+\input{appendix}
 
 \end{document}
 % vim: set spell spelllang=en_us fileencoding=utf8 :

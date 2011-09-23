@@ -1,0 +1,18 @@
+\begin{verbatim}
+import "generic.proto";
+
+message CounterData {
+    required string shot_id = 1;
+    required Timestamp start_time = 2;
+    required Timestamp stop_time = 3;
+    required uint32 cpu_count = 4;
+    repeated CounterValue counters = 5;
+    optional string benchmark_cmd = 6;
+}
+
+message CounterValue {
+    required string counter_name = 1;
+    repeated uint64 counter_value_per_cpu = 2; //ordered by cpu id
+    optional uint64 global_counter_value = 3;
+}
+\end{verbatim}

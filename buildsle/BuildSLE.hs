@@ -1,3 +1,20 @@
+{-
+ -  Generates a system of linear equations for you :-).
+ -  Copyright (C)2011, Johannes Weiß <weiss@tux4u.de>
+ -
+ -  This program is free software: you can redistribute it and/or modify
+ -  it under the terms of the GNU General Public License as published by
+ -  the Free Software Foundation, either version 3 of the License, or
+ -  (at your option) any later version.
+
+ -  This program is distributed in the hope that it will be useful,
+ -  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ -  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ -  GNU General Public License for more details.
+ -
+ -  You should have received a copy of the GNU General Public License
+ -  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+--}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -414,7 +431,15 @@ workFilesMap gc fps =
 
 main :: IO ()
 main = CL.getArgs >>= CL.executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
-    do let opt_files = mo_fileArgs opts
+    do hPutStrLn stderr $
+           "BuildSLE, Copyright (C)2011, " ++
+           "Johannes Weiß <weiss@tux4u.de>"
+       hPutStrLn stderr $
+           "This program comes with ABSOLUTELY NO WARRANTY; " ++
+           "for details type `show w'.\n" ++
+           "This is free software, and you are welcome to redistribute it" ++
+           "\nunder certain conditions; type `show c' for details.\n"
+       let opt_files = mo_fileArgs opts
            opt_counterFile =
                case mo_counterFile opts of
                  "" -> Nothing
@@ -468,7 +493,7 @@ main = CL.getArgs >>= CL.executeR _EMPTY_MAIN_OPTIONS_ >>= \opts ->
        --                   ", data=t, force.in=c('CPU_CLK_UNHALTED', " ++
        --                   "'INST_RETIRED'), nbest=10)"
        case groupShotDataMap sdmap maxRelStdDev of
-         Left err -> putStrLn err
+         Left err -> hPutStrLn stderr err
          Right gsdmap ->
              printRTAB (mo_printRefCols opts) $
               case mGroupChar of

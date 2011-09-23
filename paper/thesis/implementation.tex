@@ -1,0 +1,368 @@
+\JWlone{Implementation}
+
+%#  DATA FORMATS  ##############################################################
+\JWltwo{Data Formats}
+\label{sec:data-formats}
+
+This chapter will give a rough outline of the formats used to store data between
+the various phases of the analysis. The lingua franca for most complex on disc
+formats are the schrieblesque \JWTprotobuf{}. Though, when interfacing with
+external software such as \JWTR{}, other formats had to be chosen. The choice in
+favour of Protocol Buffers has been made because of \emph{think XML, but
+smaller, faster, and simpler} (which is incidentally their  slogan).
+
+%-  shot ids  ------------------------------------------------------------------
+\JWlthree{Shot IDs}
+\label{sec:shot-ids}
+
+A shot ID (shot identifier) is a string value uniquely identifiying one
+measuring experiment. More precisely it's a character string containing only a
+defined set of ASCII characters. The following regular expression shoud match
+all allowed shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
+
+Such shot IDs are always used to associated power and performance event
+measurings.
+
+
+%-  voltage drop data point files  ---------------------------------------------
+\JWlthree{Electrical Power Data Point Files}
+\label{sec:datapoint-files}
+
+The main matter of the \emph{electrical power data point files} (called
+\emph{data point files} for simplicity) is to log the CPU's power consumation by
+time. As described in chapter \ref{sec:measuring-setup}, voltage drops are
+measured and electrical power and work are only calculated later on. This is
+why data point files do literally contain voltage drop values by time.
+But since the only reason they exist is to serve as calculation input later on,
+they are named after their future meaning.
+
+For practical reasons the representation was designed rather flexible: It
+supports arbitrary sampling rates, an arbitrary number of (named) channels and
+high-resolution timestamps (up to \SI{1}{\nano\second}).
+
+While doing the research for this thesis, three channels have been recorded with
+a sampling rate of \SI{50}{\kilo\samples\per\second}: \texttt{CPU} -- the CPU's
+voltage drops, \texttt{BOARD} -- the mainboard's voltage drops (unused) and
+\texttt{TRIGGER} -- the trigger cable used to mark the periods of time the
+other machine counted performance events.
+
+The data point files are also one notable exception of the \emph{Protocol
+Buffers for everything} principle in this work. As \cite{google11pbtechniques}
+states the Procotol Buffers were not designed to handle large messages
+but are great as individual messages \emph{within} a large data set. So (as you
+can see in appendix \ref{sec:fmt:datapoints}) small Protocol Buffer messages
+are streamed one after another. The size of one of these chunks is not
+specified. Usually one makes up a chunk when he receives one from a measuring
+device. The rule of thumb is: Make them as large as practical, but not too large
+since we only record one timestamp per chunk. The data points inside each chunk
+are considered as distributed equally.
+
+
+%-  performance counter files  -------------------------------------------------
+\JWlthree{Counter Files}
+\label{sec:counter-files}
+
+The \emph{counter files} are used to save the performance event counter values
+after the completion of one measuring experiment. Having the performance event
+counter's values and the electrical work of one measuring experiment is an
+essential part toward calculating an energy model (see chapter
+\ref{sec:towards-the-model}). The match of corresponding data point files
+(chapter \ref{sec:datapoint-files}) and counter files is done using the shot ID
+(chapter \ref{sec:shot-ids}).
+
+The counter files' on-disc representation is -- except for some magic bytes --
+a Protocol Buffers-only format. For the technical definition see appendix
+\ref{sec:pb:counter-files}.
+
+
+%-  work files  ----------------------------------------------------------------
+\JWlthree{Work Files}
+\label{sec:work-files}
+
+The content of the work files is really just the electrical work of a certain
+measuring experiment in Joule. The file format is the ASCII representation of a
+floating point value followed by optional garbage (separated by an ASCII space
+or newline). In contrast to the other file formats, the work file's file names
+have to match the following format: \verb%work_<SHOT-ID>_.work% (e.g.
+\verb%work_SPEC-gcc@2011-08-31_16-07-46.work%).
+
+A valid work file could look like
+
+\begin{lstlisting}[style=Shell]
+$ hexdump -C work_SPEC-gcc@2011-08-31_16-07-46.work
+0000  37 34 2e 30 31 35 32 35  36 0a   |74.015256.|
+000a
+\end{lstlisting}.
+
+
+
+
+%#  TOOLS  #####################################################################
+\JWltwo{Tools}
+\label{sec:tools}
+
+Since the building of a reasonable energy model is not an easy task, numerous
+tools have been used. Most of the tools were developed specifically for the
+purpose of this study thesis. All of them are open-sourced and available on
+\JWnamedlink{https://github.com/weissi/studienarbeit}{GitHub}
+(\JWlink{https://github.com/weissi/studienarbeit}).
+
+In this chapter, we will give an overview of the software used, both standard
+software and tools developed specifically to be able to write this paper.
+
+
+%-  standard software  ---------------------------------------------------------
+\JWlthree{Standard Software}
+\label{sec:standard-software}
+
+\begin{itemize}
+
+\item \JWTprotobuf{} for saving and loading of all kinds of data
+
+\item \JWnamedlink{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/protocol-buffers}
+                  {protocol-buffers} for parsing Protocol Buffer files and
+generating code in Haskell
+
+\item \JWnamedlink{http://code.google.com/p/protobuf-c/}{protobuf-c}
+      for parsing Protocol Buffer files in generating code in C
+
+\item \JWnamedlink{http://www.r-project.org/}{R} for statistical computations
+
+\item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{leaps package}
+      , a R library for regression subset selection (to minimize the set of
+      available performance counters)
+
+\item \JWnamedlink{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}
+      {lm library}, a R library used to fit linear models
+
+\item \JWnamedlink{http://kernel.org}{Linux Kernel}
+
+\item \JWnamedlink{http://gnu.org}{numerous GNU tools}
+
+\item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
+      {\texttt{libpfm4}} for reading the performance counters from userspace
+
+\item \JWTnidaqmxbase{} for interfacing \JWPni
+
+\end{itemize}
+
+
+%-  special developments  ------------------------------------------------------
+\JWlthree{Special Developments}
+\label{sec:special-developments}
+
+
+\JWlfour{\JWTlibdp}
+
+\JWTlibdp{} is responsible for loading and saving the measured data points from
+and to the data point files (see chapter \ref{sec:datapoint-files}). It's API is
+straight forward and the library is able to handle very big files. The API can
+be found in \JWpath{libdatapoints/datapoints.h}.
+
+
+\JWlfour{\JWTfcw}
+
+\JWTfcw{} can calculate the electrical work from data points files very quickly.
+As explained in section \ref{sec:calc-work} it integrates to electrical power.
+But since we obtain discrete data by sampling (see section
+\ref{sec:measuring-setup}) the integration can be done quite fast:
+
+\JWtodo{integral P = sum P * diff}
+
+A typical call to \JWTfcw{} looks like
+
+\begin{lstlisting}[style=Shell]
+fastcalcwork captured-17:15:00.dpts CPU 0.01 TRIGGER
+\end{lstlisting}
+
+Using the command line above, \JWTfcw{} will calculate the electrical work with a
+measuring resistor of \SI{0.01}{\ohm}. The measured data points will be taken
+from column \texttt{CPU}, the analog trigger's (see section
+\ref{sec:measuring-setup}) value from \texttt{TRIGGER}.
+
+
+\JWlfour{\JWTdc}
+
+\JWTdc{} is the tool for retrieving the performance event's counter values on
+the target machine. Giving it a set of performance events and a command to
+execute, it will record the events while the task is running. It always works
+system-widely and saves values by counter and by CPU enabled. Along the way it
+also controls the trigger cable (see chapter \ref{sec:measuring-setup}).  That
+is crucial to be sure examining the same time intervals for counting performance
+events and measuring electrical power.
+
+A working example executing \texttt{/bin/ls} and counting
+\texttt{CPU\_CLK\_UNHALTED} and \texttt{INST\_RETIRED} along the way:
+
+\begin{lstlisting}[style=Shell]
+dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED \
+             -o ls_clock-cycles_inst-retired.ctrs \
+             -r /bin/ls
+\end{lstlisting}
+
+After the executing, the file \texttt{ls\_clock-cycles\_inst-retired.ctrs} will
+contain the performance event counters' values. The file format is described in
+chapter \ref{sec:counter-files}.
+
+
+\JWlfour{\JWTde}
+
+\JWTde{} exports data point files (see section \ref{sec:datapoint-files}) to
+\JWTR's \texttt{read.table} format \cite{r11data}.
+
+
+\JWlfour{\JWTdd}
+
+\JWTdd{} is the tool used to dump the measuring data to data point files (see
+chapter \ref{sec:datapoint-files}). It currently records the three channels
+\texttt{CPU}, \texttt{BOARD} and \texttt{TRIGGER} with a sampling rate of
+\SI{50}{\kilo\samples\per\second} using \JWTnidaqmxbase{} (see chapters
+\ref{sec:standard-software} and \ref{sec:measuring-device}) to a file.
+Again, the usage is quite simple and straight forward:
+
+\begin{lstlisting}[style=Shell]
+datadump out.dpts my-shot-id
+\end{lstlisting}
+
+The sample would save the measuring experiment \texttt{my-shot-id}'s data to the
+file \texttt{out.dpts}. The record would run until a \texttt{SIGINT} signal is
+caught. Optionally a third parameter representing the desired maximal running
+time in seconds is supported.
+
+
+\JWlfour{\JWTcbs{} suite}
+
+\JWTcbs{} suite is a frontend making it really easy to write and use
+microbenchmarks.  It was primarily meant to stress inividual performance event
+counters, hence its name. Because, in the end, this tool was not really used to
+gain the results, it it not described in depth. Working samples can be found in
+the directory \JWpath{ctrbenchmark/benchlets/}.
+
+
+\JWlfour{\JWTbsle}
+
+\JWTbsle{} is a \JWnamedlink{http://haskell.org}{Haskell} program which is able
+\emph{build} the \emph{s}ystem of \emph{l}inear \emph{e}quations. It takes
+several counter files (\ref{sec:counter-files}) and the corresponding work files
+(\ref{sec:work-files}) as input and outputs a system of linear equations.
+
+Given that \JWTR{} was always used to post-process the results of \JWTbsle{}
+it's obvious that, again, \JWTR's \texttt{read.table} \cite{r11data} format is
+outputted.
+
+
+\JWlfour{high-level scripts}
+
+As one could understand until here, there are a lot of simple tools. To make up
+the ensemble many of these have to be invoked correctly with each other. Since,
+that's not a trivial task, some high-level scripted have been developed. Most
+notably this is \JWTdomeasuring{}.
+
+\begin{lstlisting}[style=Shell]
+$ do_measuring.sh -f \
+                  -s 2011-09-09_15-41-32 \
+                  -p demo-shot \
+                  -o /tmp/demo-shot \
+                  i30pc59 \
+                  'CPU_CLK_UNHALTED,INST_RETIRED' \
+                  /bin/ls
+No other 'datadump' running: OK
+Checking if NI device 3923:7272 is plugged: OK
+Testing password-free SSH: OK
+Testing password-free sudo: OK
+Building: OK
+Remote building: OK
+INFO: logfile is '/tmp/measuring_log_[...].log'
+Waiting for sloooow NI call (e.g. 29s) .[...].OK[...]
+Writing remote script: OK
+Running remote benchmark: OK (time=1)
+INFO: remote log is '/tmp/remote-[...].log'
+Telling datadump to stop (SIGINT): OK
+Waiting for dump process (23472) to finish ....OK
+Calculating work to 'work_[...].work' OK
+Doing transformation
+
+GREAT SUCCESS, EVERYTHING WENT FINE :-)
+\end{lstlisting}
+
+
+%#  TOWARD THE ENERGY MODEL  ###################################################
+\JWltwo{Toward the Energy Model}
+\label{sec:towards-the-model}
+
+In this chapter a description of the steps toward the final energy model(s) is
+given.
+
+
+%-  BENCHMARKS  ----------------------------------------------------------------
+\JWlthree{The set of Benchmarks}
+\label{sec:benchmarks}
+
+How and which benchmarks did I choose?
+
+
+%-  SUBSET OF USEFUL COUNTERS  -------------------------------------------------
+\JWlthree{Finding a useful Subset of Events}
+\label{sec:finding-useful-subset}
+
+This section will feature a practical description of
+\ref{sec:min-events}.
+
+\begin{itemize}
+
+\item 1 CPU, all events, rotational
+
+\item 1 CPU enabled, chosen events
+
+\item 2 CPUs enabled, chosen events
+
+\item 3 CPUs enabled, chosed events
+
+\item 4 CPUs enabled, chosed events
+
+\end{itemize}
+
+
+%-  EVENT SELECTION  -----------------------------------------------------------
+\JWlthree{Event Selection}
+\label{sec:event-selection}
+
+See appendix \ref{appendix:chosen-events} for a description of the events which
+form the energy model presented in this paper.
+
+
+%-  FINAL MODEL  ---------------------------------------------------------------
+\JWlthree{Final Energy Model}
+\label{sec:final-model}
+
+In this section the final energy model is presented:
+
+\JWtodo{Tabelle dritte Spalte: max(n/CPU\_CLK\_CYCLES)}
+
+\JWtodo{Tabelle vierte Spalte: max-betrag(P)}
+
+\begin{tabular}{l r}
+
+(pseudo-)Event                         & Energetical Weight \\
+\hline
+\textit{time core 1 is enabled} [\si{\nano\second}] & \SI{9.758}{\nano\joule} \\
+\textit{time core 2 is enabled} [\si{\nano\second}] & \SI{3.864}{\nano\joule} \\
+\textit{time core 3 is enabled} [\si{\nano\second}] & \SI{3.591}{\nano\joule} \\
+\textit{time core 4 is enabled} [\si{\nano\second}] & \SI{4.183}{\nano\joule} \\
+\hline
+\JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}  & \SI{10307.985}{\nano\joule} \\
+\JWctr{DSB\_FILL:ALL\_CANCEL}          & \SI{15.716}{\nano\joule} \\
+\JWctr{DSB2MITE\_SWITCHES}             & \SI{7.712}{\nano\joule} \\
+\JWctr{LD\_BLOCKS:ALL\_BLOCK}          & \SI{5.757}{\nano\joule} \\
+\JWctr{CPU\_CLK\_UNHALTED}             & \SI{2.835}{\nano\joule} \\
+\JWctr{L2\_RQSTS:PF\_HIT}              & \SI{-42.799}{\nano\joule} \\
+\JWctr{LD\_BLOCKS:DATA\_UNKNOWN}       & \SI{-6.718}{\nano\joule} \\
+\JWctr{UOPS\_DISPATCHED:STALL\_CYCLES} & \SI{-1.692}{\nano\joule} \\
+\JWctr{ILD\_STALL:IQ\_FULL}            & \SI{-0.950}{\nano\joule} \\
+\JWctr{INST\_RETIRED}                  & \SI{-0.021}{\nano\joule} \\
+\hline
+
+\end{tabular}
+
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :
