@@ -1,4 +1,5 @@
 #!/bin/bash
 
+BINARY=$(echo $(basename "$0") | sed s/sudo_//g)
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
-sudo LD_LIBRARY_PATH="$LD_LIBRARY_PATH" $HERE/../build/dumpcounters "$@"
+sudo LD_LIBRARY_PATH="$LD_LIBRARY_PATH" $HERE/../build/$BINARY "$@"

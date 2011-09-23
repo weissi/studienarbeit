@@ -94,11 +94,18 @@ if checklib pfm &> /dev/null; then
         -lpfm -lprotobuf -lprotobuf-c -lrt \
         -pedantic -Wall -Werror \
         -ggdb \
-        $HERE/dumpcounters/*.c \
+        $HERE/dumpcounters/{dumpcounters,perf_util}.c \
         $HERE/gensrc/*.c $HERE/libmisc/*.c
 else
     echo '- not building dumpcounters, libpfm not found'
 fi
+
+build "$BO" "dummy_dumpcounters" -o $BUILD/dummy_dumpcounters $CFLAGS $LDFLAGS \
+    -lprotobuf -lprotobuf-c -lrt \
+    -pedantic -Wall -Werror \
+    -ggdb \
+    $HERE/dumpcounters/dummy_dumpcounters.c \
+    $HERE/gensrc/*.c $HERE/libmisc/*.c
 
 build "$BO" ctrbenchmark --std=gnu99 -o $BUILD/ctrbenchmark $CFLAGS $LDFLAGS \
     -Wall -Werror -pedantic -ggdb \
