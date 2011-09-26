@@ -68,7 +68,7 @@ plot( 1:10, replicate(10, median(csts$CPU_CLK_UNHALTED/(10^9), na.rm=T)), type='
     , xlab='number of recorded performance events'
     , ylab='Unhalted Giga Clock Cycles needed to complete'
     , main='Relation between Number of Counters and Clock Cycles'
-    , sub='Considering 5 executions of SPECint 2006/473.astar (median in red)'
+    , sub='Considering 10 executions of SPECint 2006/473.astar (median in red)'
     , col='red'
     )
 boxplot(CPU_CLK_UNHALTED/(10^9)~CTRS, data=csts, add=T)
@@ -81,7 +81,18 @@ boxplot(AVG_POWER~CTRS, data=csts
     , xlab='number of recorded performance events'
     , ylab='Average Power consumed [W]'
     , main='Relation between Number of Counters and Electrical Work'
-    , sub='Considering 5 executions of SPECint 2006/473.astar (median in red)'
+    , sub='Considering 10 executions of SPECint 2006/473.astar (median in red)'
     )
 abline(h=median(csts$AVG_POWER), col='red')
+dev.off()
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/ctr-csts-time.eps'
+          ,paper='special', width=10, height=6, horizontal=F)
+boxplot(TIME_NANO_DIFF/1000000000~CTRS, data=csts
+    , ylim=c(min(csts$TIME_NANO_DIFF/1000000000), max(csts$TIME_NANO_DIFF/1000000000))
+    , xlab='number of recorded performance events'
+    , ylab='Benchmark Execution Time [s]'
+    , main='Relation between Number of Counters and Execution Time'
+    , sub='Considering 10 executions of SPECint 2006/473.astar (median in red)'
+    )
+abline(h=median(csts$TIME_NANO_DIFF/1000000000), col='red')
 dev.off()

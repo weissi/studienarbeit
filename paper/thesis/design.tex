@@ -13,7 +13,7 @@
   \label{fig:overview}
 \end{figure}
 
-As figure \ref{fig:overview} illustrates an additional workstation - the
+As figure \ref{fig:overview} illustrates an additional workstation -- the
 \emph{Examining Workstation (EW)} has been used while evolving this thesis. The
 \emph{System under Test (SuT)} counts the CPU's performance events itself and
 the EW records the energy consumation in the meantime. These two datasets have
@@ -36,7 +36,7 @@ the examination (time) interval a trigger wire is used. It is realized as a
 simple analog signal using the parallel port's \emph{high} and \emph{low}
 voltages.
 
-This can be summed up to simply measuring three potential differences. Since the
+This can be summed up to measuring three potential differences. Since the
 measuring device (chapter \ref{sec:measuring-device}) provides up to eight
 differential, analog input channels that seems very easy at the first sight.
 Unfortunately there are two caveats here: On the one hand according to the
@@ -105,8 +105,8 @@ termination. An exemplary plot of an examination can be found in figure
 For measuring the voltage drops we chose \JWPni{} (shows in figure \ref{fig:ni}
 from \JWenterprise{http://www.ni.com}{National Instruments} because it supports
 high sampling rates of up to 250000 samples per second
-(\SI{250}{\kilo\samples\per\second}) and is very accurate (accuracy $<
-\SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
+(\SI{250}{\kilo\samples\per\second}) and is very accurate
+(accuracy $< \SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
 
 \begin{figure}
   \centering
@@ -163,7 +163,7 @@ events and their coefficients is presented.
 In this work, an energy model is considered as a linear formula. A system with
 $N$ CPUs/cores which is able to monitor $M$ performance events per core
 simultaneously is described here. Additionally to the per-core event counters,
-$K$ system-wide event counters make the model up. In the formal description (see
+$K$ global event counters make the model up. In the formal description (see
 section \ref{sec:towards-the-model} for the practical implementation) we assume
 four functions providing the actual values:
 
@@ -200,16 +200,36 @@ microprocessor.
 
 After having seen (section \ref{sec:model-properties}) what exactly makes up a
 model, it crucial to find a small and meaningful set of performance events we
-actually use. It's not practical to take into account all the events the
+use. It's not practical to take into account all the events the
 microprocessor is aware of. Today's processors offer a lot more events then they
 have counters to count them at once \cite{intel2011softdev1}.
 
 The approach to find a reasonable subset of $N$ events (of $A$ available) used
 in this work can be summed up to:
 
-\begin{itemize}
+\begin{enumerate}
 
-\item Choose $p$ test programs which utilize the CPU differently. The test
+\item Generation of the matrix of performance event counters $C$ and
+the corresponding vector of electrical works $W$
+
+\item Obtaining $C'$ containing the $N$ most correlating columns of $C$
+
+\end{enumerate}
+
+Thereafter, the system of linear equations
+
+\begin{equation}
+W = C' * X
+\end{equation}
+
+can be solved by simple linear regression.
+
+
+\JWlfour{Step 1: Obtaining $C$ and $W$}
+
+\begin{enumerate}[(a)]
+
+\item Choose $p$ test programs which use the CPU differently. The test
 programs have to be independent from external events. We consider subsequent
 runs of the test programs as equal.
 
@@ -227,25 +247,23 @@ work a run of each of the test programs consumes. Additionally, we gain a matrix
 $C = [c_{1..p,1..N}]$ containing each event counter's value for a run of each of
 the test programs.
 
-\end{itemize}
+\end{enumerate}
 
-provide because we need to count them simultaneously.
+\JWlfour{Step 2: Deriving $C'$ from $C$}
 
-\begin{itemize}
+\begin{enumerate}[(a)]
 
-\item Take all counters,
+\item Add all columns from $C$ to $C'$
 
-\item eliminate equal counters,
+\item Eliminate duplicate columns in $C'$
 
-\item eliminate linear dependent counters,
+\item Eliminate columns which only contain zeroes in $C'$
 
-\item generate the 5 best models of sizes 1..size(counters),
+\item Eliminate linear dependent columns in $C'$
 
-\item eliminate all counters which appear in no model.
+\item \JWtodo{weiter}
 
-\item Perform exhaustive search on the still-living counters.
-
-\end{itemize}
+\end{enumerate}
 
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

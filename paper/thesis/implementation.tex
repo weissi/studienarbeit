@@ -36,7 +36,7 @@ why data point files do literally contain voltage drop values by time.
 But since the only reason they exist is to serve as calculation input later on,
 they are named after their future meaning.
 
-For practical reasons the representation was designed rather flexible: It
+For practical reasons the representation is designed rather flexible: It
 supports arbitrary sampling rates, an arbitrary number of (named) channels and
 high-resolution timestamps (up to \SI{1}{\nano\second}).
 
@@ -79,7 +79,7 @@ a Protocol Buffers-only format. For the technical definition see appendix
 \JWlthree{Work Files}
 \label{sec:work-files}
 
-The content of the work files is really just the electrical work of a certain
+The content of the work files is just the electrical work of a certain
 measuring experiment in Joule. The file format is the ASCII representation of a
 floating point value followed by optional garbage (separated by an ASCII space
 or newline). In contrast to the other file formats, the work file's file names
@@ -123,24 +123,25 @@ software and tools developed specifically to be able to write this paper.
                   {protocol-buffers} for parsing Protocol Buffer files and
 generating code in Haskell
 
-\item \JWnamedlink{http://code.google.com/p/protobuf-c/}{protobuf-c}
-      for parsing Protocol Buffer files in generating code in C
+\item \JWnamedlink{http://code.google.com/p/protobuf-c/}{protobuf-c} for parsing
+Protocol Buffer files in generating code in C
 
 \item \JWnamedlink{http://www.r-project.org/}{R} for statistical computations
 
 \item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{leaps package}
-      , a R library for regression subset selection (to minimize the set of
-      available performance counters)
+, a R library for regression subset selection (to minimize the set of available
+performance counters)
 
-\item \JWnamedlink{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}
-      {lm library}, a R library used to fit linear models
+\item
+\JWnamedlink{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}
+{lm library}, a R library used to fit linear models
 
-\item \JWnamedlink{http://kernel.org}{Linux Kernel}
+\item \JWnamedlink{http://kernel.org}{Linux Kernel 3.0}
 
 \item \JWnamedlink{http://gnu.org}{numerous GNU tools}
 
 \item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
-      {\texttt{libpfm4}} for reading the performance counters from userspace
+{\texttt{libpfm4}} for reading the performance counters from userspace
 
 \item \JWTnidaqmxbase{} for interfacing \JWPni
 
@@ -232,10 +233,10 @@ time in seconds is supported.
 
 \JWlfour{\JWTcbs{} suite}
 
-\JWTcbs{} suite is a frontend making it really easy to write and use
+\JWTcbs{} suite is a frontend making it easy to write and use
 microbenchmarks.  It was primarily meant to stress inividual performance event
-counters, hence its name. Because, in the end, this tool was not really used to
-gain the results, it it not described in depth. Working samples can be found in
+counters, hence its name. Because, in the end, this tool was not used to
+gain the results, it is not described in depth. Working samples can be found in
 the directory \JWpath{ctrbenchmark/benchlets/}.
 
 
@@ -253,7 +254,7 @@ outputted.
 
 \JWlfour{high-level scripts}
 
-As one could understand until here, there are a lot of simple tools. To make up
+As one could understand until here, there are many simple tools. To compose
 the ensemble many of these have to be invoked correctly with each other. Since,
 that's not a trivial task, some high-level scripted have been developed. Most
 notably this is \JWTdomeasuring{}.
@@ -298,42 +299,83 @@ given.
 \JWlthree{The set of Benchmarks}
 \label{sec:benchmarks}
 
-How and which benchmarks did I choose?
+The first step toward the energy model is to choose a good set of benchmarks.
+The benchmarks should stress different parts of the CPU and should collectively
+stress all parts and units of the CPU. As chapter \ref{sec:restrictions} states
+some units have been deliberately excluded in this work. The benchmarks should
+also mostly avoid the excluded units because their results would then have a bad
+consequences on the final model.
+
+In this work all benchmarks of the \JWTLspec{} suite, the memory bandwith
+benchmark \JWTLstream{} a benchmark provokating many branch mispredictions
+and an ALU stress benchmark have been used.
+
+For the multi-core tests, different instances of these benchmarks have been
+pinned to each core and were therefore running simultaneously.
 
 
 %-  SUBSET OF USEFUL COUNTERS  -------------------------------------------------
 \JWlthree{Finding a useful Subset of Events}
 \label{sec:finding-useful-subset}
 
-This section will feature a practical description of
-\ref{sec:min-events}.
+Because of the symmetric architecture of the CPU (see chapter
+\ref{sec:sandy-bridge}) the final subset of events in the model has been
+gathered using only one enabled core of the CPU. The other cores have been
+disabled using the BIOS.
 
-\begin{itemize}
+To model the baseline energy of a core (the energy consumed when no performance
+event is triggered) one pseudo-event per core modelling the time this specific
+core is enabled has been added. These events fall in the group of the
+\emph{global events} (see chapter \ref{sec:model-properties}). Because the
+setting if one core is enabled or not can only be changed when (re)booting the
+machine each of these pseudo-events is either $0$ -- if the core is disabled --
+or equal to the entire running time of a benchmark -- if the core is enabled.
 
-\item 1 CPU, all events, rotational
+The general methodology has already been described in chapter
+\ref{sec:min-events}.  First the performance events were randomly
+distributed in disjoint groups of eight events -- the maximal number of
+performance events the CPU can count simultaneously (see chapter
+\ref{sec:sandy-bridge}). Thereafter, for each group of events all benchmarks
+have been executed consecutively. Then all the runs of each benchmark were
+considered as one run recording all the events available.  Since the electrical
+work consumed and the running time was recorded for each run of its own they
+were averaged per benchmark. Attention was payed that the averaged values didn't
+differ much between the runs, the relative standard deviation was below 4\% for
+the worst case.
 
-\item 1 CPU enabled, chosen events
+The result was considered as one huge system of linear equations and the best
+subset of events was chosen using \JWTleaps{}. The events \JWctrCLK{} ($=$
+\JWctr{CPU\_\-CLK\_\-UNHALTED.\-THREAD} $\propto$
+\JWctr{CPU\_\-CLK\_\-UNHALTED.\-REF\_\-TSC}) and \JWctrINST{} ($=$
+\JWctr{INST\_\-RETIRED.\-ANY}) are counted using fixed counters (see chapter
+\ref{sec:pmu}) and were therefore forced into the model. Except the two fixed
+counters, \texttt{leaps} has been configured to find the best model for eight
+counters.
 
-\item 2 CPUs enabled, chosen events
-
-\item 3 CPUs enabled, chosed events
-
-\item 4 CPUs enabled, chosed events
-
-\end{itemize}
-
-
-%-  EVENT SELECTION  -----------------------------------------------------------
-\JWlthree{Event Selection}
-\label{sec:event-selection}
-
-See appendix \ref{appendix:chosen-events} for a description of the events which
-form the energy model presented in this paper.
+Appendix \ref{appendix:chosen-events} describes the events forming the energy
+model presented in this paper.
 
 
 %-  FINAL MODEL  ---------------------------------------------------------------
 \JWlthree{Final Energy Model}
 \label{sec:final-model}
+
+\begin{figure}
+  \centering
+    \includegraphics[width=\textwidth]{fig/run-benchmarks.pdf}
+  \caption{Run Benchmarks}
+  \label{fig:run-benchmarks}
+\end{figure}
+
+After the event selection process (see chapter \ref{sec:finding-useful-subset})
+energetical weights for the (pseudo-)event had to be found. To find these, the
+benchmarks were first rerun again only on one core but recording all of
+the final events in one shot. Thereafter all reasonable permutations for two and
+three cores and 500 random permutations for all four cores have been generated.
+This new huge set of benchmarks has then been executed, always rebooting and
+reconfiguring the machine to the correct number of enabled cores. Figure
+\ref{fig:run-benchmarks} illustrates the process. The pinning of the benchmarks
+to their target core has been done using the \texttt{taskset} utility.
 
 In this section the final energy model is presented:
 
@@ -411,4 +453,4 @@ $\infty$ \\
 \end{tabular}
 
 
-% vim: set spell spelllang=en_us fileencoding=utf8 :
+% vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :
