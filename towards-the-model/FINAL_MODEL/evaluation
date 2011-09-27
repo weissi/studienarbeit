@@ -96,3 +96,9 @@ boxplot(TIME_NANO_DIFF/1000000000~CTRS, data=csts
     )
 abline(h=median(csts$TIME_NANO_DIFF/1000000000), col='red')
 dev.off()
+
+cor( csts[!is.na(csts$CPU_CLK_UNHALTED),]$CTRS
+   , csts[!is.na(csts$CPU_CLK_UNHALTED),]$CPU_CLK_UNHALTED)
+cor(csts$CTRS, csts$TIME_NANO_DIFF)
+cor(csts$CTRS, csts$AVG_POWER)
+
