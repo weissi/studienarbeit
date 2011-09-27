@@ -1,6 +1,6 @@
 \begin{itemize}
 
-\item \JWctr{CPU\_CLK\_UNHALTED}
+\item \JWctr{CPU\_\-CLK\_\-UNHALTED}
 \begin{quotation}
 This is an architectural event that counts the number of thread cycles while the
 thread is not in a halt state. The thread enters the halt state when it is
@@ -9,34 +9,36 @@ to power or thermal throttling. For this reason, this event may have a changing
 ratio with regards to wall clock time.
 \end{quotation}
 
-\item \JWctr{INST\_RETIRED}
+\item \JWctr{INST\_\-RETIRED}
 \begin{quotation}
+
 This event counts the number of instructions retired from execution. For
 instructions that consist of multiple micro-ops, this event counts the
 retirement of the last micro-op of the instruction. Counting continues during
 hardware interrupts, traps, and inside interrupt handlers. Notes:
-\JWctr{INST\_RETIRED.ANY} is counted by a designated fixed counter, leaving the
-four ( eight when Hyperthreading is disabled ) programmable counters available
-for other events. \JWctr{INST\_RETIRED.ANY\_P} is counted by a programmable
-counter and it is an architectural performance event. Counting: Faulting
-executions of GETSEC / VM entry / VM Exit / MWait will not count as retired
-instructions.
+\JWctr{INST\_\-RETIRED.\-ANY} is counted by a designated fixed counter, leaving
+the four (eight when Hyper\-threading is disabled) programmable counters
+available for other events. \JWctr{INST\_\-RE\-TI\-RED.\-ANY\_\-P} is counted by
+a programmable counter and it is an architectural performance event. Counting:
+Faulting executions of GETSEC / VM entry / VM Exit / MWait will not count as
+retired instructions.
+
 \end{quotation}
 
-\item \JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}
+\item \JWctr{BR\_\-INST\_\-RETIRED:FAR\_\-BRANCH}
 \begin{quotation}
 This is a non-precise version (that is, does not use PEBS) of the event that
 counts far branch instructions retired.
 \end{quotation}
 
-\item \JWctr{DSB2MITE\_SWITCHES}
+\item \JWctr{DSB2MITE\_\-SWITCHES}
 \begin{quotation}
 This event counts the number of the Decode Stream Buffer (DSB)-to-MITE switches
 including all misses because of missing Decode Stream Buffer (DSB) cache and
 u-arch forced misses. Note: Invoking MITE requires two or three cycles delay.
 \end{quotation}
 
-\item \JWctr{DSB\_FILL:ALL\_CANCEL}
+\item \JWctr{DSB\_\-FILL:ALL\_\-CANCEL}
 \begin{quotation}
 This event counts the number of times when a valid Decode Stream Buffer (DSB)
 fill has been actually cancelled not because of exceeding the way limit.
@@ -47,27 +49,27 @@ In the B step a four-bit counter will count the number of cancel operations and
 will reverse the priority upon look ing up the same set.
 \end{quotation}
 
-\item \JWctr{ILD\_STALL:IQ\_FULL}
+\item \JWctr{ILD\_\-STALL:IQ\_\-FULL}
 \begin{quotation}
 This event counts stall cycles when instructions cannot be written because IQ is
 full. Note: If there is no Resource Allocation Table (RAT) stalls, it indicates
 the decoders issue.
 \end{quotation}
 
-\item \JWctr{L2\_RQSTS:PF\_HIT}
+\item \JWctr{L2\_\-RQSTS:PF\_\-HIT}
 \begin{quotation}
 This event counts the number of requests from the L2 hardware prefetchers that
 hit L2 cache. LLC prefetch new types
 \end{quotation}
 
-\item \JWctr{LD\_BLOCKS:ALL\_BLOCK}
+\item \JWctr{LD\_\-BLOCKS:ALL\_\-BLOCK}
 \begin{quotation}
 Number of cases where any load ends up with a valid block-code written to the
 load buffer (including blocks due to Memory Order Buffer (MOB), Data Cache Unit
 (DCU), TLB, but load has no DCU miss)
 \end{quotation}
 
-\item \JWctr{LD\_BLOCKS:DATA\_UNKNOWN}
+\item \JWctr{LD\_\-BLOCKS:DATA\_\-UNKNOWN}
 \begin{quotation}
 This event counts the number of load operations delayed due to store buffer
 blocks, preceding store operations with known addresses but unknown data.
@@ -75,7 +77,7 @@ Counting happens according to the final blocking codes. This does not include
 inline wakeups.
 \end{quotation}
 
-\item \JWctr{UOPS\_DISPATCHED:STALL\_CYCLES}
+\item \JWctr{UOPS\_\-DISPATCHED:STALL\_\-CYCLES}
 \begin{quotation}
 This event counts cycles during which no uops were dispatched from the
 Reservation Station (RS) per thread.

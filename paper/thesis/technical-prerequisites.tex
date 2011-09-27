@@ -1,7 +1,7 @@
 \JWlone{Technical Prerequisites}
 \label{sec:technical-prerequisites}
 
-In this chapter the hardware inspected in this work appears in detail. The
+In this chapter the hardware examined in this work appears in detail. The
 hardware used to inspect (the measuring device) will be depicted in a
 chapter of its own (\ref{sec:measuring-device}).
 
@@ -11,9 +11,9 @@ chapter of its own (\ref{sec:measuring-device}).
 
 \begin{itemize}
 
-\item CPU: \JWPcpu{} (\emph{Sandy Bridge}\cite{wiki:snb} microarchitecture)
+\item CPU: \JWPLcpu{} (\emph{Sandy Bridge}\cite{wiki:snb} microarchitecture)
 
-\item Mainboard: \JWPboard{} (using an external video controller)
+\item Mainboard: \JWPLboard{} (using an external video controller)
 
 \end{itemize}
 
@@ -22,8 +22,8 @@ chapter of its own (\ref{sec:measuring-device}).
 \JWltwo{Sandy Bridge Characteristics}
 \label{sec:sandy-bridge}
 
-In this section, characteristics of the Sandy Bridge microarchitecture are
-described in detail.
+This cahpter describes the characteristics of the Sandy Bridge microarchitecture
+in detail.
 
 \begin{figure}
   \centering
@@ -63,13 +63,12 @@ follows (\cite{intel2011spec}):
 \label{sec:pmu}
 
 The CPU's \emph{Performance Monitoring Unit} (PMU) is present since the
-Intel\TReg{} Pentium processor. Using this unit you can monitor several
-of the CPU's performance parameters, originally meant for tuning system and
-application performance (mostly used by compiler developers)
-\cite{intel2011softdev3b}.
+Intel\TReg{} Pentium processor. Using this unit you can monitor several of the
+CPU's performance parameters, originally meant for tuning system and application
+performance \cite{intel2011softdev3b} (mostly used by compiler developers).
 
-In prior work (\cite{bellosa2000benefits,snowdon2010operating,
-weissel2002process,kellner03tempcontrol,bertran2010decomposable}) some of these
+In prior work \cite{bellosa2000benefits,snowdon2010operating,
+weissel2002process,kellner03tempcontrol,bertran2010decomposable} some of these
 performance events have proven to be somehow related to the power consumption of
 the CPU. As the selection of the events and the degree of their correlation to
 energy highly varies between CPUs (or at least CPU microarchitectures) this has
@@ -79,7 +78,7 @@ microarchitecture and in particular the \JWPcpu{}.
 Examining the documentation \cite{intel2011events} approximalely 184 events have
 been found available and usable. Because the CPU is only able to count eight
 (four in Hyper-threading \cite{wiki:HT} mode) user-programmable performance
-events at a time \cite{intel2011softdev1} the most useful events had to be
+events at a time \cite{intel2011softdev1} the most useful events have to be
 selected (see chapters \ref{sec:min-events} and \ref{sec:finding-useful-subset}
 for a description of  the selection process). In addition to the eight (four)
 events, the CPU provides three counters for fixed events, which will be counted
@@ -87,15 +86,16 @@ anyway: \JWctr{CPU\_CLK\_UNHALTED.REF\_TSC}, \JWctr{CPU\_CLK\_UNHALTED.THREAD}
 and \JWctr{INST\_RETIRED.ANY}.
 
 The selection, configuration and usage of these performance event counters is
-done via special \emph{model specific registers} (MSRs), see
-\cite{intel2011softdev3b} for the documentation. In this work a more high-level
-approach via the \texttt{perf\_event}-API of newer Linux Kernels (some
-documentation available at \cite{weaver2011perfevents}) and \JWtool{libpfm4}
-(see chapter \ref{sec:standard-software}) has been used.
+done via special \emph{model specific registers} (MSRs)
+\cite{intel2011softdev3b}. In this work a more high-level approach via the
+\texttt{perf\_event}-API of newer Linux Kernels (only some documentation
+available \cite{weaver2011perfevents}) and \JWTlibpfm{} (see chapter
+\ref{sec:standard-software}) has been used.
 
 
 %-  architectural differences  -------------------------------------------------
-\JWlthree{Architectural Differences between Sandy Bridge and Older Architectures}
+\JWlthree[Architectural Differences]
+{Architectural Differences between Sandy Bridge and its Predecessors}
 
 The Intel\TReg{} \emph{Sandy Bridge} microarchitecture is a further development
 of the Core and Nehalem architectures \cite{fog11}. Among other simplifications

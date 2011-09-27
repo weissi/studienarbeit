@@ -14,10 +14,10 @@
 \end{figure}
 
 As figure \ref{fig:overview} illustrates an additional workstation -- the
-\emph{Examining Workstation (EW)} has been used while evolving this thesis. The
-\emph{System under Test (SuT)} counts the CPU's performance events itself and
-the EW records the energy consumation in the meantime. These two datasets have
-thereafter been used to build up the energy model.
+\emph{Examining Workstation (EW)} -- has been used while evolving this thesis.
+The \emph{System under Test (SuT)} counts the CPU's performance events itself
+and the EW records the energy consumation in the meantime. These two datasets
+have thereafter been used to build up the energy model.
 
 
 %#  MEASURING SETUP IN DETAIL  #################################################
@@ -36,10 +36,10 @@ the examination (time) interval a trigger wire is used. It is realized as a
 simple analog signal using the parallel port's \emph{high} and \emph{low}
 voltages.
 
-This can be summed up to measuring three potential differences. Since the
+This can be summed up to measure three potential differences. Since the
 measuring device (chapter \ref{sec:measuring-device}) provides up to eight
-differential, analog input channels that seems very easy at the first sight.
-Unfortunately there are two caveats here: On the one hand according to the
+differential, analog input channels this seems very easy at the first sight.
+Unfortunately there are two caveats: On the one hand according to the
 user's manual \cite{NIManual2009} the best accuracy can be achieved in range of
 \SI{-200}{\milli\volt} and \SI{200}{\milli\volt}. On the other hand the overall
 potential differences may not exceed $\pm$\SI{10.4}{\volt}
@@ -64,8 +64,8 @@ Choosing adequate sensing resistors for the \JWchan{CPU} (R =
 \SI{10}{\milli\ohm}) and \JWchan{BOARD} (R = \SI{5}{\milli\ohm}) channels (see
 figure \ref{fig:circuit}) worked out well. The parallel port trigger wire has
 been a problem in the a problem at first, though. The parallel port has a
-potential difference range of $>$\SI{200}{\milli\volt} and our test machine's
-port had a very different potential niveau than the \JWchan{CPU} and
+potential difference range of more than \SI{200}{\milli\volt} and our test
+machine's port had a very different potential niveau than the \JWchan{CPU} and
 \JWchan{BOARD} channels, exceeding the allowed range of $\pm$\SI{10.4}{\volt}.
 The potential equalizer illustrated in figure \ref{fig:potential-equalizer}
 solves both problems very well.
@@ -102,11 +102,11 @@ termination. An exemplary plot of an examination can be found in figure
 \JWlthree{Measuring Device}
 \label{sec:measuring-device}
 
-For measuring the voltage drops we chose \JWPni{} (shows in figure \ref{fig:ni}
-from \JWenterprise{http://www.ni.com}{National Instruments} because it supports
-high sampling rates of up to 250000 samples per second
-(\SI{250}{\kilo\samples\per\second}) and is very accurate
-(accuracy $< \SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
+For measuring the voltage drops we chose \JWPLni{} (shown in figure
+\ref{fig:ni}) from \JWenterprise{http://www.ni.com}{National Instruments}
+because it supports high sampling rates of up to 250000 samples per second
+(\SI{250}{\kilo\samples\per\second}) and is very accurate (accuracy $<
+\SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
 
 \begin{figure}
   \centering
@@ -149,20 +149,21 @@ Hence, integrating will result in the electrical work
 \end{equation}
 
 
-%#  THE ENERGY MODEL  ##########################################################
-\JWltwo{The Energy Model}
+%#  ENERGY MODEL  ##############################################################
+\JWltwo{Energy Model}
 \label{sec:model}
 
-In this section the mathematical and formal methods to find a good subset of
-events and their coefficients is presented.
+The following chapters will define the term \emph{energy model} along with  the
+formal methods suggested to build such a model.
 
-%#  THE MODEL'S PROPERTIES  ####################################################
-\JWltwo{The Model's Properties}
+
+%-  the model's properties  ----------------------------------------------------
+\JWlthree{Properties}
 \label{sec:model-properties}
 
 In this work, an energy model is considered as a linear formula. A system with
 $N$ CPUs/cores which is able to monitor $M$ performance events per core
-simultaneously is described here. Additionally to the per-core event counters,
+simultaneously is described. Additionally to the per-core event counters,
 $K$ global event counters make the model up. In the formal description (see
 section \ref{sec:towards-the-model} for the practical implementation) we assume
 four functions providing the actual values:
@@ -184,11 +185,11 @@ $n$
 Though, a energy model equates to
 
 \begin{equation}
-W = \sum\limits_{k=0}^K g(m) w_g(m) +
+W = \sum\limits_{k=0}^K g(k) w_g(k) +
 \sum\limits_{n=0}^N \sum\limits_{m=0}^M c(n, m) w_c(n,m)
 \end{equation}
 
-. The functions $g$ and $c$ contain the system's life data whereas $w_g$ and
+The functions $g$ and $c$ contain the system's life data whereas $w_g$ and
 $w_c$ can be calculated a priori as done in this work. Obviously the selection
 of the events and their respective weights highly depend on the type of
 microprocessor.
@@ -198,11 +199,11 @@ microprocessor.
 \JWlthree{Minimizing the Set of Performance Events}
 \label{sec:min-events}
 
-After having seen (section \ref{sec:model-properties}) what exactly makes up a
-model, it crucial to find a small and meaningful set of performance events we
-use. It's not practical to take into account all the events the
+Having seen (chapter \ref{sec:model-properties}) what exactly constitutes an
+energy model, it is crucial to find a small and meaningful set of performance
+events to use. It is not practical to take into account all events the
 microprocessor is aware of. Today's processors offer a lot more events then they
-have counters to count them at once \cite{intel2011softdev1}.
+can count simultaneously \cite{intel2011softdev1}.
 
 The approach to find a reasonable subset of $N$ events (of $A$ available) used
 in this work can be summed up to:

@@ -18,7 +18,7 @@ smaller, faster, and simpler} (which is incidentally their  slogan).
 A shot ID (shot identifier) is a string value uniquely identifiying one
 measuring experiment. More precisely it's a character string containing only a
 defined set of ASCII characters. The following regular expression shoud match
-all allowed shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
+all valid shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
 
 Such shot IDs are always used to associated power and performance event
 measurings.
@@ -31,7 +31,7 @@ measurings.
 The main matter of the \emph{electrical power data point files} (called
 \emph{data point files} for simplicity) is to log the CPU's power consumation by
 time. As described in chapter \ref{sec:measuring-setup}, voltage drops are
-measured and electrical power and work are only calculated later on. This is
+measured and electrical power and work are calculated later on. This is
 why data point files do literally contain voltage drop values by time.
 But since the only reason they exist is to serve as calculation input later on,
 they are named after their future meaning.
@@ -47,15 +47,15 @@ voltage drops, \texttt{BOARD} -- the mainboard's voltage drops (unused) and
 other machine counted performance events.
 
 The data point files are also one notable exception of the \emph{Protocol
-Buffers for everything} principle in this work. As \cite{google11pbtechniques}
-states the Procotol Buffers were not designed to handle large messages
-but are great as individual messages \emph{within} a large data set. So (as you
-can see in appendix \ref{sec:fmt:datapoints}) small Protocol Buffer messages
-are streamed one after another. The size of one of these chunks is not
-specified. Usually one makes up a chunk when he receives one from a measuring
-device. The rule of thumb is: Make them as large as practical, but not too large
-since we only record one timestamp per chunk. The data points inside each chunk
-are considered as distributed equally.
+Buffers for everything} principle in this work. Procotol Buffers were not
+designed to handle large messages but are great as individual messages
+\emph{within} a large data set \cite{google11pbtechniques}. So (as you can see
+in appendix \ref{sec:fmt:datapoints}) small Protocol Buffer messages are
+streamed one after another. The size of one of these chunks is not specified.
+Usually one makes up a chunk when he receives one from a measuring device. The
+rule of thumb is: Make them as large as practical, but not too large since we
+only record one timestamp per chunk. The data points inside each chunk are
+considered as distributed equally.
 
 
 %-  performance counter files  -------------------------------------------------
@@ -86,13 +86,13 @@ or newline). In contrast to the other file formats, the work file's file names
 have to match the following format: \verb%work_<SHOT-ID>_.work% (e.g.
 \verb%work_SPEC-gcc@2011-08-31_16-07-46.work%).
 
-A valid work file could look like
+The following listing shows a valid work file:
 
 \begin{lstlisting}[style=Shell]
 $ hexdump -C work_SPEC-gcc@2011-08-31_16-07-46.work
 0000  37 34 2e 30 31 35 32 35  36 0a   |74.015256.|
 000a
-\end{lstlisting}.
+\end{lstlisting}
 
 
 
@@ -107,8 +107,8 @@ purpose of this study thesis. All of them are open-sourced and available on
 \JWnamedlink{https://github.com/weissi/studienarbeit}{GitHub}
 (\JWlink{https://github.com/weissi/studienarbeit}).
 
-In this chapter, we will give an overview of the software used, both standard
-software and tools developed specifically to be able to write this paper.
+This chapter will give an overview of the software used, both standard software
+and tools developed specifically.
 
 
 %-  standard software  ---------------------------------------------------------
@@ -117,33 +117,37 @@ software and tools developed specifically to be able to write this paper.
 
 \begin{itemize}
 
-\item \JWTprotobuf{} for saving and loading of all kinds of data
+\item \JWTLprotobuf{} --- for saving and loading of all kinds of data
 
-\item \JWnamedlink{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/protocol-buffers}
-                  {protocol-buffers} for parsing Protocol Buffer files and
-generating code in Haskell
+\item
+\JWnamedlink{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/protocol-buffers}
+{\JWpn{protocol-buffers}} --- for parsing \JWTprotobuf{} files and generating
+code in Haskell
 
-\item \JWnamedlink{http://code.google.com/p/protobuf-c/}{protobuf-c} for parsing
-Protocol Buffer files in generating code in C
+\item \JWnamedlink{http://code.google.com/p/protobuf-c/}{\JWpn{protobuf-c}} ---
+for parsing Protocol Buffer files in generating code in C
 
-\item \JWnamedlink{http://www.r-project.org/}{R} for statistical computations
+\item \JWTLR{} --- for statistical computations
 
-\item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{leaps package}
-, a R library for regression subset selection (to minimize the set of available
-performance counters)
+\item \JWnamedlink{http://cran.r-project.org/web/packages/leaps/}{\JWpn{leaps}}
+--- a \JWTR{} library for regression subset selection (to minimize the set of
+available performance counters)
 
 \item
 \JWnamedlink{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}
-{lm library}, a R library used to fit linear models
-
-\item \JWnamedlink{http://kernel.org}{Linux Kernel 3.0}
-
-\item \JWnamedlink{http://gnu.org}{numerous GNU tools}
+{\JWpn{lm}} --- a \JWTR{} library to fit linear models
 
 \item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
-{\texttt{libpfm4}} for reading the performance counters from userspace
+{\JWtool{libpfm4}} --- for reading the performance counters from userspace
 
-\item \JWTnidaqmxbase{} for interfacing \JWPni
+\item \JWTLnidaqmxbase{} --- for interfacing \JWPni
+
+\item \JWnamedlink{http://kernel.org}{\JWpn{Linux Kernel}} 2.6.37 and 3.0
+
+\item numerous \JWnamedlink{http://gnu.org}{\JWpn{GNU}} tools
+
+\item \JWnamedlink{http://www.haskell.org/ghc}
+{\JWpn{The Glasgow Haskell Compiler}}
 
 \end{itemize}
 
@@ -157,34 +161,34 @@ performance counters)
 
 \JWTlibdp{} is responsible for loading and saving the measured data points from
 and to the data point files (see chapter \ref{sec:datapoint-files}). It's API is
-straight forward and the library is able to handle very big files. The API can
-be found in \JWpath{libdatapoints/datapoints.h}.
+straight forward and the library is able to handle arbitrarily large files. The
+API can be found in \JWpath{libdatapoints/datapoints.h}.
 
 
 \JWlfour{\JWTfcw}
 
-\JWTfcw{} can calculate the electrical work from data points files very quickly.
-As explained in section \ref{sec:calc-work} it integrates to electrical power.
-But since we obtain discrete data by sampling (see section
-\ref{sec:measuring-setup}) the integration can be done quite fast:
+\JWTfcw{} can calculate the electrical work from data points files quickly.  As
+explained in section \ref{sec:calc-work} it integrates the instantaneous power
+to electrical work.  But since we obtain discrete data by sampling (see section
+\ref{sec:measuring-setup}), the integration can be done quite fast:
 
 \JWtodo{integral P = sum P * diff}
 
-A typical call to \JWTfcw{} looks like
+The following example illustrates the usage of \JWTfcw{}
 
 \begin{lstlisting}[style=Shell]
 fastcalcwork captured-17:15:00.dpts CPU 0.01 TRIGGER
 \end{lstlisting}
 
-Using the command line above, \JWTfcw{} will calculate the electrical work with a
-measuring resistor of \SI{0.01}{\ohm}. The measured data points will be taken
+Using the command line above, \JWTfcw{} will calculate the electrical work with
+a measuring resistor of \SI{0.01}{\ohm}. The measured data points will be taken
 from column \texttt{CPU}, the analog trigger's (see section
 \ref{sec:measuring-setup}) value from \texttt{TRIGGER}.
 
 
 \JWlfour{\JWTdc}
 
-\JWTdc{} is the tool for retrieving the performance event's counter values on
+\JWTdc{} is a tool for retrieving the performance event's counter values on
 the target machine. Giving it a set of performance events and a command to
 execute, it will record the events while the task is running. It always works
 system-widely and saves values by counter and by CPU enabled. Along the way it
@@ -193,7 +197,7 @@ is crucial to be sure examining the same time intervals for counting performance
 events and measuring electrical power.
 
 A working example executing \texttt{/bin/ls} and counting
-\texttt{CPU\_CLK\_UNHALTED} and \texttt{INST\_RETIRED} along the way:
+\JWctrCLK{} and \JWctrINST{} along the way:
 
 \begin{lstlisting}[style=Shell]
 dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED \
@@ -254,10 +258,10 @@ outputted.
 
 \JWlfour{high-level scripts}
 
-As one could understand until here, there are many simple tools. To compose
+As one could understand so far, there are many simple tools. To compose
 the ensemble many of these have to be invoked correctly with each other. Since,
-that's not a trivial task, some high-level scripted have been developed. Most
-notably this is \JWTdomeasuring{}.
+this is not a trivial task, some high-level scripts have been developed. Most
+notably \JWTdomeasuring{}.
 
 \begin{lstlisting}[style=Shell]
 $ do_measuring.sh -f \
@@ -303,12 +307,12 @@ The first step toward the energy model is to choose a good set of benchmarks.
 The benchmarks should stress different parts of the CPU and should collectively
 stress all parts and units of the CPU. As chapter \ref{sec:restrictions} states
 some units have been deliberately excluded in this work. The benchmarks should
-also mostly avoid the excluded units because their results would then have a bad
+therefore avoid the excluded units because their results would then have a bad
 consequences on the final model.
 
-In this work all benchmarks of the \JWTLspec{} suite, the memory bandwith
+The benchmark choice fell to the \JWTLspec{} suite, the memory bandwith
 benchmark \JWTLstream{} a benchmark provokating many branch mispredictions
-and an ALU stress benchmark have been used.
+and an ALU stress benchmark.
 
 For the multi-core tests, different instances of these benchmarks have been
 pinned to each core and were therefore running simultaneously.
@@ -324,23 +328,23 @@ gathered using only one enabled core of the CPU. The other cores have been
 disabled using the BIOS.
 
 To model the baseline energy of a core (the energy consumed when no performance
-event is triggered) one pseudo-event per core modelling the time this specific
-core is enabled has been added. These events fall in the group of the
-\emph{global events} (see chapter \ref{sec:model-properties}). Because the
-setting if one core is enabled or not can only be changed when (re)booting the
-machine each of these pseudo-events is either $0$ -- if the core is disabled --
-or equal to the entire running time of a benchmark -- if the core is enabled.
+event is triggered), one pseudo--event per core (modelling the time it is
+enabled) has been added. These events fall in the group of the \emph{global
+events} (see chapter \ref{sec:model-properties}). A core can only be enabled or
+disabled when the machine gets (re)booted. Therefore each of these
+pseudo--events is either $0$ (core \emph{disabled}) or equal to the
+entire running time of a benchmark (core \emph{enabled}).
 
 The general methodology has already been described in chapter
 \ref{sec:min-events}.  First the performance events were randomly
-distributed in disjoint groups of eight events -- the maximal number of
+distributed in disjoint groups of eight events which is the maximal number of
 performance events the CPU can count simultaneously (see chapter
 \ref{sec:sandy-bridge}). Thereafter, for each group of events all benchmarks
 have been executed consecutively. Then all the runs of each benchmark were
-considered as one run recording all the events available.  Since the electrical
+considered as one run recording all available events. Since the electrical
 work consumed and the running time was recorded for each run of its own they
 were averaged per benchmark. Attention was payed that the averaged values didn't
-differ much between the runs, the relative standard deviation was below 4\% for
+differ much between the runs, the relative standard deviation was below 4\% in
 the worst case.
 
 The result was considered as one huge system of linear equations and the best
@@ -367,19 +371,32 @@ model presented in this paper.
   \label{fig:run-benchmarks}
 \end{figure}
 
-After the event selection process (see chapter \ref{sec:finding-useful-subset})
-energetical weights for the (pseudo-)event had to be found. To find these, the
-benchmarks were first rerun again only on one core but recording all of
-the final events in one shot. Thereafter all reasonable permutations for two and
-three cores and 500 random permutations for all four cores have been generated.
-This new huge set of benchmarks has then been executed, always rebooting and
-reconfiguring the machine to the correct number of enabled cores. Figure
-\ref{fig:run-benchmarks} illustrates the process. The pinning of the benchmarks
-to their target core has been done using the \texttt{taskset} utility.
+After the event selection process energetical weights for the (pseudo-)event had
+to be found. To find these, the benchmarks runs were repeated -- once again on
+a single core but recording all of the final events in one shot. Thereafter all
+reasonable permutations for two and three cores and 500 random permutations for
+all four cores have been generated.  This new large set of benchmarks has then
+been executed, always rebooting and reconfiguring the machine to the correct
+number of enabled cores. Figure \ref{fig:run-benchmarks} illustrates the
+process. The pinning of the benchmarks to their target core has been done using
+the \texttt{taskset} utility.
 
-In this section the final energy model is presented:
+Presumably due to symmetric architecture of the CPU, the event's energetical
+weights proved to be similar on all cores. Hence, the model's general form could
+be simplified. Consequently the function $w_c$ is not anymore parametrized by
+core. The following equation shows the new form, identifiers as in chapter
+\ref{sec:model-properties}.
 
-\JWtodo{Tabelle vierte Spalte: max-betrag(P)}
+\begin{equation}
+W = \sum\limits_{k=0}^K g(k) w_g(k) +
+\sum\limits_{m=0}^M  w_c(m) \sum\limits_{n=0}^N c(n, m)
+\end{equation}
+
+The table shows the energetical weights which form the functions $w_g$ and
+$w_g$. $g$ and $c$ are the system's live data mainly available from the CPU's
+performance event counters. The formula above and the weights below are the
+energy model presented in this thesis. That is enough to estimate the
+electrical power the CPU consumed in a selectable time interval.
 
 \begin{tabular}{l r r}
 
@@ -387,7 +404,7 @@ In this section the final energy model is presented:
 Energetical&
 Maximal Frequency\\
 & Weight & compared to\\
-& & \JWctr{CPU\_CLK\_UNHALTED} \\
+& ($w_c$ and $w_g$) & \JWctr{CPU\_CLK\_UNHALTED} \\
 
 \hline
 \textit{time core 1 is enabled} [\si{\nano\second}] &

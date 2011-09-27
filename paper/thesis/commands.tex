@@ -25,21 +25,28 @@
 \newcommand{\JWTlibdp}{\JWtool{libdatapoints}}
 %\newcommand{\JWTfcw}{\JWtool{fastcalcwork}}
 \def\JWTfcw{\JWtool{fastcalcwork}}
+
 \def\JWTR{\texttt{R}}
+\def\JWTLR{\JWnamedlink{http://www.r-project.org/}{\JWTR{}}}
+
 \def\JWTlibpfm{\texttt{libpfm4}}
+\newcommand\JWpn{\textsf}
 \newcommand{\JWTdc}{\JWtool{dumpcounters}}
 \newcommand{\JWTdd}{\JWtool{datadump}}
 \newcommand{\JWTde}{\JWtool{dataexport}}
 \newcommand{\JWTcbs}{\JWtool{ctrbenchmark}}
 \newcommand{\JWTbsle}{\JWtool{BuildSLE}}
 \newcommand{\JWTdomeasuring}{\JWtool{do\_measuring.sh}}
-\newcommand{\JWTprotobuf}{Google Protocol Buffers}
+\newcommand{\JWTprotobuf}{Google\TTra{} Protocol Buffers}
 \newcommand{\JWTLprotobuf}
   {\JWproduct{http://code.google.com/apis/protocolbuffers/}
-             {Google Protocol Buffers}}
-\newcommand{\JWTnidaqmxbase}
+             {\JWTprotobuf{}}}
+
+\newcommand\JWTnidaqmxbase{\JWpn{NI-DAQmx Base}}
+\newcommand{\JWTLnidaqmxbase}
   {\JWproduct{http://sine.ni.com/nips/cds/view/p/lang/en/nid/14480}
-             {NI-DAQmx Base}}
+             {\JWTnidaqmxbase}}
+
 \newcommand{\JWTspec}{SPEC CINT2006}
 \newcommand{\JWTleaps}{\JWTR{}'s \texttt{leaps} package}
 \newcommand{\JWTLspec}
@@ -50,15 +57,18 @@
   {\JWproduct{http://www.cs.virginia.edu/stream/}
              {\texttt{STREAM}}}
 
-\newcommand{\JWPcpu}
+\newcommand\JWPcpu{Intel\TReg{} Core\TTra{} i7-2600K Processor}
+\newcommand\JWPboard{ASUS P8P67-M PRO}
+\newcommand\JWPni{NI USB-6218}
+\newcommand{\JWPLcpu}
   {\JWproduct{http://ark.intel.com/products/52213}
-             {Intel\TReg Core\TTra i7-2600K Processor }}
-\newcommand{\JWPboard}
+             {\JWPcpu{}}}
+\newcommand{\JWPLboard}
   {\JWproduct{http://www.asus.com/Motherboards/Intel_Socket_1155/P8P67M_PRO/}
-             {ASUS P8P67-M PRO}}
-\newcommand{\JWPni}
+             {\JWPboard{}}}
+\newcommand{\JWPLni}
   {\JWproduct{http://sine.ni.com/nips/cds/view/p/lang/en/nid/203484}
-             {NI USB-6218}}
+             {\JWPni{}}}
 
 \lstset{language=C,basicstyle=\ttfamily,commentstyle=\ttfamily}
 \lstdefinestyle{Shell}{delim=[il][\bfseries]{BB}}

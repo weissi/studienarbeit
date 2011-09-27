@@ -1,4 +1,4 @@
-\documentclass[12pt, a4paper]{book}
+\documentclass[12pt, a4paper, openright, BCOR=1cm]{book}
 
 % language
 \usepackage[american]{babel}
@@ -10,7 +10,7 @@
 \SetWatermarkScale{4.0}
 
 % bib
-\bibliographystyle{plain}
+\bibliographystyle{plainurl}
 
 % make it look good
 \setlength{\parskip}{1.3ex}
@@ -38,6 +38,7 @@
 \usepackage{appendix}
 \usepackage{longtable}
 \usepackage{enumerate}
+\usepackage{fancyvrb}
 
 
 % KITize it :-)
@@ -48,22 +49,20 @@
 \title{Multi-Core Energy Accounting}
 
 \begin{document}
-
-\pagenumbering{roman}
-
 \selectlanguage{american}
 
+\frontmatter
 \input{title}
 
 %\input{abstract}
 
 %\input{acknowledgments}
 
-\mainmatter
 \tableofcontents
 
-\pagenumbering{arabic}
+\mainmatter
 
+\cleardoublepage
 \input{introduction}
 
 %\input{related-work}
