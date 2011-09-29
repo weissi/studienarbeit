@@ -300,7 +300,7 @@ given.
 
 
 %-  BENCHMARKS  ----------------------------------------------------------------
-\JWlthree{The set of Benchmarks}
+\JWlthree{The Set of Benchmarks}
 \label{sec:benchmarks}
 
 The first step toward the energy model is to choose a good set of benchmarks.
@@ -311,7 +311,7 @@ therefore avoid the excluded units because their results would then have a bad
 consequences on the final model.
 
 The benchmark choice fell to the \JWTLspec{} suite, the memory bandwith
-benchmark \JWTLstream{} a benchmark provokating many branch mispredictions
+benchmark \JWTLstream{} a benchmark provoking many branch mispredictions
 and an ALU stress benchmark.
 
 For the multi-core tests, different instances of these benchmarks have been
@@ -372,16 +372,22 @@ model presented in this paper.
 \end{figure}
 
 After the event selection process energetical weights for the (pseudo-)event had
-to be found. To find these, the benchmarks runs were repeated -- once again on
-a single core but recording all of the final events in one shot. Thereafter all
+to be found. To find these, the benchmarks runs were repeated -- once again on a
+single core but recording all of the final events in one shot. Thereafter all
 reasonable permutations for two and three cores and 500 random permutations for
-all four cores have been generated.  This new large set of benchmarks has then
-been executed, always rebooting and reconfiguring the machine to the correct
-number of enabled cores. Figure \ref{fig:run-benchmarks} illustrates the
-process. The pinning of the benchmarks to their target core has been done using
-the \texttt{taskset} utility.
+all four cores have been generated. All in all over 3000 different benchmark
+runs have been recorded. The way the benchmark runs were recorded is illustrated
+in figure \ref{fig:run-benchmarks}. It was necessary to always reboot and
+reconfigure the machine because the number of active cores cannot be changed at
+runtime. The pinning of the benchmark processes to their target core has been
+done using the \texttt{taskset} utility.
 
-Presumably due to symmetric architecture of the CPU, the event's energetical
+To train the model only about 50 well chosen benchmark runs were used,
+iteratively adding adequate sample runs when weaknesses of the model have been
+discovered. To evaluate the model (chapter \ref{sec:evaluation}) the whole set
+was used.
+
+Presumably due to the symmetric architecture of the CPU, the event's energetical
 weights proved to be similar on all cores. Hence, the model's general form could
 be simplified. Consequently the function $w_c$ is not anymore parametrized by
 core. The following equation shows the new form, identifiers as in chapter
@@ -392,10 +398,10 @@ W = \sum\limits_{k=0}^K g(k) w_g(k) +
 \sum\limits_{m=0}^M  w_c(m) \sum\limits_{n=0}^N c(n, m)
 \end{equation}
 
-The table shows the energetical weights which form the functions $w_g$ and
-$w_g$. $g$ and $c$ are the system's live data mainly available from the CPU's
-performance event counters. The formula above and the weights below are the
-energy model presented in this thesis. That is enough to estimate the
+The following table shows the energetical weights which form the functions $w_g$
+and $w_g$. $g$ and $c$ are the system's live data mainly available from the
+CPU's performance event counters. The formula above and the weights below are
+the energy model presented in this thesis. That is enough to estimate the
 electrical power the CPU consumed in a selectable time interval.
 
 \begin{tabular}{l r r}
@@ -425,32 +431,20 @@ $\infty$ \\
 
 \hline
 
-\JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}  &
-\SI{-18031.295}{\nano\joule} &
-0.05\% \\
-
-\JWctr{DSB\_FILL:ALL\_CANCEL} &
-\SI{64.249}{\nano\joule} &
-2.60\% \\
-
-\JWctr{DSB2MITE\_SWITCHES} &
-\SI{-5.972}{\nano\joule} &
-5.31\% \\
-
-\JWctr{LD\_BLOCKS:ALL\_BLOCK} &
-\SI{5.504}{\nano\joule} &
-83.28\% \\
+\JWctr{INST\_RETIRED} &
+\SI{-0.224}{\nano\joule} &
+245.01\% \\
 
 \JWctr{CPU\_CLK\_UNHALTED} &
 \SI{4.546}{\nano\joule} &
 100.00\% \\
 
-\JWctr{L2\_RQSTS:PF\_HIT} &
-\SI{-22.837}{\nano\joule} &
-1.23\% \\
-
 \JWctr{LD\_BLOCKS:DATA\_UNKNOWN} &
 \SI{-6.281}{\nano\joule} &
+83.28\% \\
+
+\JWctr{LD\_BLOCKS:ALL\_BLOCK} &
+\SI{5.504}{\nano\joule} &
 83.28\% \\
 
 \JWctr{UOPS\_DISPATCHED:STALL\_CYCLES} &
@@ -461,9 +455,21 @@ $\infty$ \\
 \SI{-1.425}{\nano\joule} &
 18.17\% \\
 
-\JWctr{INST\_RETIRED} &
-\SI{-0.224}{\nano\joule} &
-245.01\% \\
+\JWctr{DSB2MITE\_SWITCHES} &
+\SI{-5.972}{\nano\joule} &
+5.31\% \\
+
+\JWctr{DSB\_FILL:ALL\_CANCEL} &
+\SI{64.249}{\nano\joule} &
+2.60\% \\
+
+\JWctr{L2\_RQSTS:PF\_HIT} &
+\SI{-22.837}{\nano\joule} &
+1.23\% \\
+
+\JWctr{BR\_INST\_RETIRED:FAR\_BRANCH}  &
+\SI{-18031.295}{\nano\joule} &
+0.05\% \\
 
 \hline
 

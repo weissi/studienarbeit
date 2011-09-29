@@ -1,40 +1,29 @@
 \JWlone{Conclusion}
 
-\begin{itemize}
+As of our knowledge the energy model presented in this thesis is the first
+performance event counter based for the Intel\TReg{} Sandy Bridge
+microarchitecture. Over the above it is the first for CPUs with more than two
+cores. The evaluation results prove the general concept is also applicable to
+today's and tomorrow's multi--core CPUs.
 
-\item What are the achievements? First Sandy Bridge model.
-
-\item Praise me ;-)
-
-\end{itemize}
+The software developed along with this thesis provides a convenient and freely
+available way to build energy models in the future.
 
 
 % #  PROBLEMS  #################################################################
-\JWltwo{Problems}
+\JWltwo{Problems and Outlook}
 \label{sec:problems}
 
-What are the problems, what has not been looked at?
+Even though the resulting energy model already proved its efficiency and
+necessity, there is room for further improvements. On the one hand for the model
+itself, on the other hand for the process of building energy models for new
+target architectures. First, the restrictions mentioned in chapter
+\ref{sec:restrictions} should be eliminated. To improve the practical usefulness
+real multi--threading programs should be better kept in mind. The challenge with
+threads is that shared memory regions get accessed on the same time. This will
+probably attract interest on other/additional performance events which are not
+well covered here. The latter also shows the need to develop a convenient event
+selection process. Supplementary, the upcoming many--core architectures with
+$\gg 4$ cores could become challenging.
 
-\begin{itemize}
-
-\item Suboptimal counter selection? (Multi-core: better events)
-
-\item Short processes lead to fugly results?
-
-\item No true multi-threading (processes running simultaneously do not share
-resources
-
-\item Big problem classes as in the following sub sections.
-
-\item Disabled Processor Features (chapter \ref{sec:restrictions})
-
-\end{itemize}
-
-
-% #  OUTLOOK  ##################################################################
-\JWltwo{Outlook}
-\label{sec:outlook}
-
-What could be looked at in future? (what's missing?)
-
-See \ref{sec:problems} :-(.
+% vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :
