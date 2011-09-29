@@ -1,6 +1,9 @@
 #buildsle -g @ -m 0.14 -c ~/studienarbeit/towards-the-model/v2/counters \
 #    2011-08-08_23-26-46/* 2011-08-13_11-33-20/* > /tmp/test
 test <- read.table('/tmp/test', header=T)
+test$CPU2_TIME_NANOS <- 0
+test$CPU3_TIME_NANOS <- 0
+test$CPU4_TIME_NANOS <- 0
 postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/1cpu-bench-errs.eps'
           ,paper='special', width=10, height=4, horizontal=F)
 boxplot( data.frame( model          = 100*calc_err(test$WORK, model(test))
@@ -10,12 +13,34 @@ boxplot( data.frame( model          = 100*calc_err(test$WORK, model(test))
 dev.off()
 
 #create 'tab' as in /home/weiss/studienarbeit/towards-the-model/v2/HOWTO
+raw_tab <- read.table('/tmp/v2tab', header=T)
+tab <- raw_tab[raw_tab$TIME_NANO_DIFF > (5 * 1000000000),]
+calc_err <- function(r, m) abs(r - m)/abs(r)
+simplemodel <- function(tabledata) tabledata$CPU_CLK_UNHALTED*5.885e-09
 postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/Ncpu-bench-errs.eps'
           ,paper='special', width=10, height=4, horizontal=F)
 boxplot( data.frame( model          = 100*calc_err(tab$WORK, model(tab))
                    , cpu_time_based = 100*calc_err(tab$WORK, simplemodel(tab))
                    )
-       , horizontal=T, xlab='Percent Error', ylab='Method', ylim=c(0, 40))
+       , horizontal=T, xlab='Percent Error', ylab='Method')
+dev.off()
+
+library(ggplot2)
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/hist-models.eps'
+          ,paper='special', width=10, height=4, horizontal=F)
+dataset <- data.frame( variable=gl( 2, nrow(tab)
+                                  , labels = c("model", "cpu_time_based"))
+                     , value=c( 100*calc_err(tab$WORK, model(tab))
+                              , 100*calc_err(tab$WORK, simplemodel(tab))
+                              )
+                     )
+ggplot(data=dataset, aes(x=value, fill=variable)) +
+    geom_histogram(position = "dodge", binwidth=5) +
+    scale_fill_manual(values = c("black", "gray")) +
+    opts(title='Energy Model vs. CPU time based') +
+    scale_x_continuous('\nPercent Error', breaks=seq(0, 100, 10)) +
+    scale_y_continuous('Number of Benchmarks\n') +
+    theme_bw()
 dev.off()
 
 #
@@ -101,4 +126,12 @@ cor( csts[!is.na(csts$CPU_CLK_UNHALTED),]$CTRS
    , csts[!is.na(csts$CPU_CLK_UNHALTED),]$CPU_CLK_UNHALTED)
 cor(csts$CTRS, csts$TIME_NANO_DIFF)
 cor(csts$CTRS, csts$AVG_POWER)
+
+#create 'tab' as in /home/weiss/studienarbeit/towards-the-model/v2/HOWTO
+raw_tab <- read.table('/tmp/v2tab', header=T)
+tab <- raw_tab[raw_tab$TIME_NANO_DIFF > (5 * 1000000000),]
+calc_err <- function(r, m) abs(r - m)/abs(r)
+tab$AVG_POWER <- tab$WORK/(tab$TIME_NANO_DIFF/1000000000)
+reltab <- tab[tab$TIME_NANO_DIFF > (5 * 1000000000),]
+ordtab <- tab[order(reltab$AVG_POWER),]
 

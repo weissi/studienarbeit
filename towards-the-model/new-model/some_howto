@@ -1,0 +1,8 @@
+fi <- read.table('/tmp/nm-fitting', header=T)
+fi_model_raw <- lm(WORK~0+., data=fi[2:ncol(fi)])
+write.table(fi_model_raw$coefficients, '/tmp/nm')
+
+ntab$ERR <- calc_err(ntab$WORK, model(ntab))
+ntab[order(ntab$ERR),]$SHOT_ID
+ontab <- ntab[order(ntab$ERR),]
+boxplot(ntab$ERR, ntab$FERR, ntab$SERR)
