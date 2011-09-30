@@ -6,19 +6,20 @@ on devices connected to the regular power grid --, we should use as little as
 possible. Even though most modern operating systems try to maximize the CPU
 usage by lowering the frequency \cite{snowdon2010operating} to eventually
 maximize the energy-efficiency, this reaction is not always appropriate. A lower
-CPU frequency is not always the more energy-efficient
+CPU frequency may even decrease energy efficiency
 \cite{weissel2002process,snowdon2010operating}.
 
-To intelligently minimize the usage, per--task energy accounting is the basis.
+The basis to intelligently minimize the energy consumption is per--task energy
+accounting because it reveals where exactly the energy is consumed.
 For every running process, the operating system should be aware of the present
 contribution to the machine's total power consumption. Additionally, for
 accounting purposes the overall energy consumed by a process should be known
 after its termination.
 
 Thus, for being able to develop good power management strategies, a good live
-power/energy estimation is critical. The approach used in this study thesis is
-to use the CPU's \JWemph{performance monitoring counters}. Since turn of the
-millennium \cite{bellosa2000benefits} there have been many papers
+energy estimation is crucial. The approach in this study thesis is to use the
+CPU's \JWemph{performance monitoring counters}. Since the turn of the millennium
+\cite{bellosa2000benefits} there have been many papers
 \cite{Bertran2010,bertran2010decomposable,kellner03tempcontrol,isci2003runtime,
 weissel2002process} doing energy estimation using performance counters with
 impressive results.
@@ -26,12 +27,12 @@ impressive results.
 Besides these points, various other applications of energy estimation are
 possible. Temperature control \cite{kellner03tempcontrol} and thermal management
 \cite{merkel05tmsmpsys} are just one auxiliary field. Accounted energy can also
-serve as a customer cost-model for computing centers \cite{Bertran2010}, because
-it reflects -- much more accurately -- the real costs than simple computing time
+serve as a customer cost model for computing centers \cite{Bertran2010}, because
+it reflects much more accurately the real costs than simple computing time
 based models. Another possible application in that field are migration decisions
 of either virtual machines between real machines in clusters or processes
 between processing units \cite{merkel10rcscheduling}. Power-aware scheduling can
-also help to improve the efficiency.
+also help to improve the computing time efficiency.
 
 
 %-  charges and restrictions  --------------------------------------------------
@@ -43,7 +44,7 @@ some energy-relevant processor and operating system features have been disabled.
 Since all of these either should work with the current model or individually
 raise some kind of events, this is not seen as a major drawback of this work.
 Future work may certainly be able to flawlessly integrate them into the known
-model. In particular the feature which lasted disabled were:
+model. In particular, the following features lasted disabled:
 
 \begin{itemize}
 
@@ -57,14 +58,14 @@ model. In particular the feature which lasted disabled were:
 
 \end{itemize}
 
-In addition to the advanced processor and operating system features meantioned
+In addition to the advanced processor and operating system features mentioned
 above, all auxiliary processing units could not be taken into account. The
 problem with the auxiliary processing units such as the floating point unit
 (FPU), MMX\cite{wiki:MMX}, SSE\cite{wiki:SSE} and AVX\cite{wiki:AVX} is that
-they are not or not well covered by the CPU's performance events
-\cite{intel2011events}. So, they act somehow as a black box not reveiling the
-work they do internally. That makes it almost impossible to count their energy
-with the current model.
+they are not or not well covered by the processor performance events
+\cite{intel2011events}. They somehow act as a black box not revealing the
+work they do internally. Hence it is almost impossible to count their energy
+using performance event model.
 
 
 %#  ACKNOWLEDGEMENTS  ##########################################################
@@ -81,4 +82,28 @@ with the current model.
 
 \end{itemize}
 
-% vim: set spell spelllang=en_us fileencoding=utf8 :
+
+%#  PRELIMINARIES  #############################################################
+\JWltwo{Preliminaries}
+\label{sec:preliminaries}
+
+To be able to distinguish ordinary text from special entities, different fonts
+and decorations have been typeset. File system paths (e.g. \JWpath{/bin/ls}),
+CPU performance events (e.g. \JWctrCLK{}) and measuring channels (e.g.
+\JWchan{TRIGGER}) appear in a \texttt{typewriter} font. Proper nouns of
+products, programs and libraries (e.g. \JWTnidaqmxbase{}) are typeset using a
+\textsf{sans--serif} font. Finally, typescripts of terminal sessions are
+decorated like the following sample:
+
+\begin{lstlisting}[style=Shell]
+$ echo 'Hello World!'
+Hello World!
+\end{lstlisting}
+
+
+Except for \si{\samples} meaning \emph{samples}, \si{\mebi\byte} and
+\si{\kibi\byte} (\SI{1048576}{\byte} $\hat{=}$ \SI{1024}{\kibi\byte} $\hat{=}$
+\SI{1}{\mebi\byte}) the \emph{International System of Units (SI)} is used.
+
+
+% vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :

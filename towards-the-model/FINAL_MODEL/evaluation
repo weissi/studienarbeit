@@ -43,15 +43,26 @@ ggplot(data=dataset, aes(x=value, fill=variable)) +
     theme_bw()
 dev.off()
 
+tab$AVG_POWER <- tab$WORK/(tab$TIME_NANO_DIFF/1000000000)
+postscript(file='/home/weiss/studienarbeit/paper/thesis/fig/hist-model-15W.eps'
+          ,paper='special', width=10, height=4, horizontal=F)
+hpowtab <- tab[tab$AVG_POWER > 15,]
+hist( 100*calc_err(hpowtab$WORK, model(hpowtab))
+    , col='black', border='white'
+    , xlab='Percent Error', ylab='Number of Benchmarks'
+    , main='Errors of Benchmark runs above 15W')
+dev.off()
+
+
 #
 #cp /local/tmp/weiss/measuring_data/2011-09-14_17-23-30/measured_stream_SPEC-omnetpp_SPEC-hmmer_mispredict@2011-09-15_00-38-16.dpts.bz2 /tmp/foo.dpts.bz2
 #cd /tmp && bunzip2 foo.dpts.bz2
 #dataexport foo.dpts  > foo.rtab
-m <- read.table('/tmp/foo.dpts', header=T)
+m <- read.table('/tmp/foo.rtab', header=T)
 postscript( file='/home/weiss/studienarbeit/paper/thesis/fig/cpu-power-trig.eps'
           , paper='special', width=10, height=4, horizontal=F)
 plot( m$t[1:nrow(m) %% 1000 == 0], (12 * m$CPU[1:nrow(m) %% 1000 == 0])/0.01
-    , type='l', xlab='t [s]', ylab='P [W]'
+    , type='l', xlab='t [s]', ylab='P [W]', ylim=c(0, 80)
     , main='CPU (black) and BOARD (blue) 12V power, TRIGGER wire (red)'
     , sub='core 1: stream, core 2: SPEC/471.omnetpp, core 3: SPEC/456.hmmer, core 4: mispredict'
     )
@@ -59,7 +70,7 @@ lines( m$t[1:nrow(m) %% 1000 == 0], (12 * m$BOARD[1:nrow(m) %% 1000 == 0])/0.005
      , type='l', col='blue'
      )
 lines( m$t[1:nrow(m) %% 1000 == 0]
-     , 68 * (m$TRIGGER[1:nrow(m) %% 1000 == 0] > 0.03), type='l', col='red'
+     , 72 * (m$TRIGGER[1:nrow(m) %% 1000 == 0] > 0.03), type='l', col='red'
      )
 dev.off()
 

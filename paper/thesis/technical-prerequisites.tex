@@ -1,9 +1,8 @@
 \JWlone{Technical Prerequisites}
 \label{sec:technical-prerequisites}
 
-In this chapter the hardware examined in this work appears in detail. The
-hardware used to inspect (the measuring device) will be depicted in a
-chapter of its own (\ref{sec:measuring-device}).
+In the following chapters the hardware examined in this work appears in detail.
+
 
 % #  PRODUCTS  #################################################################
 \JWltwo{Products}
@@ -13,7 +12,7 @@ chapter of its own (\ref{sec:measuring-device}).
 
 \item CPU: \JWPLcpu{} (\emph{Sandy Bridge}\cite{wiki:snb} microarchitecture)
 
-\item Mainboard: \JWPLboard{} (using an external video controller)
+\item Motherboard: \JWPLboard{} (using an external video controller)
 
 \end{itemize}
 
@@ -22,9 +21,6 @@ chapter of its own (\ref{sec:measuring-device}).
 \JWltwo{Sandy Bridge Characteristics}
 \label{sec:sandy-bridge}
 
-This cahpter describes the characteristics of the Sandy Bridge microarchitecture
-in detail.
-
 \begin{figure}
   \centering
     \includegraphics[width=\textwidth]{fig/intel-cache-orga.png}
@@ -32,16 +28,13 @@ in detail.
   \label{fig:cache-orga}
 \end{figure}
 
-
-%-  general  -----------------------------------------------------------------
-\JWlthree{General}
-\label{sec:sandy-brige-general}
-
 The most evident characteristics of the \JWPcpu{} are the four cores (on one
 chip) and the very uniform distribution of the caches (see figure
 \ref{fig:cache-orga}). All caches except for the last-level cache (L3) are
-present on each core \cite{fog11}. A short overview over the key features
-follows (\cite{intel2011spec}):
+present on each core \cite{fog11}. The CPU's \emph{performance monitoring unit}
+(PMU) appears -- because of its central importance -- in a separate chapter
+(\ref{sec:pmu}). A short overview of the key features follows
+\cite{intel2011spec}:
 
 \begin{itemize}
 
@@ -63,34 +56,34 @@ follows (\cite{intel2011spec}):
 \label{sec:pmu}
 
 The CPU's \emph{Performance Monitoring Unit} (PMU) is present since the
-Intel\TReg{} Pentium processor. Using this unit you can monitor several of the
-CPU's performance parameters, originally meant for tuning system and application
-performance \cite{intel2011softdev3b} (mostly used by compiler developers).
+Intel\TReg{} Pentium processor. This unit is able to monitor several of the
+CPU's performance parameters while the system is running. Originally meant for
+tuning system and application performance \cite{intel2011softdev3b}, it is
+mostly used by compiler developers.
 
 In prior work \cite{bellosa2000benefits,snowdon2010operating,
 weissel2002process,kellner03tempcontrol,bertran2010decomposable} some of these
-performance events have proven to be somehow related to the power consumption of
-the CPU. As the selection of the events and the degree of their correlation to
-energy highly varies between CPUs (or at least CPU microarchitectures) this has
-been done again in this work. This time for the Intel\TReg{} Sandy Bridge
+performance events have proved to be somehow related to the power consumption of
+the CPU. The selection of the events and the degree of their correlation to
+energy highly varies between CPUs, or at least CPU microarchitectures.
+Therefore, that has been done again for the Intel\TReg{} Sandy Bridge
 microarchitecture and in particular the \JWPcpu{}.
 
-Examining the documentation \cite{intel2011events} approximalely 184 events have
-been found available and usable. Because the CPU is only able to count eight
-(four in Hyper-threading \cite{wiki:HT} mode) user-programmable performance
-events at a time \cite{intel2011softdev1} the most useful events have to be
-selected (see chapters \ref{sec:min-events} and \ref{sec:finding-useful-subset}
-for a description of  the selection process). In addition to the eight (four)
-events, the CPU provides three counters for fixed events, which will be counted
-anyway: \JWctr{CPU\_CLK\_UNHALTED.REF\_TSC}, \JWctr{CPU\_CLK\_UNHALTED.THREAD}
-and \JWctr{INST\_RETIRED.ANY}.
+Examining the processor user's manual \cite{intel2011events}, approximately 184
+events have been found available and usable. Because the CPU is only able to
+count eight (four in Hyper-threading \cite{wiki:HT} mode) user--programmable
+performance events simultaneously \cite{intel2011softdev1} the most useful
+events have to be selected. In addition to the eight (four) events, the CPU
+provides three counters for fixed events, which will be counted anyway:
+\JWctr{CPU\_CLK\_UNHALTED.REF\_TSC}, \JWctr{CPU\_CLK\_UNHALTED.THREAD} and
+\JWctr{INST\_RETIRED.ANY}.
 
 The selection, configuration and usage of these performance event counters is
 done via special \emph{model specific registers} (MSRs)
 \cite{intel2011softdev3b}. In this work a more high-level approach via the
-\texttt{perf\_event}-API of newer Linux Kernels (only some documentation
-available \cite{weaver2011perfevents}) and \JWTlibpfm{} (see chapter
-\ref{sec:standard-software}) has been used.
+\texttt{perf\_event}-API (unofficial documentation at
+\cite{weaver2011perfevents}) of newer Linux Kernels and \JWTlibpfm{} (see
+chapter \ref{sec:standard-software}) has been used.
 
 
 %-  architectural differences  -------------------------------------------------
@@ -98,7 +91,9 @@ available \cite{weaver2011perfevents}) and \JWTlibpfm{} (see chapter
 
 The Intel\TReg{} \emph{Sandy Bridge} microarchitecture is a further development
 of the Core and Nehalem architectures \cite{fog11}. Among other simplifications
-of the branch prediction unit, the special loop predictor has been decontinued
+of the branch prediction unit, the special loop predictor has been discontinued
 presumably to reduce the overall pipeline length and to minimize the
 misprediction penalties \cite{fog11}. For speed-improvements a micro-operation
 ($\mu$op) cache and macro-operation fusion have been introduced \cite{fog11}.
+
+% vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :

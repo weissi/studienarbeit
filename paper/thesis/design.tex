@@ -16,8 +16,9 @@
 As figure \ref{fig:overview} illustrates an additional workstation -- the
 \emph{Examining Workstation (EW)} -- has been used while evolving this thesis.
 The \emph{System under Test (SuT)} counts the CPU's performance events itself
-and the EW records the energy consumation in the meantime. These two datasets
-have thereafter been used to build up the energy model.
+and the EW records the energy consumation using a measuring device in the
+meantime. These two datasets have thereafter been used to build up the energy
+model.
 
 
 %#  MEASURING SETUP IN DETAIL  #################################################
@@ -39,10 +40,10 @@ voltages.
 This can be summed up to measure three potential differences. Since the
 measuring device (chapter \ref{sec:measuring-device}) provides up to eight
 differential, analog input channels this seems very easy at the first sight.
-Unfortunately there are two caveats: On the one hand according to the
-user's manual \cite{NIManual2009} the best accuracy can be achieved in range of
-\SI{-200}{\milli\volt} and \SI{200}{\milli\volt}. On the other hand the overall
-potential differences may not exceed $\pm$\SI{10.4}{\volt}
+Unfortunately there are two caveats: On the one hand according to the user's
+manual \cite{NIManual2009} the best measuring accuracy can be achieved in range
+of \SI{-200}{\milli\volt} and \SI{200}{\milli\volt}. On the other hand the
+overall potential differences may not exceed $\pm$\SI{10.4}{\volt}
 \cite{NISpec2009}.
 
 \begin{figure}
@@ -63,21 +64,21 @@ potential differences may not exceed $\pm$\SI{10.4}{\volt}
 Choosing adequate sensing resistors for the \JWchan{CPU} (R =
 \SI{10}{\milli\ohm}) and \JWchan{BOARD} (R = \SI{5}{\milli\ohm}) channels (see
 figure \ref{fig:circuit}) worked out well. The parallel port trigger wire has
-been a problem in the a problem at first, though. The parallel port has a
-potential difference range of more than \SI{200}{\milli\volt} and our test
-machine's port had a very different potential niveau than the \JWchan{CPU} and
-\JWchan{BOARD} channels, exceeding the allowed range of $\pm$\SI{10.4}{\volt}.
-The potential equalizer illustrated in figure \ref{fig:potential-equalizer}
-solves both problems very well.
+been a problem at first, though. The parallel port has a potential difference
+range of more than \SI{200}{\milli\volt} and our test machine's port had a very
+different potential level than the \JWchan{CPU} and \JWchan{BOARD} channels,
+exceeding the allowed range of $\pm$\SI{10.4}{\volt}.  The potential equalizer
+illustrated in figure \ref{fig:potential-equalizer} solves both problems.
 
-Finally three differential channels \JWchan{CPU}, \JWchan{BOARD} (\SI{12}{\volt}
-current supply only!) and \JWchan{TRIGGER} in the range of
+Finally, three differential channels \JWchan{CPU}, \JWchan{BOARD}
+(\SI{12}{\volt} supply only!) and \JWchan{TRIGGER} in the range of
 $\pm$\SI{200}{\milli\volt} and alike potential levels can be connected to the
 measuring device. The performance events get counted on the SuT itself which
 controls the trigger wire, too: The trigger is set to \emph{On} directly before
 executing the program to examine and is set to \emph{Off} promptly after its
-termination. An exemplary plot of an examination can be found in figure
-\ref{fig:cpu-power-trig}.
+termination. To safely register all CPU energy consumption peaks, a high
+sampling rate of \SI{50}{\kilo\samples\per\second} is chosen. An exemplary
+plot of an examination can be found in figure \ref{fig:cpu-power-trig}.
 
 \begin{figure}
   \centering
@@ -86,27 +87,18 @@ termination. An exemplary plot of an examination can be found in figure
   \label{fig:cpu-power-trig}
 \end{figure}
 
-%-  characteristics  -----------------------------------------------------------
-\JWlthree{Characteristics}
-
-\begin{itemize}
-
-\item Three differential analog channels: CPU, BOARD, TRIGGER
-
-\item Sampling rate: \SI{50}{\kilo\samples\per\second}
-
-\end{itemize}
+\JWtodo{Bild, auf dem man den Timer-Interrupt sieht}
 
 
 %-  measuring device  ----------------------------------------------------------
 \JWlthree{Measuring Device}
 \label{sec:measuring-device}
 
-For measuring the voltage drops we chose \JWPLni{} (shown in figure
-\ref{fig:ni}) from \JWenterprise{http://www.ni.com}{National Instruments}
-because it supports high sampling rates of up to 250000 samples per second
-(\SI{250}{\kilo\samples\per\second}) and is very accurate (accuracy $<
-\SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
+For measuring the voltage drops \JWPLni{} from
+\JWenterprise{http://www.ni.com}{National Instruments} (shown in figure
+\ref{fig:ni}) was chosen because it supports high sampling rates of up to 250000
+samples per second (\SI{250}{\kilo\samples\per\second}) and is very accurate
+(accuracy $< \SI{2.69}{\milli\volt}$)\cite{NISpec2009}.
 
 \begin{figure}
   \centering
@@ -134,7 +126,7 @@ and
 \end{equation}
 
 we obtain the instantaneous power of the CPU by measuring the voltage drop
-across the (measuring) resistor:
+across the sensing resistor:
 
 \begin{eqnarray}
 P_{CPU}(t) & = & (12V - U_R(t)) * \frac{U_R(t)}{R} \\
@@ -266,5 +258,4 @@ the test programs.
 
 \end{enumerate}
 
-
-% vim: set spell spelllang=en_us fileencoding=utf8 :
+% vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :
