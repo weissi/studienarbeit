@@ -154,11 +154,11 @@ formal methods suggested to build such a model.
 \label{sec:model-properties}
 
 In this work, an energy model is considered as a linear formula. A system with
-$N$ CPUs/cores which is able to monitor $M$ performance events per core
-simultaneously is described. Additionally to the per-core event counters,
-$K$ global event counters make the model up. In the formal description (see
-section \ref{sec:towards-the-model} for the practical implementation) we assume
-four functions providing the actual values:
+$N$ cores which is able to monitor $M$ performance events per core
+simultaneously is described. Additionally to the per-core event counters, $K$
+global event counters make the model up. In the formal description (see chapter
+\ref{sec:towards-the-model} for the practical implementation) we assume four
+functions providing the actual values:
 
 \begin{itemize}
 
@@ -181,21 +181,21 @@ W = \sum\limits_{k=0}^K g(k) w_g(k) +
 \sum\limits_{n=0}^N \sum\limits_{m=0}^M c(n, m) w_c(n,m)
 \end{equation}
 
-The functions $g$ and $c$ contain the system's life data whereas $w_g$ and
-$w_c$ can be calculated a priori as done in this work. Obviously the selection
-of the events and their respective weights highly depend on the type of
-microprocessor.
+The functions $g$ and $c$ contain the system's life data whereas the energy
+weights $w_g$ and $w_c$ can be calculated a priori as done in this work.
+Obviously the selection of the events and their respective weights highly depend
+on the type of microprocessor.
 
 
 %-  minimizing the counter set  ------------------------------------------------
 \JWlthree{Minimizing the Set of Performance Events}
 \label{sec:min-events}
 
-Having seen (chapter \ref{sec:model-properties}) what exactly constitutes an
-energy model, it is crucial to find a small and meaningful set of performance
-events to use. It is not practical to take into account all events the
-microprocessor is aware of. Today's processors offer a lot more events then they
-can count simultaneously \cite{intel2011softdev1}.
+Having seen  what exactly constitutes an energy model (chapter
+\ref{sec:model-properties}), it is crucial to find a small and meaningful set of
+performance events to use. It is not practical to take into account all events
+the microprocessor is aware of. Today's processors offer a lot more events then
+they can count simultaneously \cite{intel2011softdev1}.
 
 The approach to find a reasonable subset of $N$ events (of $A$ available) used
 in this work can be summed up to:
@@ -218,27 +218,27 @@ W = C' * X
 can be solved by simple linear regression.
 
 
-\JWlfour{Step 1: Obtaining $C$ and $W$}
+\JWlfour{Step 1: Generating $C$ and $W$}
 
 \begin{enumerate}[(a)]
 
 \item Choose $p$ test programs which use the CPU differently. The test
 programs have to be independent from external events. We consider subsequent
-runs of the test programs as equal.
+runs of a test program as equal.
 
 \item Divide the $A$ available events in $g$ disjoint, non-empty sets $E_{1..g}$
-of size up to $N$
+of size up to $N$.
 
 \item For each set $E_{1..g}$, run all the $p$ test programs and record the
-electrical work and the event counters of the set's events
+electrical work and the event counters of the set's events.
 
 \item The electrical work of each of the runs of a test program should be
 roughly equal.
 
-\item Folding all the results, we gain a vector $W_{1..p}$ of the electrical
-work a run of each of the test programs consumes. Additionally, we gain a matrix
-$C = [c_{1..p,1..N}]$ containing each event counter's value for a run of each of
-the test programs.
+\item Folding all the results leads to a vector $W_{1..p}$ containing the
+electrical work a run of each of the test programs consumes. Additionally, a
+matrix $C = [c_{1..p,1..N}]$ arises, containing each event counter's value for a
+run of each of the test programs.
 
 \end{enumerate}
 

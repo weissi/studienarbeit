@@ -37,7 +37,6 @@ dataset <- data.frame( variable=gl( 2, nrow(tab)
 ggplot(data=dataset, aes(x=value, fill=variable)) +
     geom_histogram(position = "dodge", binwidth=5) +
     scale_fill_manual(values = c("black", "gray")) +
-    opts(title='Energy Model vs. CPU time based') +
     scale_x_continuous('\nPercent Error', breaks=seq(0, 100, 10)) +
     scale_y_continuous('Number of Benchmarks\n') +
     theme_bw()
@@ -50,7 +49,8 @@ hpowtab <- tab[tab$AVG_POWER > 15,]
 hist( 100*calc_err(hpowtab$WORK, model(hpowtab))
     , col='black', border='white'
     , xlab='Percent Error', ylab='Number of Benchmarks'
-    , main='Errors of Benchmark runs above 15W')
+    , main=''
+    )
 dev.off()
 
 
@@ -116,7 +116,7 @@ boxplot(AVG_POWER~CTRS, data=csts
     , ylim=c(min(csts$AVG_POWER), max(csts$AVG_POWER))
     , xlab='number of recorded performance events'
     , ylab='Average Power consumed [W]'
-    , main='Relation between Number of Counters and Electrical Work'
+    , main='Relation between Number of Counters and Electrical Power'
     , sub='Considering 10 executions of SPECint 2006/473.astar (median in red)'
     )
 abline(h=median(csts$AVG_POWER), col='red')

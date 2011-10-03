@@ -12,31 +12,31 @@
 \newcommand{\JWlappendix}[1]{\section{#1}}
 \newcommand{\JWlsubappendix}[1]{\subsection*{#1}}
 \newcommand{\JWcmdline}[1]{\begin{verbatim}\$ #1\end{verbatim}}
-\newcommand{\JWtool}[1]{\texttt{#1}}
+\newcommand{\JWtool}[1]{\textsc{#1}}
 \newcommand{\JWctr}[1]{\texttt{#1}}
 \newcommand{\JWchan}[1]{\texttt{#1}}
 \def\TReg{\textsuperscript{\textregistered}}
 \def\TCop{\textsuperscript{\textcopyright}}
 \def\TTra{\textsuperscript{\texttrademark}}
 \def\samples{S}
-\newcommand{\JWpath}[1]{\texttt{#1}}
+\newcommand{\JWpath}[1]{\path{#1}}
 \newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
 
-\newcommand{\JWTlibdp}{\JWtool{libdatapoints}}
+\newcommand{\JWTlibdp}{\JWtool{lib\-data\-points}}
 %\newcommand{\JWTfcw}{\JWtool{fastcalcwork}}
-\def\JWTfcw{\JWtool{fastcalcwork}}
+\def\JWTfcw{\JWtool{fast\-calc\-work}}
 
-\def\JWTR{\texttt{R}}
+\def\JWTR{\JWpn{R}}
 \def\JWTLR{\JWnamedlink{http://www.r-project.org/}{\JWTR{}}}
 
-\def\JWTlibpfm{\texttt{libpfm4}}
+\def\JWTlibpfm{\JWpn{libpfm4}}
 \newcommand\JWpn{\textsf}
-\newcommand{\JWTdc}{\JWtool{dumpcounters}}
-\newcommand{\JWTdd}{\JWtool{datadump}}
-\newcommand{\JWTde}{\JWtool{dataexport}}
-\newcommand{\JWTcbs}{\JWtool{ctrbenchmark}}
-\newcommand{\JWTbsle}{\JWtool{BuildSLE}}
-\newcommand{\JWTdomeasuring}{\JWtool{do\_measuring.sh}}
+\newcommand{\JWTdc}{\JWtool{dump\-counters}}
+\newcommand{\JWTdd}{\JWtool{data\-dump}}
+\newcommand{\JWTde}{\JWtool{data\-export}}
+\newcommand{\JWTcbs}{\JWtool{ctr\-bench\-mark}}
+\newcommand{\JWTbsle}{\JWtool{Build\-SLE}}
+\newcommand{\JWTdomeasuring}{\JWpath{scripts/do_measuring.sh}}
 \newcommand{\JWTprotobuf}{Google\TTra{} Protocol Buffers}
 \newcommand{\JWTLprotobuf}
   {\JWproduct{http://code.google.com/apis/protocolbuffers/}
@@ -48,14 +48,14 @@
              {\JWTnidaqmxbase}}
 
 \newcommand{\JWTspec}{SPEC CINT2006}
-\newcommand{\JWTleaps}{\JWTR{}'s \texttt{leaps} package}
+\newcommand{\JWTleaps}{\JWTR{}'s \JWpn{leaps} package}
 \newcommand{\JWTLspec}
   {\JWproduct{http://www.spec.org/cpu2006/CINT2006/}
              {CINT2006 (Integer Component of SPEC CPU2006)}}
-\newcommand{\JWTstream}{\texttt{STREAM}}
+\newcommand{\JWTstream}{\JWpn{STREAM}}
 \newcommand{\JWTLstream}
   {\JWproduct{http://www.cs.virginia.edu/stream/}
-             {\texttt{STREAM}}}
+             {\JWpn{STREAM}}}
 
 \newcommand\JWPcpu{Intel\TReg{} Core\TTra{} i7-2600K Processor}
 \newcommand\JWPboard{ASUS P8P67-M PRO}
@@ -77,3 +77,5 @@
 
 \def\JWctrCLK{\JWctr{CPU\_\-CLK\_\-UNHALTED}}
 \def\JWctrINST{\JWctr{INST\_\-RETIRED}}
+
+\renewcommand{\labelitemi}{$\triangleright$}

@@ -43,7 +43,7 @@ bibtex build/thesis
 STEP="pdflatex run 2"
 try_pdflatex $TEXOPTS thesis
 STEP="pdflatex run 3"
-pdflatex $TEXOPTS -halt-on-error thesis
+pdflatex $TEXOPTS -halt-on-error thesis |& tee /tmp/pdflatex.out
 STEP="main program"
 cp build/thesis.pdf .
 
