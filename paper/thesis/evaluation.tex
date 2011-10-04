@@ -31,9 +31,9 @@ compared to a simple computing time based model.
   \label{fig:errs-ncpu}
 \end{figure}
 
-The majority of the 3000 benchmark runs mentioned in chapter
-\ref{sec:benchmarks} and \ref{sec:final-model} are estimated with an error of
-5\% or better as \emph{model} in figure \ref{fig:err-hist} shows. The bars named
+Most of the 3000 benchmark runs mentioned in chapter \ref{sec:benchmarks} and
+\ref{sec:final-model} are estimated with an error of 5\% or better as
+\emph{model} in figure \ref{fig:err-hist} shows. The bars named
 \emph{cpu\_\-time\_\-based} are a comparison to a simple computing time based
 model, discussed in a chapter of its own (\ref{sec:time-based}). The overall
 worst sample was estimated with an error of about 40\% (see \emph{model} in
@@ -41,10 +41,10 @@ figure \ref{fig:errs-ncpu}). The sample is from a special benchmark run where
 all four cores were enabled but mostly idle (real average power usage
 \SI{8.9}{\watt}, \SI{12.5}{\watt} estimated). This erratic behavior is
 explainable by the design of the model: The goal has been to develop a model
-which won't produce completely faultily results but focuses on higher power
+which will not produce completely faultily results but focuses on higher power
 consumptions. The power consumptions observed were between \SI{6}{\watt} and
 \SI{60}{\watt} and the focus has been set on the range above \SI{15}{\watt}.
-This decision was motivated by the fact that a operating system will typically
+This decision was motivated by the fact that an operating system will typically
 spend very little time in ACPI Processor State C0 \cite{wiki:ACPI} when very
 little energy is consumed. But as chapter \ref{sec:restrictions} states, the
 energy model worked out in this thesis is only valid when the CPU is in state C0
