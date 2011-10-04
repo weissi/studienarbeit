@@ -15,7 +15,7 @@ smaller, faster, and simpler} (which is incidentally their  slogan).
 \JWlthree{Shot IDs}
 \label{sec:shot-ids}
 
-A shot ID (shot identifier) is a string value uniquely identifying one
+A shot ID (shot identifier) is a string value uniquely identifying a
 measuring experiment. More precisely it is a character string containing only a
 defined set of ASCII characters. The following regular expression should match
 all valid shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
@@ -33,7 +33,7 @@ The main matter of the \emph{electrical power data point files} (called
 time. As described in chapter \ref{sec:measuring-setup}, voltage drops are
 measured and electrical power and work are calculated later on. This is
 why data point files do literally contain voltage drop values by time.
-But since the only reason they exist is to serve as calculation input later on,
+But since the sole reason they exist is to serve as calculation input later on,
 they are named after their future meaning.
 
 For practical reasons the representation is designed rather flexible: It
@@ -357,7 +357,7 @@ The first step toward the energy model is to choose a good set of benchmarks.
 The benchmarks should stress different parts of the CPU and should collectively
 stress all parts and units of the CPU. As chapter \ref{sec:restrictions} states
 some units have been deliberately excluded in this work. The benchmarks should
-therefore avoid the excluded units because their results would then have bad
+therefore avoid the excluded units because their results would have bad
 consequences on the final model.
 
 The benchmark choice fell to the \JWTLspec{} suite, the memory bandwith
@@ -393,9 +393,8 @@ performance events the CPU can count simultaneously (see chapter
 have been executed consecutively. Then all the runs of each benchmark were
 considered as one run recording all available events. Since the electrical
 work consumed and the running time was recorded for each run of its own they
-were averaged per benchmark. Attention was payed that the averaged values didn't
-differ much between the runs, the relative standard deviation was below 4\% in
-the worst case.
+were averaged per benchmark. Because the maximal relative standard deviation
+was always below 4\%, there was no danger of averaging them.
 
 The result was considered as one huge system of linear equations and the best
 subset of events was chosen using \JWTleaps{}. The events \JWctrCLK{} ($=$

@@ -25,9 +25,9 @@ model.
 \JWltwo{Measuring Setup in Detail}
 \label{sec:measuring-setup}
 
-To fit the energy model later on, the current flows of the CPU and the
+To fit the energy model later, the current flows of the CPU and the
 motherboard's \SI{12}{\volt} supply have to be measured. Using four--terminal
-sensing \cite{wiki:FTS} voltage drops across the sensing resistor can be
+sensing \cite{wiki:FTS} voltage drops across the sensing resistor are
 measured to deduce the current flow. The motherboard's \SI{12}{\volt} current
 flow has been measured in this thesis because it was unclear if the CPU is
 entirely fed by its own \SI{12}{\volt} power supply.
@@ -39,12 +39,11 @@ voltages.
 
 This can be summed up to measure three potential differences. Since the
 measuring device (chapter \ref{sec:measuring-device}) provides up to eight
-differential, analog input channels this seems very easy at the first sight.
-Unfortunately there are two caveats: On the one hand according to the user's
-manual \cite{NIManual2009} the best measuring accuracy can be achieved in range
-of \SI{-200}{\milli\volt} and \SI{200}{\milli\volt}. On the other hand the
-overall potential differences may not exceed $\pm$\SI{10.4}{\volt}
-\cite{NISpec2009}.
+differential, analog input channels this seems easy at first. Unfortunately,
+two caveats apply: On the one hand according to the user's manual
+\cite{NIManual2009} the best measuring accuracy can be achieved in range of
+\SI{-200}{\milli\volt} and \SI{200}{\milli\volt}. On the other hand the overall
+potential differences may not exceed $\pm$\SI{10.4}{\volt} \cite{NISpec2009}.
 
 \begin{figure}
   \centering
@@ -154,7 +153,7 @@ formal methods suggested to build such a model.
 \label{sec:model-properties}
 
 In this work, an energy model is considered as a linear formula. A system with
-$N$ cores which is able to monitor $M$ performance events per core
+$N$ cores that is able to monitor $M$ performance events per core
 simultaneously is described. Additionally to the per--core event counters, $K$
 global event counters make the model up. In the formal description (see chapter
 \ref{sec:towards-the-model} for the practical implementation) we assume four
@@ -192,10 +191,10 @@ on the type of microprocessor.
 \label{sec:min-events}
 
 Having seen  what exactly constitutes an energy model (chapter
-\ref{sec:model-properties}), it is crucial to find a small and meaningful set of
-performance events to use. It is not practical to take into account all events
-the microprocessor is aware of. Today's processors offer a lot more events then
-they can count simultaneously \cite{intel2011softdev1}.
+\ref{sec:model-properties}), it is crucial to find a small and significant set
+of performance events to use. It is not practical to take into account all
+events the microprocessor is aware of. Today's processors offer a lot more
+events then they can count simultaneously \cite{intel2011softdev1}.
 
 The approach to find a reasonable subset of $N$ events (of $A$ available) used
 in this work can be summed up to:
@@ -250,7 +249,7 @@ run of each of the test programs.
 
 \item Eliminate duplicate columns in $C'$
 
-\item Eliminate columns which only contain zeroes in $C'$
+\item Eliminate columns which contain only zeroes in $C'$
 
 \item Eliminate linear dependent columns in $C'$
 

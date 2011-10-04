@@ -3,7 +3,7 @@
 
 This chapter evaluates the usefulness, the accuracy and the overhead the energy
 model imposes. The model's strenghts and weaknesses are pointed out and it is
-compared to a simple computing time based model.
+compared with a simple computing time based model.
 
 
 % #  ERROR OF ESTIMATION  ######################################################
@@ -45,14 +45,14 @@ which will not produce completely faultily results but focuses on higher power
 consumptions. The power consumptions observed were between \SI{6}{\watt} and
 \SI{60}{\watt} and the focus has been set on the range above \SI{15}{\watt}.
 This decision was motivated by the fact that an operating system will typically
-spend very little time in ACPI Processor State C0 \cite{wiki:ACPI} when very
+spend little time in ACPI Processor State C0 \cite{wiki:ACPI} when
 little energy is consumed. But as chapter \ref{sec:restrictions} states, the
-energy model worked out in this thesis is only valid when the CPU is in state C0
-all along.  Nevertheless, a similar energy model could be evolved with
+energy model worked out in this thesis is valid iff the CPU is in state C0
+all along.  Nevertheless, a similar energy model may be evolved with
 particular support for low--power CPU usage and the other ACPI Processor States
 in mind.
 
-Regarding the vast majority of benchmarks---which consume more than
+Regarding most of the benchmarks---which consume more than
 \SI{15}{\watt} on average---the model's estimation is clearly better. Figure
 \ref{fig:err-hist-15} illustrates a percentaged error classification of the
 benchmarks consuming more than \SI{15}{\watt} on average. The
@@ -72,7 +72,7 @@ The comparison of the overall average energy estimation error shows the benefit
 of a reasonable energy model: 5.4\% versus 13.1\% for the simple computing time
 based model. Figure \ref{fig:errs-ncpu} illustrates the results, where the final
 energy model is listed as \emph{model} in the figures. The computing time based
-model was built by only using the event \JWctr{CPU\_CLK\_UNHALTED} and is
+model was built by using only the event \JWctr{CPU\_CLK\_UNHALTED} and is
 referred to in the figures as \emph{cpu\_\-time\_\-model}. It has been fitted
 using a linear regression on the same training data as the regular model,
 resulting in the formula
@@ -96,7 +96,7 @@ of adding a counter, the system has been benchmarked without even setting up
 \JWTlibpfm{} (see chapter \ref{sec:standard-software}). In the plots these
 configurations are listed as \emph{0} performance events measured. Because the
 unhalted CPU clock cycles are measured using the PMU (chapter {\ref{sec:pmu})
-and \JWTlibpfm{} there is obviously no benchmark without even setting up
+and \JWTlibpfm{}, no benchmark could be recorded without even setting up
 \JWTlibpfm{}.
 
 \begin{figure}
