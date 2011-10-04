@@ -153,51 +153,121 @@ formal methods suggested to build such a model.
 \label{sec:model-properties}
 
 In this work, an energy model is considered as a linear formula. A system with
-$N$ cores that is able to monitor $M$ performance events per core
-simultaneously is described. Additionally to the per--core event counters, $K$
+$n_c$ cores that is able to monitor $n_e$ performance events per core
+simultaneously is described. Additionally to the per--core event counters, $n_g$
 global event counters make the model up. In the formal description (see chapter
 \ref{sec:towards-the-model} for the practical implementation) we assume four
 functions providing the actual values:
 
 \begin{itemize}
 
-\item $g(k)$ the global event $k$'s count in the observed period of time
+\item $c_g(i, t_0, t_e)$, the global event $i$'s count in the time interval
+$(t_0, t_e)$
 
-\item $c(n, m)$ the performance event $m$'s count in the observed period of time
-      on CPU/core $n$
+\item $c_e(j, k, t_0, t_e)$ the performance event $k$'s count on core $j$ in the
+interval $(t_0, t_e)$
 
-\item $w_g(k)$ the global event $k$'s weight in \si{\joule}
+\item $w_g(i)$ the global event $i$'s energy weight in \si{\joule}
 
-\item $w_c(n, m)$ the weight of performance event $m$ in \si{\joule} on core
-$n$
+\item $w_e(j, k)$ the weight of performance event $k$ in \si{\joule} on core
+$j$
 
 \end{itemize}
 
-Though, a energy model equates to
+Though, an energy model equates to
 
 \begin{equation}
-W = \sum\limits_{k=0}^K g(k) w_g(k) +
-\sum\limits_{n=0}^N \sum\limits_{m=0}^M c(n, m) w_c(n,m)
+W(t_0, t_e) = \sum\limits_{i=1}^{n_g} c_g(i, t_0, t_e) w_g(i) +
+\sum\limits_{j=1}^{n_c} \sum\limits_{k=1}^{n_e} c_e(j, k, t_0, t_e) w_e(j, k)
 \end{equation}
 
-The functions $g$ and $c$ contain the system's life data whereas the energy
-weights $w_g$ and $w_c$ can be calculated a priori as done in this work.
+The functions $c_e$ and $c_g$ contain the system's life data whereas the energy
+weights $w_e$ and $w_c$ can be calculated a priori as done in this work.
 Obviously the selection of the events and their respective weights highly depend
-on the type of microprocessor.
+on the type of microprocessor. To calculate the electrical power the system
+consumes, one typically chooses an arbitrary frequency $T$ and sets
+the variables $t_0$ and $t_e$ accordingly ($t_0 = ?$, $t_e = t_0 + \frac{1}{T}$)
+. The instantaneous power of the instant $t$ is then calculated as:
 
+\begin{eqnarray}
+P(t) & = & \frac{W(t - \frac{1}{T}, t)}{\frac{1}{T}} \\
+     & = & \frac{\sum\limits_{i=1}^{n_g} c_g(i, t - \frac{1}{T}, t) w_g(i) +
+                 \sum\limits_{j=1}^{n_c}
+                 \sum\limits_{k=1}^{n_e} c_e(j, k, t - \frac{1}{T}, t) w_e(j, k)
+                }{\frac{1}{T}}
+\end{eqnarray}
+
+%o_{t_0}(i)
+%o_{t_e}(i)
+
+\[
+Cg_{n_o,n_g} =
+\begin{pmatrix}
+c_g(1, b_1, e_1)         & \cdots & c_g(n_g, b_1, e_1)        \\
+\vdots                   & \ddots & \vdots                    \\
+c_g(1, b_{n_o}, e_{n_o}) & \cdots & c_g(n_g, b_{n_o}, e_{n_o})
+\end{pmatrix}
+\]
+
+\[
+Cc_{n_o,n_cn_e} =
+\begin{pmatrix}
+c_e(1, 1, b_1, e_1)         & \cdots & c_e(n_c, n_e, b_1, e_1)         \\
+\vdots                      & \cdots & \vdots                          \\
+c_e(1, 1, b_{n_o}, e_{n_o}) & \cdots & c_e(n_c, n_e, b_{n_o}, e_{n_o})
+\end{pmatrix}
+\]
+
+\[
+C_{n_o,n_g+n_cn_e} = \Bigg( Cg \| Cc \Bigg) =
+\begin{pmatrix}
+Cg_{1,1}   & \cdots & Cg_{1,n_g}   & Cc{1,1}   & \cdots & Cc{1,n_cn_e} \\
+\vdots     & \ddots & \vdots       & \vdots    & \ddots & \vdots       \\
+Cg_{n_o,1} & \cdots & Cg_{n_o,n_g} & Cc{n_o,1} & \cdots & Cc{n_o,n_cn_e} \\
+\end{pmatrix}
+\]
+
+\
+\[
+w =
+\begin{pmatrix}
+w_g(1) \\
+\vdots \\
+w_g(n_g) \\
+w_e(1, 1) \\
+\vdots \\
+w_e(n_c, n_e)
+\end{pmatrix}
+, j =
+\begin{pmatrix}
+j_1 \\
+\vdots \\
+j_{n_o}
+\end{pmatrix}
+, \epsilon =
+\begin{pmatrix}
+\epsilon_1 \\
+\vdots \\
+\epsilon_{n_o}
+\end{pmatrix}
+\]
+
+\begin{equation}
+e = C w + \epsilon
+\end{equation}
 
 %-  minimizing the counter set  ------------------------------------------------
 \JWlthree{Minimizing the Set of Performance Events}
 \label{sec:min-events}
 
-Having seen  what exactly constitutes an energy model (chapter
+Having seen what exactly constitutes an energy model (chapter
 \ref{sec:model-properties}), it is crucial to find a small and significant set
 of performance events to use. It is not practical to take into account all
 events the microprocessor is aware of. Today's processors offer a lot more
 events then they can count simultaneously \cite{intel2011softdev1}.
 
-The approach to find a reasonable subset of $N$ events (of $A$ available) used
-in this work can be summed up to:
+The approach to find a reasonable subset of $n_e$ events (of $a$ available)
+used in this work can be summed up to:
 
 \begin{enumerate}
 
