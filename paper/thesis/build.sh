@@ -14,7 +14,7 @@ cd "$HERE"
 
 function try_pdflatex() {
     set +e
-    TMP=$(mktemp)
+    TMP=$(mktemp /tmp/studi-build-XXXXXX)
     pdflatex "$@" &> "$TMP"
     if [ $? -eq 0 ]; then
         rm -- "$TMP"
@@ -31,7 +31,7 @@ function try_pdflatex() {
 ./clean.sh
 
 set -e
-STEP="texification of ressources)"
+STEP="texification of ressources"
 ../scripts/texify-verb.sh ../../protos/measured-data.proto > res/pb-dpts.tex
 ../scripts/texify-verb.sh ../../libdatapoints/dump-format.text > res/dpts.tex
 ../scripts/texify-verb.sh ../../protos/perf-counters.proto > res/pb-ctrs.tex
@@ -43,7 +43,7 @@ bibtex build/thesis
 STEP="pdflatex run 2"
 try_pdflatex $TEXOPTS thesis
 STEP="pdflatex run 3"
-pdflatex $TEXOPTS -halt-on-error thesis |& tee /tmp/pdflatex.out
+pdflatex $TEXOPTS -halt-on-error thesis 2>&1 | tee /tmp/pdflatex.out
 STEP="main program"
 cp build/thesis.pdf .
 
