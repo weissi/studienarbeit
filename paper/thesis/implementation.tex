@@ -41,9 +41,9 @@ supports arbitrary sampling rates, an arbitrary number of (named) channels and
 high-resolution timestamps (up to \SI{1}{\nano\second}).
 
 While researching for this thesis, three channels have been recorded with a
-sampling rate of \SI{50}{\kilo\samples\per\second}: \JWchan{CPU} -- the CPU's
-voltage drops -- , \JWchan{BOARD} -- the motherboard's voltage drops (unused) --
-and \JWchan{TRIGGER} -- the trigger wire used to mark the periods of time the
+sampling rate of \SI{50}{\kilo\samples\per\second}: \JWchan{CPU}---the CPU's
+voltage drops---, \JWchan{BOARD}---the motherboard's voltage drops (unused)---
+and \JWchan{TRIGGER}---the trigger wire used to mark the periods of time the
 other machine counts performance events.
 
 The data point files are also one notable exception of the \emph{Protocol
@@ -70,7 +70,7 @@ essential part toward calculating an energy model (see chapter
 (chapter \ref{sec:datapoint-files}) and counter files is done using the shot ID
 (chapter \ref{sec:shot-ids}).
 
-The counter files' on--disc representation is -- except for some magic bytes --
+The counter files' on--disc representation is---except for some magic bytes---
 a Protocol Buffers--only format. For the technical definition see appendix
 \ref{sec:pb:counter-files}.
 
@@ -423,7 +423,7 @@ model presented in this paper.
 
 After the event selection process, suitable energy weights for the
 (pseudo--)event had to be found. To find these, the benchmarks runs were
-repeated -- once again on a single core but recording all of the final events in
+repeated---once again on a single core but recording all of the final events in
 one shot. Thereafter all reasonable permutations for two and three cores and 500
 random permutations for all four cores have been generated. All in all over 3000
 different benchmark runs have been recorded. The way the benchmark runs were
