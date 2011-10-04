@@ -13,8 +13,8 @@ ratio with regards to wall clock time.
 \begin{quotation}
 
 This event counts the number of instructions retired from execution. For
-instructions that consist of multiple micro-ops, this event counts the
-retirement of the last micro-op of the instruction. Counting continues during
+instructions that consist of multiple micro--ops, this event counts the
+retirement of the last micro--op of the instruction. Counting continues during
 hardware interrupts, traps, and inside interrupt handlers. Notes:
 \JWctr{INST\_\-RETIRED.\-ANY} is counted by a designated fixed counter, leaving
 the four (eight when Hyper\-threading is disabled) programmable counters
@@ -27,16 +27,14 @@ retired instructions.
 
 \item \JWctr{BR\_\-INST\_\-RETIRED:FAR\_\-BRANCH}
 \begin{quotation}
-This is a non-precise version (that is, does not use PEBS) of the event that
+This is a non--precise version (that is, does not use PEBS) of the event that
 counts far branch instructions retired.
 \end{quotation}
 
-\item \JWctr{DSB2MITE\_\-SWITCHES}
-\begin{quotation}
-This event counts the number of the Decode Stream Buffer (DSB)-\-to-\-MITE
-swit\-ches including all misses because of missing Decode Stream Buffer (DSB)
-cache and u-arch forced misses. Note: Invoking MITE requires two or three cycles
-delay.
+\item \JWctr{DSB2MITE\_\-SWITCHES} \begin{quotation} This event counts the
+number of the Decode Stream Buffer (DSB)-\-to-\-MITE swit\-ches including all
+misses because of missing Decode Stream Buffer (DSB) cache and $\mu$--arch
+forced misses. Note: Invoking MITE requires two or three cycles delay.
 \end{quotation}
 
 \item \JWctr{DSB\_\-FILL:ALL\_\-CANCEL}
@@ -46,7 +44,7 @@ fill has been actually cancelled not because of exceeding the way limit.
 Cancelling Decode Stream Buffer (DSB) fill may also result, for example, from
 Decode Stream Buffer Queue (DSBQ) snoop hits. This is because the Decode Stream
 Buffer (DSB) full hit is guaranteed to delivery from Decode Stream Buffer (DSB).
-In the B step a four-bit counter will count the number of cancel operations and
+In the B step a four--bit counter will count the number of cancel operations and
 will reverse the priority upon look ing up the same set.
 \end{quotation}
 
@@ -65,7 +63,7 @@ hit L2 cache. LLC prefetch new types
 
 \item \JWctr{LD\_\-BLOCKS:ALL\_\-BLOCK}
 \begin{quotation}
-Number of cases where any load ends up with a valid block-code written to the
+Number of cases where any load ends up with a valid block--code written to the
 load buffer (including blocks due to Memory Order Buffer (MOB), Data Cache Unit
 (DCU), TLB, but load has no DCU miss)
 \end{quotation}

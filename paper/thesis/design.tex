@@ -26,7 +26,7 @@ model.
 \label{sec:measuring-setup}
 
 To fit the energy model later on, the current flows of the CPU and the
-motherboard's \SI{12}{\volt} supply have to be measured. Using four-terminal
+motherboard's \SI{12}{\volt} supply have to be measured. Using four--terminal
 sensing \cite{wiki:FTS} voltage drops across the sensing resistor can be
 measured to deduce the current flow. The motherboard's \SI{12}{\volt} current
 flow has been measured in this thesis because it was unclear if the CPU is
@@ -155,7 +155,7 @@ formal methods suggested to build such a model.
 
 In this work, an energy model is considered as a linear formula. A system with
 $N$ cores which is able to monitor $M$ performance events per core
-simultaneously is described. Additionally to the per-core event counters, $K$
+simultaneously is described. Additionally to the per--core event counters, $K$
 global event counters make the model up. In the formal description (see chapter
 \ref{sec:towards-the-model} for the practical implementation) we assume four
 functions providing the actual values:
@@ -226,8 +226,8 @@ can be solved by simple linear regression.
 programs have to be independent from external events. We consider subsequent
 runs of a test program as equal.
 
-\item Divide the $A$ available events in $g$ disjoint, non-empty sets $E_{1..g}$
-of size up to $N$.
+\item Divide the $A$ available events in $g$ disjoint, non--empty sets
+$E_{1..g}$ of size up to $N$.
 
 \item For each set $E_{1..g}$, run all the $p$ test programs and record the
 electrical work and the event counters of the set's events.

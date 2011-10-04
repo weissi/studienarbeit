@@ -38,7 +38,7 @@ they are named after their future meaning.
 
 For practical reasons the representation is designed rather flexible: It
 supports arbitrary sampling rates, an arbitrary number of (named) channels and
-high-resolution timestamps (up to \SI{1}{\nano\second}).
+high--resolution timestamps (up to \SI{1}{\nano\second}).
 
 While researching for this thesis, three channels have been recorded with a
 sampling rate of \SI{50}{\kilo\samples\per\second}: \JWchan{CPU}---the CPU's
@@ -276,11 +276,11 @@ R version 2.12.1 (2010-12-16)
 \end{lstlisting}
 
 
-\JWlfour{high-level scripts}
+\JWlfour{high--level scripts}
 
 So far, there are several simple tools for simple tasks. To compose the ensemble
 many of them have to be invoked correctly with each other. Since this is not a
-trivial task, some high-level scripts have been developed, most notably
+trivial task, some high--level scripts have been developed, most notably
 \JWpath{scripts/measure-n-counters-m-benchmarks.sh} and \JWTdomeasuring{}.  The
 former script can control records of many benchmarks with a fixed (chapter
 \ref{sec:final-model}), rotational (chapter \ref{sec:finding-useful-subset}) or
@@ -364,7 +364,7 @@ The benchmark choice fell to the \JWTLspec{} suite, the memory bandwith
 benchmark \JWTLstream{} a benchmark provoking many branch mispredictions
 and an ALU stress benchmark.
 
-For the multi-core tests, different instances of these benchmarks have been
+For the multi--core tests, different instances of these benchmarks have been
 pinned to each core and were therefore running simultaneously.
 
 

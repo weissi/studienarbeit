@@ -1,12 +1,12 @@
 \JWlone{Introduction}
 
 Energy is a crucial resource especially for mobile devices. Since the energy
-available is either limited---on mobile devices---or can become expensive---
-on devices connected to the regular power grid---we should use as little as
+available is either limited---on mobile devices---or can become expensive---on
+devices connected to the regular power grid---we should use as little as
 possible. Even though most modern operating systems try to maximize the CPU
 usage by lowering the frequency \cite{snowdon2010operating} to eventually
-maximize the energy-efficiency, this reaction is not always appropriate. A lower
-CPU frequency may even decrease energy efficiency
+maximize the energy--efficiency, this reaction is not always appropriate. A
+lower CPU frequency may even decrease energy efficiency
 \cite{weissel2002process,snowdon2010operating}.
 
 The basis to intelligently minimize the energy consumption is per--task energy
@@ -28,11 +28,11 @@ Besides these points, various other applications of energy estimation are
 possible. Temperature control \cite{kellner03tempcontrol} and thermal management
 \cite{merkel05tmsmpsys} are just one auxiliary field. Accounted energy can also
 serve as a customer cost model for computing centers \cite{Bertran2010}, because
-it reflects much more accurately the real costs than simple computing time
-based models. Another possible application in that field are migration decisions
-of either virtual machines between real machines in clusters or processes
-between processing units \cite{merkel10rcscheduling}. Power-aware scheduling can
-also help to improve the computing time efficiency.
+it reflects much more accurately the real costs than simple computing time based
+models. Another possible application in that field are migration decisions of
+either virtual machines between real machines in clusters or processes between
+processing units \cite{merkel10rcscheduling}. Power--aware scheduling can also
+help to improve the computing time efficiency.
 
 
 %-  charges and restrictions  --------------------------------------------------
@@ -40,17 +40,17 @@ also help to improve the computing time efficiency.
 \label{sec:restrictions}
 
 Because of the limited amount of time and the start from scratch of this thesis,
-some energy-relevant processor and operating system features have been disabled.
-Since all of these either should work with the current model or individually
-raise some kind of events, this is not seen as a major drawback of this work.
-Future work may certainly be able to flawlessly integrate them into the known
-model. In particular, the following features lasted disabled:
+some energy--relevant processor and operating system features have been
+disabled.  Since all of these either should work with the current model or
+individually raise some kind of events, this is not seen as a major drawback of
+this work.  Future work may certainly be able to flawlessly integrate them into
+the known model. In particular, the following features lasted disabled:
 
 \begin{itemize}
 
 \item Dynamic Frequency and Voltage Scaling \cite{wiki:DVFS}
 
-\item Hyper-Threading \cite{wiki:HT}
+\item Hyper--Threading \cite{wiki:HT}
 
 \item ACPI Processor States other than C0 \cite{wiki:ACPI}
 

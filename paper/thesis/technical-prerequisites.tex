@@ -30,7 +30,7 @@ In the following chapter the hardware examined in this work appears in detail.
 
 The most evident characteristics of the \JWPcpu{} are the four cores (on one
 chip) and the very uniform distribution of the caches (see figure
-\ref{fig:cache-orga}). All caches except for the last-level cache (L3) are
+\ref{fig:cache-orga}). All caches except for the last--level cache (L3) are
 present on each core \cite{fog11}. The CPU's \emph{performance monitoring unit}
 (PMU) appears---because of its central importance---in a separate chapter
 (\ref{sec:pmu}). A short overview of the key features follows
@@ -71,7 +71,7 @@ microarchitecture and in particular the \JWPcpu{}.
 
 Examining the processor user's manual \cite{intel2011events}, approximately 184
 events have been found available and usable. Because the CPU is only able to
-count eight (four in Hyper-threading \cite{wiki:HT} mode) user--programmable
+count eight (four in Hyper--threading \cite{wiki:HT} mode) user--programmable
 performance events simultaneously \cite{intel2011softdev1} the most useful
 events have to be selected. In addition to the eight (four) events, the CPU
 provides three counters for fixed events, which will be counted anyway:
@@ -80,7 +80,7 @@ provides three counters for fixed events, which will be counted anyway:
 
 The selection, configuration and usage of these performance event counters is
 done via special \emph{model specific registers} (MSRs)
-\cite{intel2011softdev3b}. In this work a more high-level approach via the
+\cite{intel2011softdev3b}. In this work a more high--level approach via the
 \JWpn{perf\_event}-API (unofficial documentation at
 \cite{weaver2011perfevents}) of newer Linux Kernels and \JWTlibpfm{} (see
 chapter \ref{sec:standard-software}) has been used.
@@ -93,7 +93,7 @@ The Intel\TReg{} \emph{Sandy Bridge} microarchitecture is a further development
 of the Core and Nehalem architectures \cite{fog11}. Among other simplifications
 of the branch prediction unit, the special loop predictor has been discontinued
 presumably to reduce the overall pipeline length and to minimize the
-misprediction penalties \cite{fog11}. For speed-improvements a micro-operation
-($\mu$op) cache and macro-operation fusion have been introduced \cite{fog11}.
+misprediction penalties \cite{fog11}. For speed--improvements a micro--operation
+($\mu$op) cache and macro--operation fusion have been introduced \cite{fog11}.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :
