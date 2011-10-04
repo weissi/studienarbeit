@@ -3,7 +3,6 @@
 \addappheadtotoc
 
 \renewcommand\thesection{\Alph{section}}
-\chapter{Appendix}
 
 \JWlappendix{Performance Event Selection and Description}
 \label{appendix:chosen-events}
@@ -17,11 +16,12 @@ presented in this work. The descriptive texts are all taken from
 
 \JWlappendix{File Formats}
 
-\JWlsubappendix{Data Points File's Format}
+\JWlsubappendix{Data Point Files}
 \label{sec:fmt:datapoints}
-For the definition of the Protocol Buffers used, see appendices
-\ref{sec:pb:datapoints} and \ref{sec:pb:generic}. For the definition of the
-Protocol Buffer's language see their
+
+For the definition of the Protocol Buffers used, see appendix
+\ref{sec:pb:datapoints}. For the definition of the Protocol Buffer's language
+see their
 \JWnamedlink{http://code.google.com/apis/protocolbuffers/docs/proto.html}{web
 site}.
 
@@ -29,12 +29,26 @@ site}.
 
 \JWlsubappendix{Generic Protocol Buffers}
 \label{sec:pb:generic}
+
+This file contains generic Protocol Buffers definitions. Its file path is
+\JWpath{protos/generic.proto}.
 \input{res/pb-generic}
+
 
 \JWlsubappendix{Data Points Protocol Buffers}
 \label{sec:pb:datapoints}
+
+This file contains the Protocol Buffers definition as used by \JWTlibdp{} (see
+chapter \ref{sec:datapoint-files} and \ref{sec:special-developments}). Its file
+path is \JWpath{protos/measured-data.proto}.
 \input{res/pb-dpts}
 
 \JWlsubappendix{Performance Event Counter Protocol Buffers}
 \label{sec:pb:counter-files}
+
+This file contains the Protocol Buffers definition as used by \JWTdd{},
+\JWTbsle{} and \JWTde{} (see chapter \ref{sec:counter-files} and
+\ref{sec:special-developments}). Its file path is
+\JWpath{protos/perf-counters.proto}.
+
 \input{res/pb-ctrs}

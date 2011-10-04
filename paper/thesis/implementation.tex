@@ -83,7 +83,7 @@ The content of the work files is just the electrical work of a certain
 measuring experiment in Joule. The file format is the ASCII representation of a
 floating point value followed by optional garbage (separated by an ASCII space
 or newline). In contrast to the other file formats, the work file's file names
-have to match the following format: \verb%work_<SHOT-ID>_.work% (e.g.
+have to match the following format: \verb%work_<SHOT-ID>_.work% (e.\,g.\ 
 \verb%work_SPEC-gcc@2011-08-31_16-07-46.work%).
 
 The following listing shows a valid work file:
@@ -196,7 +196,7 @@ P(t) & = & \frac{12V * U_R(t)}{R} \\
 W & = & \int_{t_0}^{t_{max}} P(t)dt = \sum_{i=1}^{max}P(t_i)*(t_i-t_{i-1})
 \end{eqnarray}
 
-The following example illustrates the usage of \JWTfcw{}
+The following example illustrates the usage of \JWTfcw{}:
 
 \begin{lstlisting}[style=Shell]
 fastcalcwork captured-17:15:00.dpts CPU 0.01 TRIGGER
@@ -227,7 +227,7 @@ intervals intervals for counting performance events and measuring electrical
 power.
 
 A working example executing \JWpath{/bin/ls} and counting
-\JWctrCLK{} and \JWctrINST{} along the way folows:
+\JWctrCLK{} and \JWctrINST{} along the way follows:
 
 \begin{lstlisting}[style=Shell]
 dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED \
@@ -235,7 +235,7 @@ dumpcounters -e CPU_CLK_UNHALTED,INST_RETIRED \
              -r /bin/ls
 \end{lstlisting}
 
-After the execution, the file \JWpath{ls\_clock-cycles\_inst-retired.ctrs} will
+After the execution, the file \JWpath{ls_clock-cycles_inst-retired.ctrs} will
 contain the performance event counter values. The file format is described in
 chapter \ref{sec:counter-files}.
 
@@ -278,14 +278,14 @@ R version 2.12.1 (2010-12-16)
 
 \JWlfour{high-level scripts}
 
-So far, there are many simple tools. To compose the ensemble many of them have
-to be invoked correctly with each other. Since this is not a trivial task, some
-high-level scripts have been developed, most notably
-\JWpath{scripts/measure-n-counters-m-benchmarks.sh} and \JWTdomeasuring{}.
-The former script can control records of many benchmarks with a fixed (chapter
+So far, there are several simple tools for simple tasks. To compose the ensemble
+many of them have to be invoked correctly with each other. Since this is not a
+trivial task, some high-level scripts have been developed, most notably
+\JWpath{scripts/measure-n-counters-m-benchmarks.sh} and \JWTdomeasuring{}.  The
+former script can control records of many benchmarks with a fixed (chapter
 \ref{sec:final-model}), rotational (chapter \ref{sec:finding-useful-subset}) or
 incremental (chapter \ref{sec:overhead}) set of performance event counters; the
-latter automates the following steps as shows in the example below:
+latter automates the following steps as shown in the example below:
 
 \begin{enumerate}
 
@@ -417,27 +417,27 @@ model presented in this paper.
 \begin{figure}
   \centering
     \includegraphics[width=\textwidth]{fig/run-benchmarks.eps}
-  \caption{Run Benchmarks}
+  \caption{Data acquisition by running benchmark permutations}
   \label{fig:run-benchmarks}
 \end{figure}
 
-After the event selection process energetical weights for the (pseudo--)event
-had to be found. To find these, the benchmarks runs were repeated -- once again
-on a single core but recording all of the final events in one shot. Thereafter
-all reasonable permutations for two and three cores and 500 random permutations
-for all four cores have been generated. All in all over 3000 different benchmark
-runs have been recorded. The way the benchmark runs were recorded is illustrated
-in figure \ref{fig:run-benchmarks}. It was necessary to always reboot and
-reconfigure the machine because the number of active cores cannot be changed at
-runtime. The \JWpn{taskset}\cite{man:taskset} utility has been used to pin the
-benchmark processes to their target core.
+After the event selection process, suitable energy weights for the
+(pseudo--)event had to be found. To find these, the benchmarks runs were
+repeated -- once again on a single core but recording all of the final events in
+one shot. Thereafter all reasonable permutations for two and three cores and 500
+random permutations for all four cores have been generated. All in all over 3000
+different benchmark runs have been recorded. The way the benchmark runs were
+recorded is illustrated in figure \ref{fig:run-benchmarks}. It was necessary to
+always reboot and reconfigure the machine because the number of active cores
+cannot be changed at runtime. The \JWpn{taskset}\cite{man:taskset} utility has
+been used to pin the benchmark processes to their target core.
 
 To train the model only about 50 well chosen benchmark runs were used,
 iteratively adding adequate sample runs when weaknesses of the model have been
 discovered. To evaluate the model (chapter \ref{sec:evaluation}) the whole set
 was used.
 
-Presumably due to the symmetric architecture of the CPU, the event's energetical
+Presumably due to the symmetric architecture of the CPU, the events' energy
 weights proved to be similar on all cores. Hence, the model's general form could
 be simplified. Consequently the function $w_c$ is not anymore parametrized by
 core. The following equation shows the new form, identifiers as in chapter
@@ -448,7 +448,7 @@ W = \sum\limits_{k=0}^K g(k) w_g(k) +
 \sum\limits_{m=0}^M  w_c(m) \sum\limits_{n=0}^N c(n, m)
 \end{equation}
 
-The following table shows the energetical weights which form the functions $w_c$
+The following table shows the energy weights which form the functions $w_c$
 and $w_g$. $g$ and $c$ are the system's live data mainly available from the
 CPU's performance event counters. The formula above and the weights below
 represent the energy model presented in this thesis. That is enough to estimate
