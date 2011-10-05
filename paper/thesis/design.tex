@@ -152,7 +152,7 @@ formal methods suggested to build such a model.
 \JWlthree{Properties}
 \label{sec:model-properties}
 
-In this work, an energy model is considered as a linear formula. A system with
+In this work, an energy model is considered as a linear function. A system with
 $n_c$ cores that is able to monitor $n_e$ performance events per core
 simultaneously is described. Additionally to the per--core event counters, $n_g$
 global event counters make the model up. In the formal description (see chapter
@@ -174,7 +174,8 @@ $j$
 
 \end{itemize}
 
-Though, an energy model equates to
+Though, an energy model equates to a linear function. The function's value is
+the electrical work performed between two instants of time $t_0$ and $t_e$:
 
 \begin{equation}
 W(t_0, t_e) = \sum\limits_{i=1}^{n_g} c_g(i, t_0, t_e) w_g(i) +
@@ -182,12 +183,13 @@ W(t_0, t_e) = \sum\limits_{i=1}^{n_g} c_g(i, t_0, t_e) w_g(i) +
 \end{equation}
 
 The functions $c_e$ and $c_g$ contain the system's life data whereas the energy
-weights $w_e$ and $w_c$ can be calculated a priori as done in this work.
-Obviously the selection of the events and their respective weights highly depend
-on the type of microprocessor. To calculate the electrical power the system
-consumes, one typically chooses an arbitrary frequency $T$ and sets
-the variables $t_0$ and $t_e$ accordingly ($t_0 = ?$, $t_e = t_0 + \frac{1}{T}$)
-. The instantaneous power of the instant $t$ is then calculated as:
+weight functions $w_e$ and $w_c$ can be calculated a priori as done in this
+work. Obviously, the selection of the events and their respective weights highly
+depend on the type of microprocessor. To calculate the electrical power the
+system consumes, one typically chooses an arbitrary frequency $T$ and sets the
+variables $t_0$ and $t_e$ accordingly ($t_0 = ?$, $t_e = t_0 + \frac{1}{T}$).
+The instantaneous power of the instant $t$ (of length $\frac{1}{T}$) is then
+calculated as:
 
 \begin{eqnarray}
 P(t) & = & \frac{W(t - \frac{1}{T}, t)}{\frac{1}{T}} \\
@@ -197,39 +199,101 @@ P(t) & = & \frac{W(t - \frac{1}{T}, t)}{\frac{1}{T}} \\
                 }{\frac{1}{T}}
 \end{eqnarray}
 
-%o_{t_0}(i)
-%o_{t_e}(i)
 
-\[
-Cg_{n_o,n_g} =
+%-  finding the energy weights  ------------------------------------------------
+\JWlthree{Finding the Energy Weights}
+\label{sec:finding-weights}
+
+Having seen what exactly constitutes an energy model (chapter
+\ref{sec:model-properties}), it is crucial to find a small and significant set
+of performance events and appropriate energy weights. This chapter will focus on
+how to find the weights, a seperate chapter (\ref{sec:min-events}) describes the
+miniaturization of the event set. To find reasonable energy weights, test
+program execution (also called benchmark) observations have to be recorded and
+evaluated. Of each test program run record, the following data is needed later:
+
+\begin{itemize}
+
+\item $b$, the point of time the run began
+
+\item $e$, the point of time the run ended
+
+\item The $n_g$ values of the functions $c_g(1 \cdots n_g, b, e)$
+
+\item The $n_c * n_e$ values of the functions
+$c_e(1 \cdots n_c, 1 \cdots n_e, b, e)$
+
+\item The electrical work $j$ the system performed between $b$ and $e$
+
+\end{itemize}
+
+Since the fitting of the energy weights needs a larger data set, a matrix
+representation is appropriate. So, $n_o$ observations in the non--overlapping
+time intervals $(b_{1 \cdots n_o}, e_{1 \cdots n_o})$ lead to:
+
+\begin{itemize}
+
+\item $b_{1 \cdots n_o}$, the points of time the runs began
+
+\item $e_{1 \cdots n_o}$, the points of time the runs ended
+
+\item The matrix $Cg$ containing the global counter values (see equation
+\ref{eqn:cg})
+
+\item The matrix $Cc$, containing the performance event counter values (see
+equation \ref{eqn:cc})
+
+\item The vector $j = <j_1, \cdots, j_{n_o}>$, containing the electrical works
+performed
+
+\end{itemize}
+
+\begin{eqnarray}
+%% Cg
+\label{eqn:cg}
+Cg_{n_o,n_g} & = &
 \begin{pmatrix}
 c_g(1, b_1, e_1)         & \cdots & c_g(n_g, b_1, e_1)        \\
 \vdots                   & \ddots & \vdots                    \\
 c_g(1, b_{n_o}, e_{n_o}) & \cdots & c_g(n_g, b_{n_o}, e_{n_o})
-\end{pmatrix}
-\]
-
-\[
-Cc_{n_o,n_cn_e} =
+\end{pmatrix} \\
+%% Cc
+\label{eqn:cc}
+Cc_{n_o,n_cn_e} & = &
 \begin{pmatrix}
 c_e(1, 1, b_1, e_1)         & \cdots & c_e(n_c, n_e, b_1, e_1)         \\
 \vdots                      & \cdots & \vdots                          \\
 c_e(1, 1, b_{n_o}, e_{n_o}) & \cdots & c_e(n_c, n_e, b_{n_o}, e_{n_o})
 \end{pmatrix}
-\]
+\end{eqnarray}
 
-\[
-C_{n_o,n_g+n_cn_e} = \Bigg( Cg \| Cc \Bigg) =
+Using a linear regression (of eqation \ref{eqn:lin-reg}), suitable energy
+weight vectors $w_c$ and $w_g$ may be found. The goal is to minimize the error
+term, i.\,e.\ $\sum\epsilon^2$ is small as possible.
+
+\begin{equation}
+\label{eqn:lin-reg}
+j = C w + \epsilon
+\end{equation}
+
+\begin{eqnarray*}
+%% j
+j & = &
+\begin{pmatrix}
+j_1 \\
+\vdots \\
+j_{n_o}
+\end{pmatrix} \\
+%% C
+C_{n_o,n_g+n_cn_e} & = & \big( Cg \arrowvert Cc \big) \\
+& = &
 \begin{pmatrix}
 Cg_{1,1}   & \cdots & Cg_{1,n_g}   & Cc{1,1}   & \cdots & Cc{1,n_cn_e} \\
 \vdots     & \ddots & \vdots       & \vdots    & \ddots & \vdots       \\
 Cg_{n_o,1} & \cdots & Cg_{n_o,n_g} & Cc{n_o,1} & \cdots & Cc{n_o,n_cn_e} \\
-\end{pmatrix}
-\]
-
-\
-\[
-w =
+\end{pmatrix} \\
+%% w
+w & = &
 \begin{pmatrix}
 w_g(1) \\
 \vdots \\
@@ -237,37 +301,18 @@ w_g(n_g) \\
 w_e(1, 1) \\
 \vdots \\
 w_e(n_c, n_e)
-\end{pmatrix}
-, j =
-\begin{pmatrix}
-j_1 \\
-\vdots \\
-j_{n_o}
-\end{pmatrix}
-, \epsilon =
-\begin{pmatrix}
-\epsilon_1 \\
-\vdots \\
-\epsilon_{n_o}
-\end{pmatrix}
-\]
+\end{pmatrix} \\
+\end{eqnarray*}
 
-\begin{equation}
-e = C w + \epsilon
-\end{equation}
 
 %-  minimizing the counter set  ------------------------------------------------
 \JWlthree{Minimizing the Set of Performance Events}
 \label{sec:min-events}
 
-Having seen what exactly constitutes an energy model (chapter
-\ref{sec:model-properties}), it is crucial to find a small and significant set
-of performance events to use. It is not practical to take into account all
-events the microprocessor is aware of. Today's processors offer a lot more
-events then they can count simultaneously \cite{intel2011softdev1}.
-
-The approach to find a reasonable subset of $n_e$ events (of $a$ available)
-used in this work can be summed up to:
+It is not practical to take into account all events the microprocessor is aware
+of. Today's processors offer a lot more events then they can count
+simultaneously \cite{intel2011softdev1}. The approach to find a meaningful
+subset of $n_e$ events (of $a$ available) used in this work can be summed up to:
 
 \begin{enumerate}
 
