@@ -1,0 +1,7 @@
+thesis.pdf
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+*.out
