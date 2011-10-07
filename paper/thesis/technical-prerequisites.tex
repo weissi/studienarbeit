@@ -10,7 +10,7 @@ In the following chapter the hardware examined in this work appears in detail.
 
 \begin{itemize}
 
-\item CPU: \JWPLcpu{} (\emph{Sandy Bridge}\cite{wiki:snb} microarchitecture)
+\item CPU: \JWPLcpu{} (\emph{San\-dy Bridge} microarchitecture)
 
 \item Motherboard: \JWPLboard{} (using an external video controller)
 
@@ -18,7 +18,7 @@ In the following chapter the hardware examined in this work appears in detail.
 
 
 % #  SANDY BRIDGE CHARACTERISTICS  #############################################
-\JWltwo{Sandy Bridge Characteristics}
+\JWltwo{San\-dy Bridge Characteristics}
 \label{sec:sandy-bridge}
 
 \begin{figure}
@@ -66,12 +66,12 @@ weissel2002process,kellner03tempcontrol,bertran2010decomposable} some of these
 performance events have proved to be somehow related to the power consumption of
 the CPU. The selection of the events and the degree of their correlation to
 energy highly varies among CPUs, or at least CPU microarchitectures.
-Therefore, that has been done again for the Intel\TReg{} Sandy Bridge
+Therefore, that has been done again for the Intel\TReg{} San\-dy Bridge
 microarchitecture and in particular the \JWPcpu{}.
 
 Examining the processor user's manual \cite{intel2011events}, approximately 184
 events have been found available and usable. Because the CPU is only able to
-count eight (four in Hyper--threading \cite{wiki:HT} mode) user--programmable
+count eight (four in Hyper--threading \cite{HT} mode) user--programmable
 performance events simultaneously \cite{intel2011softdev1} the most useful
 events have to be selected. In addition to the eight (four) events, the CPU
 provides three counters for fixed events, which will be counted anyway:
@@ -87,13 +87,14 @@ chapter \ref{sec:standard-software}) has been used.
 
 
 %-  architectural differences  -------------------------------------------------
-\JWlthree{Architectural Differences among Sandy Bridge and its Predecessors}
+\JWlthree{Architectural Differences among San\-dy Bridge and its Predecessors}
 
-The Intel\TReg{} \emph{Sandy Bridge} microarchitecture is a further development
-of the Core and Nehalem architectures \cite{fog11}. Among other simplifications
-of the branch prediction unit, the special loop predictor has been discontinued
-presumably to reduce the overall pipeline length and to minimize the
-misprediction penalties \cite{fog11}. For speed--improvements a micro--operation
-($\mu$op) cache and macro--operation fusion have been introduced \cite{fog11}.
+The Intel\TReg{} \emph{San\-dy Bridge} microarchitecture is a further
+development of the Core and Nehalem architectures \cite{fog11}. Among other
+simplifications of the branch prediction unit, the special loop predictor has
+been discontinued presumably to reduce the overall pipeline length and to
+minimize the misprediction penalties \cite{fog11}. For speed--improvements a
+micro--operation ($\mu$op) cache and macro--operation fusion have been
+introduced \cite{fog11}.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 : syntax spell toplevel :

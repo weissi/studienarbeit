@@ -443,15 +443,22 @@ core. The following equation shows the new form, identifiers as in chapter
 \ref{sec:model-properties}.
 
 \begin{equation}
-W = \sum\limits_{k=0}^K g(k) w_g(k) +
-\sum\limits_{m=0}^M  w_c(m) \sum\limits_{n=0}^N c(n, m)
+W(t_0, t_e) = \sum\limits_{i=1}^{n_g} c_g(i, t_0, t_e) w_g(i) +
+\sum\limits_{k=1}^{n_e} w_e(k) \sum\limits_{j=1}^{n_c}
+c_e(j, k, t_0, t_e)
 \end{equation}
 
-The following table shows the energy weights which form the functions $w_c$
-and $w_g$. $g$ and $c$ are the system's live data mainly available from the
-CPU's performance event counters. The formula above and the weights below
-represent the energy model presented in this thesis. That is enough to estimate
-the electrical power the CPU consumed in a selectable time interval.
+The following table shows the energy weights which form the functions $w_c$ and
+$w_g$. $c_g$ and $c_e$ are the system's live data, available from the PMU (via
+\JWTlibpfm{}). When running live on a system, the parameters $t_0$ and $t_e$
+result from the sampling process: $t_0$ is the point in time of the last sample,
+$t_e$ is ``now''. The functions' values are then obtained by the performance
+event counter's difference between the last and the current sample. Obviously,
+$c_g$ and $c_e$ are partial functions in reality: They are only defined if $t_0$
+matches the time of the last sample and $t_e$ the time of the current sample.
+The formula above and the weights below represent the energy model presented in
+this thesis. That is enough to estimate the electrical power the CPU consumed in
+selectable sampling intervals.
 
 \begin{tabular}{l r r}
 

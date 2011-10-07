@@ -86,8 +86,6 @@ plot of an examination can be found in figure \ref{fig:cpu-power-trig}.
   \label{fig:cpu-power-trig}
 \end{figure}
 
-\JWtodo{Bild, auf dem man den Timer-Interrupt sieht}
-
 
 %-  measuring device  ----------------------------------------------------------
 \JWlthree{Measuring Device}
@@ -111,32 +109,27 @@ samples per second (\SI{250}{\kilo\samples\per\second}) and is very accurate
 \JWltwo{Calculation of the Electrical Work}
 \label{sec:calc-work}
 
-From elementary physics
+From elementary physics:
 
 \begin{eqnarray}
-     U_R & = & R * I \\
-  \iff I & = & \frac{U_R}{R}
+     U = R * I \iff I = \frac{U}{R} \\
+     P = U * I
 \end{eqnarray}
 
-and
-
-\begin{equation}
-  U_{CPU} + U_{R} = 12 V
-\end{equation}
-
-we obtain the instantaneous power of the CPU by measuring the voltage drop
-across the sensing resistor:
+So, the current flow is calculatable from the volatage drops across the
+measuring resistor ($U_R$). Accordingly, the instantaneous power can be
+calculated as:
 
 \begin{eqnarray}
-P_{CPU}(t) & = & (12V - U_R(t)) * \frac{U_R(t)}{R} \\
-           & = & \frac{12V * U_R - {U_R}^2}{R} \\
-           & \stackrel{0 < U_R \ll 1}{\approx} & \frac{12V * U_R}{R}.
+P    & = & U * I \\
+     & = & U * \frac{U_R}{R} \\
+P(t) & = & \frac{12V * U_R}{R}
 \end{eqnarray}
 
 Hence, integrating will result in the electrical work
 
 \begin{equation}
-  W = \int P_{CPU}(t)dt.
+  W = \int P(t)dt.
 \end{equation}
 
 
@@ -161,16 +154,19 @@ functions providing the actual values:
 
 \begin{itemize}
 
-\item $c_g(i, t_0, t_e)$, the global event $i$'s count in the time interval
-$(t_0, t_e)$
+\item $c_g(i, t_0, t_e) \in \mathbb{N}^{\{1, \ldots, n_e\} \times
+\mathbb{R}_{\geq 0} \times \mathbb{R}_{\geq 0}}$, the global event $i$'s count
+in the time interval $(t_0, t_e)$
 
-\item $c_e(j, k, t_0, t_e)$ the performance event $k$'s count on core $j$ in the
-interval $(t_0, t_e)$
+\item $c_e(j, k, t_0, t_e) \in \mathbb{N}^{\{1, \ldots, n_c\} \times
+\{1, \ldots, n_g\} \times \mathbb{R}_{\geq 0} \times \mathbb{R}_{\geq 0}}$, the
+performance event $k$'s count on core $j$ in the interval $(t_0, t_e)$
 
-\item $w_g(i)$ the global event $i$'s energy weight in \si{\joule}
+\item $w_g(i) \in \mathbb{R}^{\{1, \ldots, n_g\}}$, the global event $i$'s
+energy weight in \si{\joule}
 
-\item $w_e(j, k)$ the weight of performance event $k$ in \si{\joule} on core
-$j$
+\item $w_e(j, k) \in \mathbb{R}^{\{1, \ldots, n_c\} \times \{1, \ldots, n_g\}}$,
+the weight of performance event $k$ in \si{\joule} on core $j$
 
 \end{itemize}
 
@@ -240,7 +236,7 @@ time intervals $(b_{1 \cdots n_o}, e_{1 \cdots n_o})$ lead to:
 \item The matrix $Cg$ containing the global counter values (see equation
 \ref{eqn:cg})
 
-\item The matrix $Cc$, containing the performance event counter values (see
+\item The matrix $Ce$, containing the performance event counter values (see
 equation \ref{eqn:cc})
 
 \item The vector $j = <j_1, \cdots, j_{n_o}>$, containing the electrical works
@@ -251,15 +247,17 @@ performed
 \begin{eqnarray}
 %% Cg
 \label{eqn:cg}
-Cg_{n_o,n_g} & = &
+& Cg & \in \mathbb{N}^{n_o \times n_g} \\
+& Cg & =
 \begin{pmatrix}
 c_g(1, b_1, e_1)         & \cdots & c_g(n_g, b_1, e_1)        \\
 \vdots                   & \ddots & \vdots                    \\
 c_g(1, b_{n_o}, e_{n_o}) & \cdots & c_g(n_g, b_{n_o}, e_{n_o})
 \end{pmatrix} \\
-%% Cc
+%% Ce
 \label{eqn:cc}
-Cc_{n_o,n_cn_e} & = &
+& Ce & \in \mathbb{N}^{n_o \times n_cn_e } \\
+& Ce & =
 \begin{pmatrix}
 c_e(1, 1, b_1, e_1)         & \cdots & c_e(n_c, n_e, b_1, e_1)         \\
 \vdots                      & \cdots & \vdots                          \\
@@ -285,12 +283,12 @@ j_1 \\
 j_{n_o}
 \end{pmatrix} \\
 %% C
-C_{n_o,n_g+n_cn_e} & = & \big( Cg \arrowvert Cc \big) \\
+C & = & \big( Cg \arrowvert Ce \big) \in \mathbb{N}^{n_o \times n_g+n_cn_e} \\
 & = &
 \begin{pmatrix}
-Cg_{1,1}   & \cdots & Cg_{1,n_g}   & Cc{1,1}   & \cdots & Cc{1,n_cn_e} \\
+Cg_{1,1}   & \cdots & Cg_{1,n_g}   & Ce{1,1}   & \cdots & Ce{1,n_cn_e} \\
 \vdots     & \ddots & \vdots       & \vdots    & \ddots & \vdots       \\
-Cg_{n_o,1} & \cdots & Cg_{n_o,n_g} & Cc{n_o,1} & \cdots & Cc{n_o,n_cn_e} \\
+Cg_{n_o,1} & \cdots & Cg_{n_o,n_g} & Ce{n_o,1} & \cdots & Ce{n_o,n_cn_e} \\
 \end{pmatrix} \\
 %% w
 w & = &
@@ -311,28 +309,29 @@ w_e(n_c, n_e)
 
 It is not practical to take into account all events the microprocessor is aware
 of. Today's processors offer a lot more events then they can count
-simultaneously \cite{intel2011softdev1}. The approach to find a meaningful
-subset of $n_e$ events (of $a$ available) used in this work can be summed up to:
+simultaneously \cite{intel2011softdev1}. The functions and matrices names of the
+previous chapter (\ref{sec:finding-weights}) also apply here. The single
+exception is that this chapter only focusses on the CPU's performance events.
+The global events are not taken into account here because they are
+pseudo--events not obtained by the limited PMU. The approach to find a subset of
+$n_e$ events (of $e_{max}$ available) used in this work can be summed up to:
 
 \begin{enumerate}
 
-\item Generation of the matrix of performance event counters $C$ and
-the corresponding vector of electrical works $W$
+\item Generation of the matrix of performance event counters $Ce$ and
+the corresponding vector of electrical works $j$
 
-\item Obtaining $C'$ containing the $N$ most correlating columns of $C$
+\item Obtaining $Ce_{final}$ containing the $n_e$ most correlating columns of
+$Ce$ that will form the energy model's performance events
 
 \end{enumerate}
 
-Thereafter, the system of linear equations
-
-\begin{equation}
-W = C' * X
-\end{equation}
-
-can be solved by simple linear regression.
+Thereafter, the performance events the model finally uses are found. The next
+step is to find the final energy weights as in the previous chapter
+(\ref{sec:finding-weights}).
 
 
-\JWlfour{Step 1: Generating $C$ and $W$}
+\JWlfour{Step 1: Generating $Ce$ and $j$}
 
 \begin{enumerate}[(a)]
 
@@ -340,35 +339,41 @@ can be solved by simple linear regression.
 programs have to be independent from external events. We consider subsequent
 runs of a test program as equal.
 
-\item Divide the $A$ available events in $g$ disjoint, non--empty sets
-$E_{1..g}$ of size up to $N$.
+\item Divide the $e_{max}$ available events in $g$ disjoint, non--empty sets
+$E_{1..g}$ of size up to $n_e$.
 
 \item For each set $E_{1..g}$, run all the $p$ test programs and record the
-electrical work and the event counters of the set's events.
+electrical work performed and the event counters of the set's events.
 
 \item The electrical work of each of the runs of a test program should be
-roughly equal.
+roughly equal. If they differ a lot, there is either a dependency on external
+events in the benchmark or the machine is otherwisely stressed. In the former
+case the test program selection should be improved, in the latter the affected
+test runs have to be repeated.
 
-\item Folding all the results leads to a vector $W_{1..p}$ containing the
-electrical work a run of each of the test programs consumes. Additionally, a
-matrix $C = [c_{1..p,1..N}]$ arises, containing each event counter's value for a
-run of each of the test programs.
+\item Folding all the results leads to a vector $j_{1..p}$ containing the
+electrical work a run of each of the test programs performed. Additionally, a
+matrix $Ce$ (as in chapter \ref{sec:finding-weights}) arises, containing each
+event counter's value for a run of each of the test programs.
 
 \end{enumerate}
 
-\JWlfour{Step 2: Deriving $C'$ from $C$}
+\JWlfour{Step 2: Deriving $Ce_{final}$ from $Ce$}
 
 \begin{enumerate}[(a)]
 
-\item Add all columns from $C$ to $C'$
+\item Eliminate duplicate columns in $Ce$
 
-\item Eliminate duplicate columns in $C'$
+\item Eliminate columns that contain only zeroes in $Ce$
 
-\item Eliminate columns which contain only zeroes in $C'$
+\item Eliminate linear dependent columns in $Ce$
 
-\item Eliminate linear dependent columns in $C'$
+\item Generate all column combinations of size $n_e$ (without repetition) of the
+remaining columns in $Ce$, generate energetical weights (as in chapter
+\ref{sec:finding-weights})
 
-\item \JWtodo{weiter}
+\item $Ce_{final}$ is the combination with the smallest error term
+($\sum\epsilon^2$)
 
 \end{enumerate}
 
