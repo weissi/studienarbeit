@@ -13,19 +13,19 @@
   \label{fig:overview}
 \end{figure}
 
-As figure \ref{fig:overview} illustrates an additional workstation---the
+As figure \ref{fig:overview} illustrates, an additional workstation---the
 \emph{Examining Workstation (EW)}---has been used while evolving this thesis.
 The \emph{System under Test (SuT)} counts the CPU's performance events itself
 and the EW records the energy consumption using a measuring device in the
-meantime. These two data sets have thereafter been used to build up the energy
-model.
+meantime. The resulting data sets have thereafter been used to build up the
+energy model.
 
 
 %#  MEASURING SETUP IN DETAIL  #################################################
 \JWltwo{Measuring Setup in Detail}
 \label{sec:measuring-setup}
 
-To fit the energy model later, the current flows of the CPU and the
+To fit the energy model afterwards, the current flows of the CPU and the
 motherboard's \SI{12}{\volt} supply have to be measured. Voltage drops across
 the sensing resistor are measured using four--terminal sensing \cite{wiki:FTS}
 to deduce the current flow. The motherboard's \SI{12}{\volt} current flow has
@@ -130,12 +130,12 @@ P & = & \frac{12V * U_R}{R}
 Hence, integrating will result in the electrical work
 
 \begin{equation}
-  W = \int P(t)dt.
+  W = \int P(t)dt
 \end{equation}
 
 
 %#  ENERGY MODEL  ##############################################################
-\JWltwo{Energy Model}
+\JWltwo{The Energy Model}
 \label{sec:model}
 
 The following chapters will define the term \emph{energy model} along with  the
@@ -207,13 +207,13 @@ of performance events and appropriate energy weights. This chapter will focus on
 how to find the weights. A separate chapter (\ref{sec:min-events}) describes the
 downsizing of the event set. To find reasonable energy weights test
 program (also called benchmark) execution observations have to be recorded and
-evaluated. Of each test program run record, the following data is needed later:
+evaluated. Each test program run record contains the following data:
 
 \begin{itemize}
 
-\item $b$, the point of time the run began
+\item $b$, the point in time the run began
 
-\item $e$, the point of time the run ended
+\item $e$, the point in time the run ended
 
 \item The $n_g$ values of the functions $c_g(1 \cdots n_g, b, e)$
 
@@ -230,9 +230,9 @@ time intervals $(b_{1 \cdots n_o}, e_{1 \cdots n_o})$ lead to:
 
 \begin{itemize}
 
-\item $b_{1 \cdots n_o}$, the points of time the runs began
+\item $b_{1 \cdots n_o}$, the points in time the runs began
 
-\item $e_{1 \cdots n_o}$, the points of time the runs ended
+\item $e_{1 \cdots n_o}$, the points in time the runs ended
 
 \item The matrix $Cg$ containing the global counter values (see equation
 \ref{eqn:cg})
@@ -240,7 +240,7 @@ time intervals $(b_{1 \cdots n_o}, e_{1 \cdots n_o})$ lead to:
 \item The matrix $Ce$, containing the performance event counter values (see
 equation \ref{eqn:cc})
 
-\item The vector $j = <j_1, \cdots, j_{n_o}>$, containing the electrical works
+\item The vector $j = <j_1, \cdots, j_{n_o}>$, containing the electrical work
 performed
 
 \end{itemize}
@@ -271,7 +271,7 @@ chosen
 
 Using a linear regression (of equation \ref{eqn:lin-reg}), suitable energy
 weight vectors $w_c$ and $w_g$ can be found. The goal is to minimize the error
-term, i.\,e.\ $\sum\epsilon^2$ is small as possible.
+term, i.\,e.\ $\sum\epsilon^2$ as small as possible.
 
 \begin{equation}
 \label{eqn:lin-reg}
@@ -313,13 +313,14 @@ w_e(n_c, n_e)
 
 It is not practical to take into account all events the microprocessor is aware
 of. Today's processors offer much more events than they can count simultaneously
-\cite{intel2011softdev1}. The functions and matrices names of the previous
+\cite{intel2011softdev1}. The function and matrix names of the previous
 chapter (\ref{sec:finding-weights}) also apply here. The single exception is
-that this chapter only focusses on the CPU's performance events.  The global
+that this chapter only focuses on the CPU's performance events.  The global
 events are not taken into account here because they are pseudo--events not
 obtained by the limited PMU and therefore have no maximal quantity.
 The approach to find a subset of $n_e$ events (of $e_{max}$ available) used in
-this work can be summed up to:
+this work can be summed up to the following two steps which will be discussed in
+detail later:
 
 \begin{enumerate}
 
@@ -356,9 +357,9 @@ events in the benchmark or the machine is otherwisely stressed. In the former
 case the test program selection should be improved, in the latter the affected
 test runs have to be repeated.
 
-\item Folding all the results leads to a vector $j_{1..p}$ containing the
-electrical work a run of each of the test programs performed. Additionally, a
-matrix $Ce$ (as in chapter \ref{sec:finding-weights}) accrues, containing each
+\item Folding all the results leads to a vector $j \in \mathbb{R}^p$ containing
+the electrical work a run of each of the test programs performed. Additionally,
+a matrix $Ce$ (as in chapter \ref{sec:finding-weights}) accrues, containing each
 event counter's value for a run of each of the test programs.
 
 \end{enumerate}
@@ -369,12 +370,12 @@ event counter's value for a run of each of the test programs.
 
 \item Eliminate duplicate columns in $Ce$
 
-\item Eliminate columns that contain only zeroes in $Ce$
+\item Eliminate columns that contain only zeros in $Ce$
 
 \item Eliminate linear dependent columns in $Ce$
 
 \item Generate all column combinations of size $n_e$ (without repetition) of the
-remaining columns in $Ce$, generate energetical weights (as in chapter
+remaining columns in $Ce$ and deduce the energy weights (as in chapter
 \ref{sec:finding-weights})
 
 \item $Ce_{final}$ is the combination with the smallest error term

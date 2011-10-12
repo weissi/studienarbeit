@@ -32,7 +32,7 @@ to a simple computing time based model.
 \end{figure}
 
 Most of the 3000 benchmark runs mentioned in chapter \ref{sec:benchmarks} and
-\ref{sec:final-model} are estimated with an error of 5\% or better as
+\ref{sec:final-model} are estimated with an error of 5\% or better, as
 \emph{model} in figure \ref{fig:err-hist} shows. The bars named
 \emph{cpu\_\-time\_\-based} are a comparison to a simple computing time based
 model, discussed in a chapter of its own (\ref{sec:time-based}). The overall
@@ -89,7 +89,7 @@ W = 5.885J * 10^{-9} * \JWctr{CPU\_CLK\_UNHALTED}.
 To evaluate the overhead of this implementation three metrics have been applied:
 Running time, average power usage and unhalted CPU clock cycles. To compare the
 results the \emph{473.astar} benchmark of the \JWTLspec{} benchmark suite has
-been used. Besides a warm--up run every configuration has been executed ten
+been used. Besides a warm--up run, every configuration has been executed ten
 times. The performance events have been added consecutively in the order they
 are listed in appendix \ref{appendix:chosen-events}. Before measuring the costs
 of adding a counter, the system has been benchmarked without even setting up
@@ -121,8 +121,8 @@ and \JWTlibpfm{}, no benchmark could be recorded without even setting up
 \end{figure}
 
 As one can see in figures \ref{fig:ctr-costs-cycles} and
-\ref{fig:ctr-costs-time}, the number of counted performance events or using the
-PMU (see chapter \ref{sec:pmu}) does not seem to correlate to the clock CPU
+\ref{fig:ctr-costs-time}, the number of counted performance events or not using
+the PMU (see chapter \ref{sec:pmu}) does not seem to correlate to the CPU clock
 cycles or the time a process needs to complete. The Pearson product--moment
 correlation coefficients (PCCs) \cite{wiki:PCC} are $-0.18$ with respect to the
 running time and $-0.12$ to the clock cycles. Considering the average electrical

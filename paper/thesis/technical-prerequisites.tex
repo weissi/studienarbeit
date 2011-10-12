@@ -72,12 +72,12 @@ energy highly varies among CPUs, or at least CPU microarchitectures. Therefore,
 selection and fitting have been done again for the Intel\TReg{} San\-dy Bridge
 microarchitecture and in particular the \JWPcpu{}.
 
-By examining the processor user's manual \cite{intel2011events} approximately
+By examining the processor user's manual \cite{intel2011events}
 184 events have been found available and usable. Because the CPU is only able to
 count eight (four in Hyper--threading \cite{HT} mode) user--programmable
 performance events simultaneously \cite{intel2011softdev1} the most useful
 events have to be selected. In addition to the eight (four) events, the CPU
-provides three counters for fixed events, which will be counted in any case:
+provides three counters for fixed events, that will be counted in any case:
 \JWctr{CPU\_CLK\_UNHALTED.REF\_TSC}, \JWctr{CPU\_CLK\_UNHALTED.THREAD} and
 \JWctr{INST\_RETIRED.ANY}.
 
