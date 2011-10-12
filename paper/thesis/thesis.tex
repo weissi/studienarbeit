@@ -40,6 +40,7 @@
 \usepackage{enumerate}
 \usepackage{fancyvrb}
 \usepackage{amsfonts}
+\usepackage{datetime}
 %\usepackage{geometry}
 %\geometry{bindingoffset=1cm}
 
@@ -52,15 +53,16 @@
 \title{Multi--Core Energy Accounting}
 
 \begin{document}
-\selectlanguage{american}
 
-\frontmatter
+\selectlanguage{american}
+\pagenumbering{Roman}
+
 \input{title}
 
+\frontmatter
 \tableofcontents
 
 \mainmatter
-
 \cleardoublepage
 \input{introduction}
 
@@ -75,10 +77,8 @@
 \input{conclusion}
 
 \backmatter
-
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{bibliography}
-
 \input{appendix}
 
 \end{document}
