@@ -1,18 +1,21 @@
 \JWlone{Technical Prerequisites}
 \label{sec:technical-prerequisites}
 
-In the following chapter the hardware examined in this work appears in detail.
+In the following chapter the hardware examined in this work will be discussed in
+detail.
 
 
 % #  PRODUCTS  #################################################################
 \JWltwo{Products}
 \label{sec:hw-products}
 
+The examinded computer consisted of:
+
 \begin{itemize}
 
 \item CPU: \JWPLcpu{} (\emph{San\-dy Bridge} microarchitecture)
 
-\item Motherboard: \JWPLboard{} (using an external video controller)
+\item Motherboard: \JWPLboard{} (using an separate video controller)
 
 \end{itemize}
 
@@ -56,7 +59,7 @@ present on each core \cite{fog11}. The CPU's \emph{performance monitoring unit}
 \label{sec:pmu}
 
 The CPU's \emph{Performance Monitoring Unit} (PMU) is present since the
-Intel\TReg{} Pentium processor. This unit is able to monitor several of the
+Intel\TReg{} Pentium processor. It is able to monitor several of the
 CPU's performance parameters while the system is running. Originally meant for
 tuning system and application performance \cite{intel2011softdev3b}, it is
 mostly used by compiler developers.
@@ -65,16 +68,16 @@ In prior work \cite{bellosa2000benefits,snowdon2010operating,
 weissel2002process,kellner03tempcontrol,bertran2010decomposable} some of these
 performance events have proved to be somehow related to the power consumption of
 the CPU. The selection of the events and the degree of their correlation to
-energy highly varies among CPUs, or at least CPU microarchitectures.
-Therefore, that has been done again for the Intel\TReg{} San\-dy Bridge
+energy highly varies among CPUs, or at least CPU microarchitectures. Therefore,
+selection and fitting have been done again for the Intel\TReg{} San\-dy Bridge
 microarchitecture and in particular the \JWPcpu{}.
 
-Examining the processor user's manual \cite{intel2011events}, approximately 184
-events have been found available and usable. Because the CPU is only able to
+By examining the processor user's manual \cite{intel2011events} approximately
+184 events have been found available and usable. Because the CPU is only able to
 count eight (four in Hyper--threading \cite{HT} mode) user--programmable
 performance events simultaneously \cite{intel2011softdev1} the most useful
 events have to be selected. In addition to the eight (four) events, the CPU
-provides three counters for fixed events, which will be counted anyway:
+provides three counters for fixed events, which will be counted in any case:
 \JWctr{CPU\_CLK\_UNHALTED.REF\_TSC}, \JWctr{CPU\_CLK\_UNHALTED.THREAD} and
 \JWctr{INST\_RETIRED.ANY}.
 

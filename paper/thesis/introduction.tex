@@ -10,11 +10,11 @@ lower CPU frequency may even decrease energy efficiency
 \cite{weissel2002process,snowdon2010operating}.
 
 The basis to intelligently minimize the energy consumption is per--task energy
-accounting because it reveals where exactly the energy is consumed.
-For every running process, the operating system should be aware of the present
-contribution to the machine's total power consumption. Additionally, for
-accounting purposes the overall energy consumed by a process should be known
-after its termination.
+accounting because it reveals where exactly the energy is consumed. For every
+running process the operating system should be aware of the present contribution
+to the machine's total power consumption. Furthermore, the overall energy
+consumed by a process should be known after its termination for accounting
+purposes.
 
 Thus, for being able to develop good power management strategies, a good live
 energy estimation is crucial. The approach in this study thesis is to use the
@@ -25,10 +25,10 @@ weissel2002process} doing energy estimation using performance counters with
 impressive results.
 
 Besides these points, various other applications of energy estimation are
-possible. Temperature control \cite{kellner03tempcontrol} and thermal management
+possible: Temperature control \cite{kellner03tempcontrol} and thermal management
 \cite{merkel05tmsmpsys} are just one auxiliary field. Accounted energy can also
 serve as a customer cost model for computing centers \cite{Bertran2010}, because
-it reflects much more accurately the real costs than simple computing time based
+it much more accurately reflects the real costs than simple computing time based
 models. Another possible application in that field are migration decisions of
 either virtual machines between real machines in clusters or processes between
 processing units \cite{merkel10rcscheduling}. Power--aware scheduling can also
@@ -39,18 +39,18 @@ help to improve the computing time efficiency.
 \JWltwo{Charges and Restrictions}
 \label{sec:restrictions}
 
-Because of the limited amount of time and the start from scratch of this thesis,
-some energy--relevant processor and operating system features have been
-disabled.  Since all of these either should work with the current model or
-individually raise some kind of events, this is not seen as a major drawback of
-this work. Future work may certainly be able to flawlessly integrate them into
-the known model. In particular, the following features lasted disabled:
+Because of the limited amount of time and the start from scratch, some
+energy--relevant processor and operating system features have been disabled.
+Since all of these individually raise some kind of events, this is not seen as a
+major drawback of this work.  Future work may certainly be able to flawlessly
+integrate them into the known model. In particular, the following features
+lasted disabled:
 
 \begin{itemize}
 
 \item Dynamic Frequency and Voltage Scaling \cite{DVFS}
 
-\item Hyper--Threading \cite{HT}
+\item Hyper--threading \cite{HT}
 
 \item ACPI Processor States other than C0 \cite{ACPI}
 
@@ -59,10 +59,10 @@ the known model. In particular, the following features lasted disabled:
 \end{itemize}
 
 In addition to the advanced processor and operating system features mentioned
-above, all auxiliary processing units could not be taken into account. The
-problem with the auxiliary processing units such as the floating point unit
-(FPU), MMX\cite{wiki:MMX}, SSE\cite{wiki:SSE} and AVX\cite{AVX} is that
-they are not or not well covered by the processor performance events
+above, all auxiliary processing units were not taken into account. The
+problem with the auxiliary processing units, such as the floating point unit
+(FPU), MMX\cite{wiki:MMX}, SSE\cite{wiki:SSE} and AVX\cite{AVX}, is that
+they are mostly uncovered by the processor performance events
 \cite{intel2011events}. They somehow act as a black box not revealing the
 work they do internally. Hence it is almost impossible to count their energy
 using performance event model.
@@ -102,7 +102,8 @@ $ echo 'Hello World!'
 Hello World!
 \end{lstlisting}
 
-The \emph{International System of Units (SI)} is used except for \si{\samples}
+The \emph{International System of Units (SI)} is used where ever appropriate.
+Additionally, the following new definitions are introduced: \si{\samples}
 meaning \emph{samples}, \si{\mebi\byte} and \si{\kibi\byte} (\SI{1}{\mebi\byte}
 $\hat{=}$ \SI{1024}{\kibi\byte} $\hat{=}$ \SI{1048576}{\byte} $=$ 1048576 byte).
 

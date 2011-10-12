@@ -9,7 +9,7 @@ the various phases of the analysis. The lingua franca for most complex on--disc
 formats are the schrieblesque \JWTprotobuf{}. Though, when interfacing with
 external software such as \JWTR{}, other formats had to be chosen. The choice in
 favor of Protocol Buffers has been made because of \emph{think XML, but
-smaller, faster, and simpler} (which is incidentally their  slogan).
+smaller, faster, and simpler} (which is incidentally their slogan).
 
 %-  shot ids  ------------------------------------------------------------------
 \JWlthree{Shot IDs}
@@ -34,7 +34,7 @@ time. As described in chapter \ref{sec:measuring-setup}, voltage drops are
 measured and electrical power and work are calculated later on. This is
 why data point files do literally contain voltage drop values by time.
 But since the sole reason they exist is to serve as calculation input later on,
-they are named after their future meaning.
+they are named after their future purpose.
 
 For practical reasons the representation is designed rather flexible: It
 supports arbitrary sampling rates, an arbitrary number of (named) channels and
@@ -213,18 +213,17 @@ from column \JWchan{CPU}, the analog trigger's value (see chapter
 \JWTde{} exports data point files (see chapter \ref{sec:datapoint-files}) to
 \JWTR{}'s \texttt{read.table} format \cite{r11data}. This format is less
 efficient and contains only parts of the information but enables user to exploit
-\JWTR{}'s excellent analysis and plotting abilities.
+\JWTR{}'s excellent analysis and plotting capabilities.
 
 
 \JWlfour{\JWTdc{}}
 
 \JWTdc{} is a tool for retrieving the performance event's counter values on the
 target machine. Giving it a set of performance events and a command to execute,
-it will record the events while the task is running. It always works
-system--widely and saves values by counter and by CPU enabled. Along the way it
-also controls the trigger wire. The trigger is crucial to match the time
-intervals intervals for counting performance events and measuring electrical
-power.
+it will record the events while the task is running. It always records the whole
+system's performance events for all CPUs. Along the way it also controls the
+trigger wire. The trigger is crucial to match the time intervals intervals for
+counting performance events and measuring electrical power.
 
 A working example executing \JWpath{/bin/ls} and counting
 \JWctrCLK{} and \JWctrINST{} along the way follows:
@@ -267,8 +266,8 @@ BuildSLE, Copyright (C)2011, Johannes Weiss
 [...]
 Processed work files: 500
 [...]
-$ R
 
+$ R
 R version 2.12.1 (2010-12-16)
 [...]
 > sle <- read.table('/tmp/sle.rtab', header=TRUE)
@@ -276,7 +275,7 @@ R version 2.12.1 (2010-12-16)
 \end{lstlisting}
 
 
-\JWlfour{high--level scripts}
+\JWlfour{High--level Scripts}
 
 So far, there are several simple tools for simple tasks. To compose the ensemble
 many of them have to be invoked correctly with each other. Since this is not a
@@ -293,7 +292,8 @@ latter automates the following steps as shown in the example below:
 
 \item Check that \JWPni{} is connected.
 
-\item Check that the login to the remote machine \texttt{i30pc59} works
+\item Check that the login to the remote machine (which has the hostname
+\texttt{i30pc59} in the example) works
 password--less and the remote user is allowed to use \JWpn{sudo}.
 
 \item Locally and remotely build the needed software tools.
@@ -421,7 +421,7 @@ model presented in this paper.
 \end{figure}
 
 After the event selection process, suitable energy weights for the
-(pseudo--)event had to be found. To find these, the benchmarks runs were
+(pseudo--)\ event had to be found. To find these, the benchmarks runs were
 repeated---once again on a single core but recording all of the final events in
 one shot. Thereafter all reasonable permutations for two and three cores and 500
 random permutations for all four cores have been generated. All in all over 3000
