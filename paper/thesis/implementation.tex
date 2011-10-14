@@ -21,7 +21,7 @@ defined set of ASCII characters. The following regular expression should match
 all valid shot IDs: \verb%[a-zA-Z0-9@_-]{1,64}%.
 
 Such shot IDs are always used to associate power and performance event
-measurings.
+measurements.
 
 
 %-  voltage drop data point files  ---------------------------------------------
@@ -138,7 +138,7 @@ performance event counters)
 {\JWpn{lm}} --- a \JWTR{} library to fit linear models
 
 \item \JWnamedlink{http://perfmon2.sourceforge.net/docs_v4.html}
-{\JWpn{libpfm4}} --- for reading the performance event counters from userspace
+{\JWpn{libpfm4}} --- for reading the performance event counters from user space
 
 \item \JWTLnidaqmxbase{} --- for interfacing \JWPni
 
@@ -428,7 +428,7 @@ random permutations for all four cores have been generated. All in all over 3000
 different benchmark runs have been recorded. The way the benchmark runs were
 recorded is illustrated in figure \ref{fig:run-benchmarks}. It was necessary to
 always reboot and reconfigure the machine because the number of active cores
-cannot be changed at runtime. The \JWpn{taskset}\cite{man:taskset} utility has
+cannot be changed at run time. The \JWpn{taskset}\cite{man:taskset} utility has
 been used to pin the benchmark processes to their target core.
 
 To train the model only about 50 well chosen benchmark runs were used,
