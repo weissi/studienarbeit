@@ -9,7 +9,7 @@ the various phases of the analysis. The lingua franca for most complex on--disc
 formats are the schrieblesque \JWTprotobuf{}. Though, when interfacing with
 external software such as \JWTR{}, other formats had to be chosen. The choice in
 favor of Protocol Buffers has been made because of \emph{think XML, but
-smaller, faster, and simpler} (which is incidentally their slogan).
+smaller, faster, and simpler} (Protocol Buffer's slogan).
 
 %-  shot ids  ------------------------------------------------------------------
 \JWlthree{Shot IDs}
@@ -55,7 +55,7 @@ streamed one after another. The size of one of these chunks is not specified.
 Usually one makes up a chunk when he receives one from a measuring device. The
 rule of thumb is: Make them as large as practical, but not too large since we
 only record one time stamp per chunk. The data points inside each chunk are
-considered as distributed equally.
+considered as equally distributed.
 
 
 %-  performance counter files  -------------------------------------------------
@@ -386,15 +386,15 @@ pseudo--events is either $0$ (core \emph{disabled}) or is equal to the entire
 running time of a benchmark (core \emph{enabled}).
 
 The general methodology has already been described in chapter
-\ref{sec:min-events}.  First the performance events were randomly
-distributed in disjoint groups of eight events which is the maximal number of
-performance events the CPU can count simultaneously (see chapter
-\ref{sec:sandy-bridge}). Thereafter, for each group of events all benchmarks
-have been executed consecutively. Then, all the runs of each benchmark were
-considered as one run recording all available events. Since the electrical
-work consumed and the running time were recorded for each run of its own, they
-were averaged per benchmark. Because the maximal relative standard deviation
-was always below 4\%, there was no danger of averaging them.
+\ref{sec:min-events}.  First the performance events were randomly distributed in
+disjoint groups of eight events which is the maximal number of performance
+events the CPU can count simultaneously (see chapter \ref{sec:sandy-bridge}).
+Thereafter, for each group of events all benchmarks have been executed
+consecutively. Then, all the runs of each benchmark were considered as one run
+recording all available events. Since the electrical work consumed and the
+running time were recorded for each run of its own, they were averaged per
+benchmark. This was reasonable because the maximal relative standard deviation
+was always below 4\%.
 
 The result was considered as one huge system of linear equations and the best
 subset of events was chosen using \JWTleaps{}. The events \JWctrCLK{} ($=$
