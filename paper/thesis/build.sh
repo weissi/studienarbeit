@@ -36,6 +36,7 @@ STEP="texification of ressources"
 ../scripts/texify-verb.sh ../../libdatapoints/dump-format.text > res/dpts.tex
 ../scripts/texify-verb.sh ../../protos/perf-counters.proto > res/pb-ctrs.tex
 ../scripts/texify-verb.sh ../../protos/generic.proto > res/pb-generic.tex
+../scripts/texify-git-state.sh > res/git-state.tex
 STEP="pdflatex run 1"
 try_pdflatex $TEXOPTS thesis
 STEP="bibtex"
